@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "ethereal",
+    "filterTag": "angelic",
+    "title": "Ethereal / Angelic Icons",
+    "archiveCount": 506,
+    "coverAssetId": "nv-003",
+    "count": 506,
+    "image": "/media/previews/nv-003.jpg"
+  },
+  {
+    "slug": "gothic",
+    "filterTag": "gothic",
+    "title": "Dark / Gothic Icons",
+    "archiveCount": 3970,
+    "coverAssetId": "nv-005",
+    "count": 3970,
+    "image": "/media/previews/nv-005.jpg"
+  },
+  {
+    "slug": "anime",
+    "filterTag": "anime",
+    "title": "Anime / Girl Icons",
+    "archiveCount": 311,
+    "coverAssetId": "nv-006",
+    "count": 311,
+    "image": "/media/previews/nv-006.jpg"
+  },
+  {
+    "slug": "matching",
+    "filterTag": "matching",
+    "title": "Matching / Couple Icons",
+    "archiveCount": 1023,
+    "coverAssetId": "nv-012",
+    "count": 1023,
+    "image": "/media/previews/nv-012.jpg"
+  }
+]

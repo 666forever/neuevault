@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "assets": [
+    { "id": "nv-001", "sourceFile": "icons/nv-001.jpg", "title": "Silver Static", "collectionSlugs": ["blonde-pfps-v1"], "tags": ["portrait", "silver", "editorial"], "uploadDate": "2026-07-17" },
+    { "id": "nv-002", "sourceFile": "icons/nv-002.jpg", "title": "Night Bloom", "collectionSlugs": ["blonde-pfps-v1"], "tags": ["portrait", "night", "soft"], "uploadDate": "2026-07-16" },
+    { "id": "nv-003", "sourceFile": "icons/nv-003.jpg", "title": "Concrete Angel", "collectionSlugs": ["blonde-pfps-v1"], "tags": ["angelic", "fashion", "portrait"], "uploadDate": "2026-07-15" },
+    { "id": "nv-004", "sourceFile": "banners/nv-004.jpg", "title": "Signal Loss", "collectionSlugs": ["lil-peep"], "tags": ["banner", "monochrome", "space"], "uploadDate": "2026-07-14" },
+    { "id": "nv-005", "sourceFile": "icons/nv-005.jpg", "title": "Velvet Figure", "collectionSlugs": ["imvu-pack-2"], "tags": ["gothic", "black", "avatar"], "uploadDate": "2026-07-13", "requiresDiscordAuth": true, "protectedDownloadPath": "/api/assets/nv-005/download" },
+    { "id": "nv-006", "sourceFile": "icons/nv-006.jpg", "title": "Chrome Memory", "collectionSlugs": ["imvu-pack-2"], "tags": ["chrome", "editorial", "avatar"], "uploadDate": "2026-07-12" },
+    { "id": "nv-007", "sourceFile": "wallpapers/nv-007.jpg", "title": "Midnight Transit", "collectionSlugs": ["after-hours"], "tags": ["city", "night", "wallpaper"], "uploadDate": "2026-07-11" },
+    { "id": "nv-008", "sourceFile": "wallpapers/nv-008.jpg", "title": "Soft Exit", "collectionSlugs": ["after-hours"], "tags": ["fog", "landscape", "soft"], "uploadDate": "2026-07-10" },
+    { "id": "nv-009", "sourceFile": "animated/nv-009.jpg", "title": "Afterimage", "collectionSlugs": ["imvu-pack-2"], "tags": ["fashion", "motion", "loop"], "uploadDate": "2026-07-09", "animated": true, "requiresDiscordAuth": true, "protectedDownloadPath": "/api/assets/nv-009/download" },
+    { "id": "nv-010", "sourceFile": "icons/nv-010.jpg", "title": "Low Light No. 4", "collectionSlugs": ["lil-peep"], "tags": ["portrait", "grain", "music"], "uploadDate": "2026-07-08" },
+    { "id": "nv-011", "sourceFile": "banners/nv-011.jpg", "title": "Black Room", "collectionSlugs": ["lil-peep"], "tags": ["concert", "music", "banner"], "uploadDate": "2026-07-07" },
+    { "id": "nv-012", "sourceFile": "icons/nv-012.jpg", "title": "Parallel Hearts", "collectionSlugs": ["blonde-pfps-v1"], "tags": ["couple", "matching", "portrait"], "uploadDate": "2026-07-06" },
+    { "id": "nv-013", "sourceFile": "icons/nv-013.jpg", "title": "White Noise", "collectionSlugs": ["blonde-pfps-v1"], "tags": ["square", "portrait", "minimal"], "uploadDate": "2026-07-05" },
+    { "id": "nv-014", "sourceFile": "icons/nv-014.jpg", "title": "Half Awake", "collectionSlugs": ["imvu-pack-2"], "tags": ["portrait", "fashion", "dark"], "uploadDate": "2026-07-04" },
+    { "id": "nv-015", "sourceFile": "banners/nv-015.jpg", "title": "Nocturne Strip", "collectionSlugs": ["after-hours"], "tags": ["wide", "stage", "night"], "uploadDate": "2026-07-03" },
+    { "id": "nv-016", "sourceFile": "banners/nv-016.jpg", "title": "Grey Horizon", "collectionSlugs": ["after-hours"], "tags": ["wide", "horizon", "fog"], "uploadDate": "2026-07-02" },
+    { "id": "nv-017", "sourceFile": "wallpapers/nv-017.jpg", "title": "Quiet Architecture", "collectionSlugs": ["after-hours"], "tags": ["architecture", "wallpaper", "monochrome"], "uploadDate": "2026-07-01" },
+    { "id": "nv-018", "sourceFile": "wallpapers/nv-018.jpg", "title": "Blue Interval", "collectionSlugs": ["after-hours"], "tags": ["landscape", "wallpaper", "quiet"], "uploadDate": "2026-06-30" },
+    { "id": "nv-019", "sourceFile": "animated/nv-019.jpg", "title": "Endless Loop", "collectionSlugs": ["imvu-pack-2"], "tags": ["loop", "digital", "motion"], "uploadDate": "2026-06-29", "animated": true },
+    { "id": "nv-020", "sourceFile": "animated/nv-020.jpg", "title": "Pulse Study", "collectionSlugs": ["imvu-pack-2"], "tags": ["pulse", "retro", "motion"], "uploadDate": "2026-06-28", "animated": true, "requiresDiscordAuth": true, "protectedDownloadPath": "/api/assets/nv-020/download" }
+  ]
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "slug": "blonde-pfps-v1",
+    "title": "Blonde PFPs Vol. 1",
+    "description": "48 bleached-blonde, selfie-style portraits.",
+    "coverAssetId": "nv-001",
+    "tags": [
+      "portrait",
+      "blonde",
+      "icons"
+    ],
+    "archiveCount": 48,
+    "featured": true,
+    "featuredOrder": 1,
+    "public": true,
+    "assetIds": [
+      "nv-001",
+      "nv-002",
+      "nv-003",
+      "nv-012",
+      "nv-013"
+    ],
+    "count": 48
+  },
+  {
+    "slug": "imvu-pack-2",
+    "title": "IMVU Pack 2",
+    "description": "16 monochrome, gothic digital avatars.",
+    "coverAssetId": "nv-005",
+    "tags": [
+      "avatar",
+      "gothic",
+      "digital"
+    ],
+    "archiveCount": 16,
+    "featured": true,
+    "featuredOrder": 2,
+    "public": true,
+    "accessNote": "Includes restricted originals",
+    "assetIds": [
+      "nv-005",
+      "nv-006",
+      "nv-009",
+      "nv-014",
+      "nv-019",
+      "nv-020"
+    ],
+    "count": 16
+  },
+  {
+    "slug": "lil-peep",
+    "title": "Ultimate Lil Peep Collection",
+    "description": "27 banners, portraits, and icons.",
+    "coverAssetId": "nv-010",
+    "tags": [
+      "music",
+      "portrait",
+      "banner"
+    ],
+    "archiveCount": 27,
+    "featured": true,
+    "featuredOrder": 3,
+    "public": true,
+    "assetIds": [
+      "nv-004",
+      "nv-010",
+      "nv-011"
+    ],
+    "count": 27
+  },
+  {
+    "slug": "after-hours",
+    "title": "After Hours",
+    "description": "Night streets, grain, and soft electric light.",
+    "coverAssetId": "nv-007",
+    "tags": [
+      "night",
+      "wallpaper",
+      "city"
+    ],
+    "archiveCount": 34,
+    "featured": false,
+    "public": true,
+    "assetIds": [
+      "nv-007",
+      "nv-008",
+      "nv-015",
+      "nv-016",
+      "nv-017",
+      "nv-018"
+    ],
+    "count": 34
+  }
+]

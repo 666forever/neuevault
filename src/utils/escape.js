@@ -2,7 +2,7 @@ export function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 }
 
-export function safeUrl(value, { allowRelative = false } = {}) {
+export function safeUrl(value, { allowRelative = true } = {}) {
   if (allowRelative && /^\/(?!\/)/.test(String(value))) return String(value);
   try {
     const url = new URL(String(value));

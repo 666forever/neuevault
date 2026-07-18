@@ -1,0 +1,545 @@
+[
+  {
+    "id": "nv-001",
+    "title": "Silver Static",
+    "slug": "silver-static",
+    "sourceFile": "icons/nv-001.jpg",
+    "previewFile": "/media/previews/nv-001.jpg",
+    "src": "/media/originals/nv-001.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "blonde-pfps-v1"
+    ],
+    "tags": [
+      "editorial",
+      "portrait",
+      "silver"
+    ],
+    "width": 900,
+    "height": 1350,
+    "aspectRatio": 0.666667,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 243525,
+    "uploadDate": "2026-07-17",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-002",
+    "title": "Night Bloom",
+    "slug": "night-bloom",
+    "sourceFile": "icons/nv-002.jpg",
+    "previewFile": "/media/previews/nv-002.jpg",
+    "src": "/media/originals/nv-002.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "blonde-pfps-v1"
+    ],
+    "tags": [
+      "night",
+      "portrait",
+      "soft"
+    ],
+    "width": 900,
+    "height": 1125,
+    "aspectRatio": 0.8,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 78226,
+    "uploadDate": "2026-07-16",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-003",
+    "title": "Concrete Angel",
+    "slug": "concrete-angel",
+    "sourceFile": "icons/nv-003.jpg",
+    "previewFile": "/media/previews/nv-003.jpg",
+    "src": "/media/originals/nv-003.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "blonde-pfps-v1"
+    ],
+    "tags": [
+      "angelic",
+      "fashion",
+      "portrait"
+    ],
+    "width": 900,
+    "height": 1350,
+    "aspectRatio": 0.666667,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 128733,
+    "uploadDate": "2026-07-15",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-004",
+    "title": "Signal Loss",
+    "slug": "signal-loss",
+    "sourceFile": "banners/nv-004.jpg",
+    "previewFile": "/media/previews/nv-004.jpg",
+    "src": "/media/originals/nv-004.jpg",
+    "category": "Banners",
+    "collectionSlugs": [
+      "lil-peep"
+    ],
+    "tags": [
+      "banner",
+      "monochrome",
+      "space"
+    ],
+    "width": 1200,
+    "height": 801,
+    "aspectRatio": 1.498127,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 148280,
+    "uploadDate": "2026-07-14",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-005",
+    "title": "Velvet Figure",
+    "slug": "velvet-figure",
+    "sourceFile": "icons/nv-005.jpg",
+    "previewFile": "/media/previews/nv-005.jpg",
+    "src": null,
+    "category": "Icons",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "avatar",
+      "black",
+      "gothic"
+    ],
+    "width": 900,
+    "height": 600,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 82515,
+    "uploadDate": "2026-07-13",
+    "animated": false,
+    "requiresDiscordAuth": true,
+    "protectedDownloadPath": "/api/assets/nv-005/download"
+  },
+  {
+    "id": "nv-006",
+    "title": "Chrome Memory",
+    "slug": "chrome-memory",
+    "sourceFile": "icons/nv-006.jpg",
+    "previewFile": "/media/previews/nv-006.jpg",
+    "src": "/media/originals/nv-006.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "avatar",
+      "chrome",
+      "editorial"
+    ],
+    "width": 900,
+    "height": 1125,
+    "aspectRatio": 0.8,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 120687,
+    "uploadDate": "2026-07-12",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-007",
+    "title": "Midnight Transit",
+    "slug": "midnight-transit",
+    "sourceFile": "wallpapers/nv-007.jpg",
+    "previewFile": "/media/previews/nv-007.jpg",
+    "src": "/media/originals/nv-007.jpg",
+    "category": "Wallpapers",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "city",
+      "night",
+      "wallpaper"
+    ],
+    "width": 1200,
+    "height": 800,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 137360,
+    "uploadDate": "2026-07-11",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-008",
+    "title": "Soft Exit",
+    "slug": "soft-exit",
+    "sourceFile": "wallpapers/nv-008.jpg",
+    "previewFile": "/media/previews/nv-008.jpg",
+    "src": "/media/originals/nv-008.jpg",
+    "category": "Wallpapers",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "fog",
+      "landscape",
+      "soft"
+    ],
+    "width": 1200,
+    "height": 1800,
+    "aspectRatio": 0.666667,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 405382,
+    "uploadDate": "2026-07-10",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-009",
+    "title": "Afterimage",
+    "slug": "afterimage",
+    "sourceFile": "animated/nv-009.jpg",
+    "previewFile": "/media/previews/nv-009.jpg",
+    "src": null,
+    "category": "Animated",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "fashion",
+      "loop",
+      "motion"
+    ],
+    "width": 900,
+    "height": 1246,
+    "aspectRatio": 0.722311,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 122234,
+    "uploadDate": "2026-07-09",
+    "animated": true,
+    "requiresDiscordAuth": true,
+    "protectedDownloadPath": "/api/assets/nv-009/download"
+  },
+  {
+    "id": "nv-010",
+    "title": "Low Light No. 4",
+    "slug": "low-light-no-4",
+    "sourceFile": "icons/nv-010.jpg",
+    "previewFile": "/media/previews/nv-010.jpg",
+    "src": "/media/originals/nv-010.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "lil-peep"
+    ],
+    "tags": [
+      "grain",
+      "music",
+      "portrait"
+    ],
+    "width": 900,
+    "height": 600,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 85244,
+    "uploadDate": "2026-07-08",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-011",
+    "title": "Black Room",
+    "slug": "black-room",
+    "sourceFile": "banners/nv-011.jpg",
+    "previewFile": "/media/previews/nv-011.jpg",
+    "src": "/media/originals/nv-011.jpg",
+    "category": "Banners",
+    "collectionSlugs": [
+      "lil-peep"
+    ],
+    "tags": [
+      "banner",
+      "concert",
+      "music"
+    ],
+    "width": 1200,
+    "height": 800,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 140053,
+    "uploadDate": "2026-07-07",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-012",
+    "title": "Parallel Hearts",
+    "slug": "parallel-hearts",
+    "sourceFile": "icons/nv-012.jpg",
+    "previewFile": "/media/previews/nv-012.jpg",
+    "src": "/media/originals/nv-012.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "blonde-pfps-v1"
+    ],
+    "tags": [
+      "couple",
+      "matching",
+      "portrait"
+    ],
+    "width": 900,
+    "height": 1350,
+    "aspectRatio": 0.666667,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 102871,
+    "uploadDate": "2026-07-06",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-013",
+    "title": "White Noise",
+    "slug": "white-noise",
+    "sourceFile": "icons/nv-013.jpg",
+    "previewFile": "/media/previews/nv-013.jpg",
+    "src": "/media/originals/nv-013.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "blonde-pfps-v1"
+    ],
+    "tags": [
+      "minimal",
+      "portrait",
+      "square"
+    ],
+    "width": 720,
+    "height": 1080,
+    "aspectRatio": 0.666667,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 151057,
+    "uploadDate": "2026-07-05",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-014",
+    "title": "Half Awake",
+    "slug": "half-awake",
+    "sourceFile": "icons/nv-014.jpg",
+    "previewFile": "/media/previews/nv-014.jpg",
+    "src": "/media/originals/nv-014.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "dark",
+      "fashion",
+      "portrait"
+    ],
+    "width": 720,
+    "height": 989,
+    "aspectRatio": 0.728008,
+    "orientation": "Portrait",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 73256,
+    "uploadDate": "2026-07-04",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-015",
+    "title": "Nocturne Strip",
+    "slug": "nocturne-strip",
+    "sourceFile": "banners/nv-015.jpg",
+    "previewFile": "/media/previews/nv-015.jpg",
+    "src": "/media/originals/nv-015.jpg",
+    "category": "Banners",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "night",
+      "stage",
+      "wide"
+    ],
+    "width": 1000,
+    "height": 667,
+    "aspectRatio": 1.49925,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 189990,
+    "uploadDate": "2026-07-03",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-016",
+    "title": "Grey Horizon",
+    "slug": "grey-horizon",
+    "sourceFile": "banners/nv-016.jpg",
+    "previewFile": "/media/previews/nv-016.jpg",
+    "src": "/media/originals/nv-016.jpg",
+    "category": "Banners",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "fog",
+      "horizon",
+      "wide"
+    ],
+    "width": 1000,
+    "height": 667,
+    "aspectRatio": 1.49925,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 33148,
+    "uploadDate": "2026-07-02",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-017",
+    "title": "Quiet Architecture",
+    "slug": "quiet-architecture",
+    "sourceFile": "wallpapers/nv-017.jpg",
+    "previewFile": "/media/previews/nv-017.jpg",
+    "src": "/media/originals/nv-017.jpg",
+    "category": "Wallpapers",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "architecture",
+      "monochrome",
+      "wallpaper"
+    ],
+    "width": 1000,
+    "height": 667,
+    "aspectRatio": 1.49925,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 90746,
+    "uploadDate": "2026-07-01",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-018",
+    "title": "Blue Interval",
+    "slug": "blue-interval",
+    "sourceFile": "wallpapers/nv-018.jpg",
+    "previewFile": "/media/previews/nv-018.jpg",
+    "src": "/media/originals/nv-018.jpg",
+    "category": "Wallpapers",
+    "collectionSlugs": [
+      "after-hours"
+    ],
+    "tags": [
+      "landscape",
+      "quiet",
+      "wallpaper"
+    ],
+    "width": 1000,
+    "height": 667,
+    "aspectRatio": 1.49925,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 144597,
+    "uploadDate": "2026-06-30",
+    "animated": false,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-019",
+    "title": "Endless Loop",
+    "slug": "endless-loop",
+    "sourceFile": "animated/nv-019.jpg",
+    "previewFile": "/media/previews/nv-019.jpg",
+    "src": "/media/originals/nv-019.jpg",
+    "category": "Animated",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "digital",
+      "loop",
+      "motion"
+    ],
+    "width": 720,
+    "height": 480,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 67889,
+    "uploadDate": "2026-06-29",
+    "animated": true,
+    "requiresDiscordAuth": false
+  },
+  {
+    "id": "nv-020",
+    "title": "Pulse Study",
+    "slug": "pulse-study",
+    "sourceFile": "animated/nv-020.jpg",
+    "previewFile": "/media/previews/nv-020.jpg",
+    "src": null,
+    "category": "Animated",
+    "collectionSlugs": [
+      "imvu-pack-2"
+    ],
+    "tags": [
+      "motion",
+      "pulse",
+      "retro"
+    ],
+    "width": 720,
+    "height": 480,
+    "aspectRatio": 1.5,
+    "orientation": "Landscape",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 60883,
+    "uploadDate": "2026-06-28",
+    "animated": true,
+    "requiresDiscordAuth": true,
+    "protectedDownloadPath": "/api/assets/nv-020/download"
+  }
+]
