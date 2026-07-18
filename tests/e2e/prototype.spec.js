@@ -15,31 +15,28 @@ test('modal keyboard steps and restores the opening card focus', async ({ page }
   await expect(page.locator('#modal-title')).not.toHaveText(initial); await page.keyboard.press('Escape'); await expect(first).toBeFocused();
 });
 
-test('deep-linked restricted assets expose only an unavailable boundary', async ({ page }) => {
+test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/')) protectedRequests.push(request.url()); });
-  await page.goto('/#/asset/nv-005'); await expect(page.locator('#modal-title')).toHaveText('Velvet Figure');
-  await expect(page.getByRole('button', { name: 'Authentication unavailable' })).toBeVisible();
-  await expect(page.locator('.modal-preview img')).toHaveAttribute('src', '/media/previews/nv-005.jpg');
-  await page.getByRole('button', { name: 'Authentication unavailable' }).click();
+  await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.getByRole('button', { name: 'Sign in unavailable' }).last().click();
   await expect(page.locator('#auth-title')).toHaveText('Authentication unavailable'); expect(protectedRequests).toEqual([]);
 });
 
 test('public download requests the public original', async ({ page }) => {
-  let requested = false;
-  page.on('request', request => { if (request.url().includes('/media/originals/nv-001.jpg')) requested = true; });
-  await page.goto('/#/asset/nv-001'); await page.getByRole('button', { name: /Download original/ }).click();
+  const [asset] = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8')); let requested = false;
+  page.on('request', request => { if (request.url().includes(asset.src)) requested = true; });
+  await page.goto(`/#/asset/${asset.id}`); await page.getByRole('button', { name: /Download original/ }).click();
   await expect.poll(() => requested).toBe(true);
 });
 
 test('an ingested manifest asset appears in the gallery and opens its modal', async ({ page }) => {
   const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
-  expect(manifest.find(asset => asset.id === 'nv-001')).toMatchObject({ previewFile: '/media/previews/nv-001.jpg', src: '/media/originals/nv-001.jpg' });
-  await page.goto('/'); const card = page.getByRole('button', { name: 'Open Silver Static' }); await expect(card).toBeVisible(); await card.click();
-  await expect(page.locator('#modal-title')).toHaveText('Silver Static');
+  const asset = manifest[0]; expect(asset.src).toMatch(/^\/media\/originals\//);
+  await page.goto('/'); const card = page.getByRole('button', { name: `Open ${asset.title}` }); await expect(card).toBeVisible(); await card.click();
+  await expect(page.locator('#modal-title')).toHaveText(asset.title);
 });
 
 test('restricted source remains outside public and built output', async () => {
-  for (const target of [path.resolve('public/media/originals/nv-005.jpg'), path.resolve('dist/media/originals/nv-005.jpg')]) {
-    await expect(access(target)).rejects.toThrow();
-  }
+  const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
+  for (const asset of manifest.filter(item => item.requiresDiscordAuth)) for (const root of ['public', 'dist']) await expect(access(path.resolve(root, asset.src || `media/originals/${path.basename(asset.sourceFile)}`))).rejects.toThrow();
 });

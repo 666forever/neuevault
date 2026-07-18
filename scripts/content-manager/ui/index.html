@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Neuevault local content manager</title><link rel="stylesheet" href="/manager.css"></head>
+<body>
+  <header><div><p>Local owner tool</p><h1>Neuevault content</h1></div><div class="save-summary" id="save-summary" aria-live="polite"></div><div class="actions"><button id="discard">Discard</button><button id="save" class="accent">Review & save</button></div></header>
+  <main>
+    <aside><div class="tabs"><button data-tab="categories" class="active">Categories</button><button data-tab="collections">Collections</button></div><button id="create" class="wide">Create category</button><div id="records"></div></aside>
+    <section class="editor"><div id="empty">Select or create a record.</div><form id="editor" hidden></form></section>
+    <section class="assets"><h2>Assets</h2><div class="filters"><input id="asset-search" type="search" placeholder="Filename or ID"><select id="asset-folder"><option value="">All folders</option><option>Icons</option><option>Banners</option><option>Animated</option><option>Wallpapers</option></select><input id="asset-tag" placeholder="Tag"><label><input id="current-only" type="checkbox"> Current collection</label></div><div class="picker-status" id="picker-status"><div><strong id="selection-count" aria-live="polite">0 selected</strong><span id="asset-count">0 shown</span></div><div class="picker-actions"><button id="select-visible" type="button">Select all visible</button><button id="clear-visible" type="button">Clear visible selection</button><button id="clear-all" type="button">Clear all selection</button></div></div><div id="asset-grid"></div></section>
+  </main>
+  <div id="status" role="status" aria-live="polite"></div><script type="module" src="/manager.js"></script>
+</body>
+</html>

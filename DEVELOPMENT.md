@@ -50,21 +50,42 @@ Supported source formats are JPEG, PNG, GIF, and WebP. [Sharp](https://sharp.pix
 ## Add one image
 
 1. Copy the original into the matching directory under `content/assets`.
-2. Add one record to `content/metadata/assets.json` with at least `sourceFile`. Add an explicit stable `id` before publishing if the asset will be referenced externally.
-3. Add deliberate `tags`, `collectionSlugs`, and optionally `uploadDate`. Category, title, dimensions, file details, orientation, and animation are inferred.
-4. Run `npm run generate:assets`.
-5. Run `npm run validate:assets` and review every reported error.
+2. Preview the complete reconciliation with `npm run assets:update -- --dry-run`.
+3. Run `npm run assets:update` when the report is clean and Cloudinary credentials are configured.
+
+The update command allocates the next numeric `nv-###` ID and creates metadata automatically. Category, title, dimensions, file details, orientation, animation, hash, and upload date are inferred. New records default to public access with empty tags and collection membership. Normal imports do not require JSON editing.
+
+Existing titles, tags, collections, upload dates, and restricted states are preserved. Subjective tags and collection assignments are never inferred. Add those later only when editorial curation is intentional.
 
 When `uploadDate` is omitted, the source file modification date is used. Tags and collection membership are never guessed from filenames.
 
 ## Bulk import
 
 1. Batch-copy files into the four category directories.
-2. Add corresponding records to `assets.json`. A spreadsheet or script may produce this JSON, but every source path must appear exactly once.
-3. Run `npm run validate:assets`. Orphan source files, unsupported files, duplicate IDs/slugs/paths, and missing sources fail validation.
-4. Run `npm run generate:assets` after the batch validates.
+2. Run `npm run assets:update -- --dry-run` and review allocated IDs, cryptographic duplicates, filename collisions, removals, and cover issues.
+3. Run `npm run assets:update`. It backs up control files, writes reconciled metadata, regenerates previews/manifests, synchronizes and verifies Cloudinary, validates assets, and runs unit tests, Playwright, the production build, secret audit, and restricted-exposure audit.
 
 The generator never overwrites anything in `content/assets`. Preview cache keys include source bytes and preview configuration, so unchanged previews are not regenerated.
+
+Before any real update, timestamped copies of asset metadata, category metadata, collection metadata, and Cloudinary synchronization state are written beneath `content/backups`. Dry-run performs no writes and does not contact Cloudinary.
+
+A missing source is removed automatically only when its prior cryptographic hash proves it was previously scanned, or when a source-aligned legacy placeholder is being replaced by a real archive import. If a removed cover has no single objectively safe replacement, the real update stops and reports the affected collection or category instead of choosing randomly.
+
+## Edit categories and collections locally
+
+Run `npm run manage:content`, then open the printed `127.0.0.1` address. This starts a loopback-only content tool; it is not included in the Vite application or production build.
+
+The manager supports creating, editing, and deleting categories and collections; selecting covers; searching assets; editing collection membership; and building categories from a source folder, tags, explicit asset IDs, or a collection’s stable ID. Stable `cat-*` and `col-*` IDs are allocated once and are read-only in the interface. Titles, descriptions, ordering, visibility, feature state, tags, counts, and slugs remain authored content.
+
+Asset counts are derived, not manually authored. `archiveCount` has been removed from category and collection source JSON; generated manifests contain `count`, calculated from the current local archive. For collections, this is the number of assets whose `collectionSlugs` includes the collection slug. For categories, it is the number matched by the configured folder, all required tags, explicit asset IDs, or stable collection ID. Empty records generate a count of zero. If an external archive total is needed later, it must use a separate field such as `externalArchiveCount`.
+
+The sticky picker counter distinguishes assets checked in the currently visible, filtered picker from the total assignment that will be saved. Searching and filtering never clear working selections. “Select all visible” and “Clear visible selection” affect only the filtered result; “Clear all selection” affects the complete assignment. The editor and save header show the computed total that will be written to the generated manifest.
+
+Saving performs schema and reference validation, creates a timestamped backup of `assets.json`, `categories.json`, `collections.json`, and `cloudinary-sync.json`, atomically replaces the three authored metadata files, then regenerates previews and manifests. Source assets are never deleted by the manager. A collection slug rename migrates asset memberships by stable collection ID; deleting a collection removes those memberships. Published slug changes and destructive actions require confirmation.
+
+Hidden categories and non-public collections may be empty and have no cover. Visible/public records require an existing cover. Restricted assets are safe covers because only their generated preview is exposed; their original remains `src: null`. The former demo records remain ordinary authored records and are currently hidden/non-public, so they can be edited or deleted without being recreated.
+
+The public homepage and archive routes render only visible categories, public collections, and featured public collections. If none exist, those homepage sections are omitted and the collections page shows a restrained empty state. Generated files remain outputs and must not be edited manually.
 
 ## Create a collection
 
@@ -96,6 +117,9 @@ Previews retain natural aspect ratio and use an inside-fit maximum of 1200×1200
 - `npm run generate:assets` — validate, generate previews, copy allowed originals, and write manifests
 - `npm run validate:assets` — perform the complete ingestion audit without writing output
 - `npm run clean:generated` — remove generated manifests, media, and preview cache
+- `npm run assets:update -- --dry-run` — read-only local/Cloudinary reconciliation plan
+- `npm run assets:update` — complete backed-up ingestion, Cloudinary, validation, and test workflow
+- `npm run manage:content` — start the local-only category and collection manager
 - `npm test` — run unit tests
 - `npm run test:e2e` — run desktop and mobile Playwright tests
 - `npm run build` — create the production bundle

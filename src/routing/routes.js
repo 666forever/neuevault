@@ -3,7 +3,7 @@ export function parseRoute(hash = '') {
   const [path, query = ''] = raw.split('?');
   const parts = path.split('/').filter(Boolean).map(decodeURIComponent);
   if (!parts.length) return { name: 'home', path, params: {}, query: new URLSearchParams(query) };
-  const names = { collections: 'collections', collection: 'collection', recent: 'recent', search: 'search', about: 'about', asset: 'asset' };
+  const names = { collections: 'collections', collection: 'collection', category: 'category', recent: 'recent', search: 'search', about: 'about', asset: 'asset' };
   return { name: names[parts[0]] || 'notFound', path, params: { slug: parts[1], id: parts[1] }, query: new URLSearchParams(query) };
 }
 

@@ -12,8 +12,14 @@ const generatedAssetSchema = z.object({
   if (!asset.requiresDiscordAuth && !asset.src) context.addIssue({ code: 'custom', path: ['src'], message: 'Public assets require an original src.' });
 });
 
-const collectionSchema = z.object({ slug: z.string(), title: z.string(), description: z.string(), coverAssetId: z.string(), assetIds: z.array(z.string()), tags: z.array(z.string()), count: z.number(), featured: z.boolean(), featuredOrder: z.number().optional(), public: z.boolean(), accessNote: z.string().optional() });
-const categorySchema = z.object({ slug: z.string(), filterTag: z.string(), title: z.string(), count: z.number(), image: z.string() });
+const collectionSchema = z.object({ id: z.string(), slug: z.string(), title: z.string(), description: z.string(), coverAssetId: z.string().nullable(), assetIds: z.array(z.string()), tags: z.array(z.string()), count: z.number(), featured: z.boolean(), featuredOrder: z.number().optional(), public: z.boolean(), accessNote: z.string().optional() });
+const categoryFilterSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('folder'), category: z.string() }),
+  z.object({ type: z.literal('tags'), tags: z.array(z.string()) }),
+  z.object({ type: z.literal('assets'), assetIds: z.array(z.string()) }),
+  z.object({ type: z.literal('collection'), collectionId: z.string() }),
+]);
+const categorySchema = z.object({ id: z.string(), slug: z.string(), title: z.string(), description: z.string().optional(), count: z.number(), coverAssetId: z.string().nullable(), image: z.string(), visible: z.boolean(), order: z.number(), filter: categoryFilterSchema.optional() });
 
 export function validateGeneratedData(data) {
   if (!import.meta.env?.DEV) return data;

@@ -21,5 +21,9 @@ const collections = generated.collections.filter(collection => collection.public
   cover: assetById.get(collection.coverAssetId)?.preview || '',
   restricted: collection.assetIds.some(id => assetById.get(id)?.requiresDiscordAuth),
 }));
+const categories = generated.categories.filter(category => category.visible).map(category => ({
+  ...category,
+  image: assetById.get(category.coverAssetId)?.preview || category.image || '',
+})).sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 
-export const repository = new StaticAssetRepository({ assets, collections, categories: generated.categories });
+export const repository = new StaticAssetRepository({ assets, collections, categories });

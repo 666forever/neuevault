@@ -1,9 +1,65 @@
 {
   "version": 1,
   "collections": [
-    { "slug": "blonde-pfps-v1", "title": "Blonde PFPs Vol. 1", "description": "48 bleached-blonde, selfie-style portraits.", "coverAssetId": "nv-001", "tags": ["portrait", "blonde", "icons"], "archiveCount": 48, "featured": true, "featuredOrder": 1, "public": true },
-    { "slug": "imvu-pack-2", "title": "IMVU Pack 2", "description": "16 monochrome, gothic digital avatars.", "coverAssetId": "nv-005", "tags": ["avatar", "gothic", "digital"], "archiveCount": 16, "featured": true, "featuredOrder": 2, "public": true, "accessNote": "Includes restricted originals" },
-    { "slug": "lil-peep", "title": "Ultimate Lil Peep Collection", "description": "27 banners, portraits, and icons.", "coverAssetId": "nv-010", "tags": ["music", "portrait", "banner"], "archiveCount": 27, "featured": true, "featuredOrder": 3, "public": true },
-    { "slug": "after-hours", "title": "After Hours", "description": "Night streets, grain, and soft electric light.", "coverAssetId": "nv-007", "tags": ["night", "wallpaper", "city"], "archiveCount": 34, "featured": false, "public": true }
+    {
+      "id": "col-001",
+      "slug": "blonde-pfps-v1",
+      "title": "Blonde PFPs Vol. 1",
+      "description": "48 bleached-blonde, selfie-style portraits.",
+      "coverAssetId": "nv-001",
+      "tags": [
+        "portrait",
+        "blonde",
+        "icons"
+      ],
+      "featured": false,
+      "featuredOrder": 1,
+      "public": false
+    },
+    {
+      "id": "col-002",
+      "slug": "imvu-pack-2",
+      "title": "IMVU Pack 2",
+      "description": "16 monochrome, gothic digital avatars.",
+      "coverAssetId": "nv-005",
+      "tags": [
+        "avatar",
+        "gothic",
+        "digital"
+      ],
+      "featured": false,
+      "featuredOrder": 2,
+      "public": false,
+      "accessNote": "Includes restricted originals"
+    },
+    {
+      "id": "col-003",
+      "slug": "lil-peep",
+      "title": "Ultimate Lil Peep Collection",
+      "description": "27 banners, portraits, and icons.",
+      "coverAssetId": "nv-010",
+      "tags": [
+        "music",
+        "portrait",
+        "banner"
+      ],
+      "featured": false,
+      "featuredOrder": 3,
+      "public": false
+    },
+    {
+      "id": "col-004",
+      "slug": "after-hours",
+      "title": "After Hours",
+      "description": "Night streets, grain, and soft electric light.",
+      "coverAssetId": "nv-007",
+      "tags": [
+        "night",
+        "wallpaper",
+        "city"
+      ],
+      "featured": false,
+      "public": false
+    }
   ]
 }

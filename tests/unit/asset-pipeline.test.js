@@ -15,9 +15,9 @@ async function fixture({ files = [{ name: 'icons/fixture.jpg', color: '#a7ff1e' 
   await Promise.all([mkdir(sourceRoot, { recursive: true }), mkdir(metadataRoot, { recursive: true }), mkdir(collectionRoot, { recursive: true })]);
   for (const file of files) { const target = path.join(sourceRoot, file.name); await mkdir(path.dirname(target), { recursive: true }); if (file.raw) await writeFile(target, file.raw); else await sharp({ create: { width: file.width || 40, height: file.height || 20, channels: 4, background: file.color } }).jpeg().toFile(target); }
   const authoredAssets = assets || [{ id: 'nv-fixture', sourceFile: 'icons/fixture.jpg', collectionSlugs: ['fixture'], tags: ['test'], uploadDate: '2026-01-01' }];
-  const authoredCollections = collections || [{ slug: 'fixture', title: 'Fixture', description: 'Fixture collection.', coverAssetId: authoredAssets[0]?.id || 'nv-fixture', tags: [], featured: true, featuredOrder: 1, public: true }];
+  const authoredCollections = (collections || [{ slug: 'fixture', title: 'Fixture', description: 'Fixture collection.', coverAssetId: authoredAssets[0]?.id || 'nv-fixture', tags: [], featured: true, featuredOrder: 1, public: true }]).map((collection, index) => ({ id: `col-${index + 1}`, ...collection }));
   await writeFile(path.join(metadataRoot, 'assets.json'), JSON.stringify({ version: 1, assets: authoredAssets }));
-  await writeFile(path.join(metadataRoot, 'categories.json'), JSON.stringify({ version: 1, categories: [{ slug: 'fixture', filterTag: 'test', title: 'Fixture', archiveCount: 1, coverAssetId: authoredAssets[0]?.id || 'nv-fixture' }] }));
+  await writeFile(path.join(metadataRoot, 'categories.json'), JSON.stringify({ version: 1, categories: [{ id: 'cat-1', slug: 'fixture', title: 'Fixture', archiveCount: 1, coverAssetId: authoredAssets[0]?.id || 'nv-fixture', visible: true, order: 1, filter: { type: 'tags', tags: ['test'] } }] }));
   await writeFile(path.join(collectionRoot, 'collections.json'), JSON.stringify({ version: 1, collections: authoredCollections }));
   return { root, config: { sourceRoot, metadataRoot, collectionRoot, cacheRoot: path.join(root, 'content/generated/cache'), generatedRoot: path.join(root, 'src/generated'), publicPreviewRoot: path.join(root, 'public/media/previews'), publicOriginalRoot: path.join(root, 'public/media/originals'), supportedExtensions: new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']), preview: { maxWidth: 1200, maxHeight: 1200, quality: 78 } } };
 }
@@ -33,6 +33,20 @@ describe('asset metadata normalization', () => {
     ], collections: [{ slug: 'fixture', title: 'Fixture', description: '', coverAssetId: 'nv-later', assetIds: ['nv-later', 'nv-earlier'], featured: true, featuredOrder: 1, public: true }] });
     const result = await generateAssets({ config }); expect(result.assets.map(asset => asset.id)).toEqual(['nv-later', 'nv-earlier']);
     expect(result.assets[0]).toMatchObject({ slug: 'later', width: 40, height: 20, aspectRatio: 2, orientation: 'Landscape', previewFile: '/media/previews/nv-later.jpg', src: '/media/originals/nv-later.jpg' });
+  });
+
+  it('derives generated collection and category counts from actual assets', async () => {
+    const countFixture = await fixture({
+      files: [{ name: 'icons/fixture.jpg', color: '#a7ff1e' }, { name: 'icons/second.jpg', color: '#777' }],
+      assets: [
+        { id: 'nv-one', sourceFile: 'icons/fixture.jpg', collectionSlugs: ['fixture'], tags: ['test'], uploadDate: '2026-01-01' },
+        { id: 'nv-two', sourceFile: 'icons/second.jpg', collectionSlugs: [], tags: ['test'], uploadDate: '2026-01-02' },
+      ],
+    });
+    const generated = await generateAssets({ config: countFixture.config, writeOutput: false });
+    expect(generated.collections[0].count).toBe(1);
+    expect(generated.collections[0].assetIds).toEqual(['nv-one']);
+    expect(generated.categories[0].count).toBe(2);
   });
 });
 

@@ -35,6 +35,7 @@ function route() {
   if (current.name === 'home') pages.home();
   else if (current.name === 'collections') pages.collectionsPage();
   else if (current.name === 'collection') pages.collectionPage(current.params.slug);
+  else if (current.name === 'category') pages.categoryPage(current.params.slug);
   else if (current.name === 'recent') pages.recentPage();
   else if (current.name === 'search') pageCleanup = pages.searchPage(current.query);
   else if (current.name === 'about') pages.aboutPage();

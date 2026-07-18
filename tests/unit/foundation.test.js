@@ -23,6 +23,7 @@ describe('routes and access', () => {
   it('parses deep links and query values', () => {
     expect(parseRoute('#/asset/nv-005')).toMatchObject({ name: 'asset', params: { id: 'nv-005' } });
     expect(parseRoute('#/search?tag=gothic').query.get('tag')).toBe('gothic');
+    expect(parseRoute('#/category/icons')).toMatchObject({ name: 'category', params: { slug: 'icons' } });
   });
   it('never exposes a restricted original', () => {
     expect(isRestricted(assets[1])).toBe(true);

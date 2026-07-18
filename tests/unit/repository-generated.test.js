@@ -5,8 +5,9 @@ import { repository } from '../../src/data/repository.js';
 describe('generated repository', () => {
   it('consumes generated manifests behind the existing repository interface', () => {
     expect(repository.getAssets()).toHaveLength(generatedAssets.length);
-    expect(repository.getAsset('nv-001')).toMatchObject({ title: 'Silver Static', preview: '/media/previews/nv-001.jpg', src: '/media/originals/nv-001.jpg' });
-    expect(repository.getAsset('nv-005')).toMatchObject({ requiresDiscordAuth: true, src: null });
-    expect(repository.getCollection('blonde-pfps-v1').cover).toMatch(/^\/media\/previews\//);
+    const first = generatedAssets[0];
+    expect(repository.getAsset(first.id)).toMatchObject({ title: first.title, preview: first.previewFile, src: first.src });
+    expect(repository.getCategories()).toEqual([]);
+    expect(repository.getCollections()).toEqual([]);
   });
 });

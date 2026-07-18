@@ -14,7 +14,9 @@
     "cloudinary:sync": "node scripts/cloudinary-sync.mjs",
     "cloudinary:verify": "node scripts/cloudinary-verify.mjs",
     "cloudinary:prune": "node scripts/cloudinary-prune.mjs",
-    "audit:cloudinary-secrets": "node scripts/audit-cloudinary-secrets.mjs"
+    "audit:cloudinary-secrets": "node scripts/audit-cloudinary-secrets.mjs",
+    "assets:update": "node scripts/assets-update.mjs",
+    "manage:content": "node scripts/manage-content.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",

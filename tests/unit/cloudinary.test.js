@@ -22,8 +22,8 @@ async function cloudFixture() {
     { id: 'nv-restricted', sourceFile: 'icons/restricted.jpg', title: 'Restricted', collectionSlugs: ['fixture'], uploadDate: '2026-01-01', requiresDiscordAuth: true, protectedDownloadPath: '/api/assets/nv-restricted/download' },
   ];
   await writeFile(path.join(metadataRoot, 'assets.json'), JSON.stringify({ version: 1, assets }));
-  await writeFile(path.join(metadataRoot, 'categories.json'), JSON.stringify({ version: 1, categories: [{ slug: 'fixture', filterTag: 'fixture', title: 'Fixture', archiveCount: 2, coverAssetId: 'nv-restricted' }] }));
-  await writeFile(path.join(collectionRoot, 'collections.json'), JSON.stringify({ version: 1, collections: [{ slug: 'fixture', title: 'Fixture', description: '', coverAssetId: 'nv-restricted', featured: true, featuredOrder: 1, public: true }] }));
+  await writeFile(path.join(metadataRoot, 'categories.json'), JSON.stringify({ version: 1, categories: [{ id: 'cat-1', slug: 'fixture', title: 'Fixture', archiveCount: 2, coverAssetId: 'nv-restricted', visible: true, order: 1, filter: { type: 'folder', category: 'Icons' } }] }));
+  await writeFile(path.join(collectionRoot, 'collections.json'), JSON.stringify({ version: 1, collections: [{ id: 'col-1', slug: 'fixture', title: 'Fixture', description: '', coverAssetId: 'nv-restricted', featured: true, featuredOrder: 1, public: true }] }));
   return { root, stateFile: path.join(root, 'content/cloudinary-sync.json'), config: { sourceRoot, metadataRoot, collectionRoot, cacheRoot: path.join(root, 'content/generated/cache'), generatedRoot: path.join(root, 'src/generated'), publicPreviewRoot: path.join(root, 'public/media/previews'), publicOriginalRoot: path.join(root, 'public/media/originals'), supportedExtensions: new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']), preview: { maxWidth: 1200, maxHeight: 1200, quality: 78 } } };
 }
 

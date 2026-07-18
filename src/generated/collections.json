@@ -1,5 +1,6 @@
 [
   {
+    "id": "col-001",
     "slug": "blonde-pfps-v1",
     "title": "Blonde PFPs Vol. 1",
     "description": "48 bleached-blonde, selfie-style portraits.",
@@ -9,20 +10,14 @@
       "blonde",
       "icons"
     ],
-    "archiveCount": 48,
-    "featured": true,
+    "featured": false,
     "featuredOrder": 1,
-    "public": true,
-    "assetIds": [
-      "nv-001",
-      "nv-002",
-      "nv-003",
-      "nv-012",
-      "nv-013"
-    ],
-    "count": 48
+    "public": false,
+    "assetIds": [],
+    "count": 0
   },
   {
+    "id": "col-002",
     "slug": "imvu-pack-2",
     "title": "IMVU Pack 2",
     "description": "16 monochrome, gothic digital avatars.",
@@ -32,22 +27,15 @@
       "gothic",
       "digital"
     ],
-    "archiveCount": 16,
-    "featured": true,
+    "featured": false,
     "featuredOrder": 2,
-    "public": true,
+    "public": false,
     "accessNote": "Includes restricted originals",
-    "assetIds": [
-      "nv-005",
-      "nv-006",
-      "nv-009",
-      "nv-014",
-      "nv-019",
-      "nv-020"
-    ],
-    "count": 16
+    "assetIds": [],
+    "count": 0
   },
   {
+    "id": "col-003",
     "slug": "lil-peep",
     "title": "Ultimate Lil Peep Collection",
     "description": "27 banners, portraits, and icons.",
@@ -57,18 +45,14 @@
       "portrait",
       "banner"
     ],
-    "archiveCount": 27,
-    "featured": true,
+    "featured": false,
     "featuredOrder": 3,
-    "public": true,
-    "assetIds": [
-      "nv-004",
-      "nv-010",
-      "nv-011"
-    ],
-    "count": 27
+    "public": false,
+    "assetIds": [],
+    "count": 0
   },
   {
+    "id": "col-004",
     "slug": "after-hours",
     "title": "After Hours",
     "description": "Night streets, grain, and soft electric light.",
@@ -78,17 +62,9 @@
       "wallpaper",
       "city"
     ],
-    "archiveCount": 34,
     "featured": false,
-    "public": true,
-    "assetIds": [
-      "nv-007",
-      "nv-008",
-      "nv-015",
-      "nv-016",
-      "nv-017",
-      "nv-018"
-    ],
-    "count": 34
+    "public": false,
+    "assetIds": [],
+    "count": 0
   }
 ]

@@ -7,6 +7,7 @@ import { PipelineReport } from './errors.mjs';
 import { exists, readJson, walkFiles } from './filesystem.mjs';
 import { mimeFor, normalizePath, normalizeSlug, orientationFor, stableAssetId, titleFromFilename } from './normalize.mjs';
 import { authoredAssetsFileSchema, authoredCategoriesFileSchema, authoredCollectionsFileSchema } from './schema.mjs';
+import { assetsForCategory, assetsForCollection } from './counts.mjs';
 
 const categoryByDirectory = { icons: 'Icons', banners: 'Banners', animated: 'Animated', wallpapers: 'Wallpapers' };
 const relativeSource = (file, config) => normalizePath(path.relative(config.sourceRoot, file));
@@ -63,18 +64,20 @@ export async function generateAssets({ config = pipelineConfig, writeOutput = tr
   const assetIds = new Set(assets.map(asset => asset.id)); const collectionSlugs = new Set();
   const collections = collectionsFile.collections.map(collection => {
     if (collectionSlugs.has(collection.slug)) report.error(`Duplicate collection slug "${collection.slug}"`); collectionSlugs.add(collection.slug);
-    if (!assetIds.has(collection.coverAssetId)) report.error(`Collection ${collection.slug} references missing cover asset ${collection.coverAssetId}`);
+    if (collection.public && (!collection.coverAssetId || !assetIds.has(collection.coverAssetId))) report.error(`Visible collection ${collection.slug} references missing cover asset ${collection.coverAssetId || '(none)'}`);
     for (const id of collection.assetIds || []) if (!assetIds.has(id)) report.error(`Collection ${collection.slug} references missing asset ${id}`);
-    const members = assets.filter(asset => asset.collectionSlugs.includes(collection.slug));
-    return { ...collection, assetIds: collection.assetIds || members.map(asset => asset.id), count: collection.archiveCount ?? members.length };
+    const members = assetsForCollection(collection, assets);
+    return { ...collection, assetIds: members.map(asset => asset.id), count: members.length };
   }).sort((a, b) => Number(b.featured) - Number(a.featured) || (a.featuredOrder ?? 9999) - (b.featuredOrder ?? 9999) || a.slug.localeCompare(b.slug));
   for (const asset of assets) for (const slug of asset.collectionSlugs) if (!collectionSlugs.has(slug)) report.error(`Asset ${asset.id} references missing collection ${slug}`);
   const categorySlugs = new Set();
   const categories = categoriesFile.categories.map(category => {
     if (categorySlugs.has(category.slug)) report.error(`Duplicate category slug "${category.slug}"`); categorySlugs.add(category.slug);
-    const cover = assets.find(asset => asset.id === category.coverAssetId); if (!cover) report.error(`Category ${category.slug} references missing cover asset ${category.coverAssetId}`);
-    return { ...category, count: category.archiveCount, image: cover?.previewFile || '' };
-  });
+    const cover = assets.find(asset => asset.id === category.coverAssetId); if (category.visible && !cover) report.error(`Visible category ${category.slug} references missing cover asset ${category.coverAssetId || '(none)'}`);
+    if (category.filter?.type === 'collection' && !collections.some(collection => collection.id === category.filter.collectionId)) report.error(`Category ${category.slug} references missing collection ID ${category.filter.collectionId}`);
+    const matches = assetsForCategory(category, assets, collections);
+    return { ...category, count: matches.length, image: cover?.previewFile || '' };
+  }).sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
   report.assertValid();
   const sortedAssets = assets.sort((a, b) => b.uploadDate.localeCompare(a.uploadDate) || a.id.localeCompare(b.id));
   if (writeOutput) {
