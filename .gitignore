@@ -4,9 +4,9 @@ test-results/
 playwright-report/
 .vite-browser.*.log
 content/generated/
-.env
 public/media/previews/
 public/media/originals/
+content/backups/
 coverage/
 .env
 .env.*
