@@ -16,7 +16,8 @@ import { verifyCloudinary } from './cloudinary/verify.mjs';
 const dryRun = process.argv.includes('--dry-run');
 const writeJson = (file, value) => writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
 const runNpm = args => new Promise((resolve, reject) => {
-  const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd: process.cwd(), stdio: 'inherit', shell: false });
+  const windows = process.platform === 'win32';
+  const child = spawn(windows ? 'npm.cmd' : 'npm', args, { cwd: process.cwd(), stdio: 'inherit', shell: windows });
   child.on('error', reject); child.on('exit', code => code === 0 ? resolve() : reject(new Error(`npm ${args.join(' ')} exited with code ${code}`)));
 });
 const localCloudPlan = async assets => {

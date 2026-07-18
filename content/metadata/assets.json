@@ -275,7 +275,7 @@
       "uploadDate": "2026-05-17",
       "requiresDiscordAuth": false,
       "animated": true,
-      "sourceHash": "07152f6da1e731477728ecc56b8affe08577af268418d673f4dbaee9eede7624"
+      "sourceHash": "5115d05cd7b9a853770392dc9e2b0199e7b42ffe103db72900ae153b8b928a7a"
     },
     {
       "id": "nv-043",
@@ -287,7 +287,7 @@
       "uploadDate": "2026-06-03",
       "requiresDiscordAuth": false,
       "animated": true,
-      "sourceHash": "ec4b4942260cc35df40106f2e1805e36cfc1d5502a51f269d2aeb9064d1e156e"
+      "sourceHash": "cdac12a9000b0b76812a80b4a4fbb77dd06300d0e77b0b3c7c3f765cc73f5b55"
     },
     {
       "id": "nv-044",
@@ -2027,7 +2027,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "131f2d6a07e4ca235db46dd8226163ddfec8b04a9d77cbd6ef273dfbc977b252"
+      "sourceHash": "c2992697bb5c33c42186f5ddce4d5aedde0adc1a308cfc29f2a9d516b9344103"
     },
     {
       "id": "nv-183",
@@ -2063,7 +2063,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "f56625a68aef344b19cf9f862a1e96140c7b577eb4067ec140dc30cc2771037c"
+      "sourceHash": "fa25e9c72a8afb694b2e7672ee21d0d0782f2e82d41a104f0f82eaa71822d674"
     },
     {
       "id": "nv-186",
@@ -2174,18 +2174,6 @@
       "sourceHash": "165915d4c98bfcba97a5f74cf1cbe95bb3d92aae0c8903e6adabd8f2dcfb3a12"
     },
     {
-      "id": "nv-195",
-      "sourceFile": "wallpapers/05. Lucid Aurora.png",
-      "title": "05. Lucid Aurora",
-      "category": "Wallpapers",
-      "collectionSlugs": [],
-      "tags": [],
-      "uploadDate": "2026-05-19",
-      "requiresDiscordAuth": false,
-      "animated": false,
-      "sourceHash": "6060641248e18874f4e5909dcf0dbd4fc1e436a7efe4822cd37e85f50192e123"
-    },
-    {
       "id": "nv-196",
       "sourceFile": "wallpapers/05. Scarlet Night.png",
       "title": "05. Scarlet Night",
@@ -2219,7 +2207,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "a16c50562ddd32b789cd132cdd94f5b248c10d72ebc393440bf7f677b5e13962"
+      "sourceHash": "2881ab2da2a0b12dc3e8211dae5cc88ddeb24444ca477cc414238ccb7a8985c0"
     },
     {
       "id": "nv-199",
@@ -2267,7 +2255,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "4835f65b040d960d7687f6945d18a8f5d14ae6611285f9f7e29ba1374af2a74b"
+      "sourceHash": "76ae35d44d10ce9cc49dc7d046e0b77202871334fa3079acf07447602d8eb553"
     },
     {
       "id": "nv-203",
@@ -2303,7 +2291,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "032915990598131f2b2a15799d4854c0d41c160f8bba501ad07db1eb0b1e09ce"
+      "sourceHash": "83151a5c5a0c1aab2afc7f8390102597c19d4f37dca88aa569429de27c56c3ea"
     },
     {
       "id": "nv-206",
@@ -2403,7 +2391,7 @@
     },
     {
       "id": "nv-214",
-      "sourceFile": "wallpapers/11. Scarlet Night.jpg",
+      "sourceFile": "wallpapers/11. Scarlet Night.png",
       "title": "11. Scarlet Night",
       "category": "Wallpapers",
       "collectionSlugs": [],
@@ -2411,7 +2399,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "2a43db41ae98b039d4402bcd65cf4558ea5f1ba7513489dfa940206a8d463c6a"
+      "sourceHash": "223f29acba99f0dd222db01660e635b4362736a9f7e66bfe1438f8857cb74559"
     },
     {
       "id": "nv-215",
@@ -2639,7 +2627,7 @@
       "uploadDate": "2026-05-19",
       "requiresDiscordAuth": false,
       "animated": false,
-      "sourceHash": "fb468154c0556a86d3c16a79fc3c795475701a2dba4a3338fb1a8afe859bc8d2"
+      "sourceHash": "17bfdedd88a4f274c1a5516f96d01df2d5fa2f81e99437432d6273d8d7278033"
     },
     {
       "id": "nv-234",

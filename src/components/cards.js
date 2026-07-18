@@ -22,10 +22,10 @@ export function bindAnimatedCovers(scope = document) {
   const cleanups = []; const observer = !reducedMotion && 'IntersectionObserver' in window ? new IntersectionObserver(entries => entries.forEach(entry => { if (!entry.isIntersecting) entry.target.__stopAnimatedCover?.(); })) : null;
   scope.querySelectorAll('[data-animated-src]').forEach(animated => {
     const card = animated.closest('.collection-card, .category-card'); if (!card || reducedMotion) return;
-    let removeTimer;
+    let removeTimer; let active = false;
     const visible = () => { const rect = card.getBoundingClientRect(); return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth; };
-    const start = () => { if (!visible() || document.hidden) return; clearTimeout(removeTimer); if (!animated.src) animated.src = animated.dataset.animatedSrc; if (animated.complete) card.classList.add('cover-playing'); else animated.onload = () => card.classList.add('cover-playing'); };
-    const stop = () => { card.classList.remove('cover-playing'); clearTimeout(removeTimer); removeTimer = setTimeout(() => animated.removeAttribute('src'), 220); };
+    const start = () => { if (!visible() || document.hidden) return; active = true; clearTimeout(removeTimer); if (!animated.src) animated.src = animated.dataset.animatedSrc; const show = () => { if (active && card.isConnected) card.classList.add('cover-playing'); }; if (animated.complete && animated.naturalWidth) show(); else animated.onload = show; };
+    const stop = () => { active = false; animated.onload = null; card.classList.remove('cover-playing'); clearTimeout(removeTimer); removeTimer = setTimeout(() => animated.removeAttribute('src'), 220); };
     const focusout = event => { if (!card.contains(event.relatedTarget)) stop(); };
     card.addEventListener('pointerenter', start); card.addEventListener('pointerleave', stop); card.addEventListener('focusin', start); card.addEventListener('focusout', focusout); card.__stopAnimatedCover = stop; observer?.observe(card);
     cleanups.push(() => { card.removeEventListener('pointerenter', start); card.removeEventListener('pointerleave', stop); card.removeEventListener('focusin', start); card.removeEventListener('focusout', focusout); clearTimeout(removeTimer); card.classList.remove('cover-playing'); animated.removeAttribute('src'); delete card.__stopAnimatedCover; });

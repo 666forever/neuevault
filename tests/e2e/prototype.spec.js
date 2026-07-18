@@ -31,7 +31,7 @@ test('public download requests the public original', async ({ page }) => {
 
 test('an ingested manifest asset appears in the gallery and opens its modal', async ({ page }) => {
   const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
-  const asset = manifest[0]; expect(asset.src).toMatch(/^\/media\/originals\//);
+  const asset = manifest[0]; expect(asset.src).toMatch(/^(?:\/media\/originals\/|https:\/\/res\.cloudinary\.com\/)/);
   await page.goto('/'); const card = page.getByRole('button', { name: `Open ${asset.title}` }); await expect(card).toBeVisible(); await card.click();
   await expect(page.locator('#modal-title')).toHaveText(asset.title);
 });
@@ -59,7 +59,7 @@ test('public animated cover loads only during hover or focus and returns static'
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/#/collections'); const card = page.locator('a[href="#/collection/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
   await expect(animated).not.toHaveAttribute('src'); await card.hover();
-  await expect(animated).toHaveAttribute('src', /\/media\/originals\/nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
+  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
   await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await page.waitForTimeout(250); await expect(animated).not.toHaveAttribute('src');
   await card.focus(); await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await page.keyboard.press('Tab'); await expect(card).not.toHaveClass(/cover-playing/);
 });
@@ -77,8 +77,8 @@ test('gallery animation follows viewport visibility and observers clean up', asy
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/#/recent'); const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); const animated = card.locator('.asset-animated'); const staticImage = card.locator('.asset-static');
   await card.evaluate(element => window.scrollTo(0, element.offsetTop + 1200)); await page.waitForTimeout(300);
-  await expect(animated).not.toHaveAttribute('src'); await expect(staticImage).toHaveAttribute('src', /\/media\/previews\//);
-  await card.scrollIntoViewIfNeeded(); await expect(animated).toHaveAttribute('src', /\/media\/originals\/.*\.gif$/); await expect(card).toHaveClass(/asset-playing/);
+  await expect(animated).not.toHaveAttribute('src'); await expect(staticImage).toHaveAttribute('src', /(?:\/media\/previews\/|\/pg_1,)/);
+  await card.scrollIntoViewIfNeeded(); await expect(animated).toHaveAttribute('src', /nv-\d+\.gif$/); await expect(card).toHaveClass(/asset-playing/);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(300);
   await expect(animated).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
   await page.goto('/#/about');
@@ -98,7 +98,7 @@ test('category cards share base and hover visual treatment', async ({ page }, te
   const first = page.locator('a[href="#/category/ethereal"]'); const fourth = page.locator('a[href="#/category/matching"]');
   const visual = card => card.evaluate(element => { const image = [...element.querySelectorAll('img')].find(node => Number(getComputedStyle(node).opacity) > 0); const style = getComputedStyle(image); return { opacity: style.opacity, filter: style.filter, border: getComputedStyle(element).borderColor, transform: style.transform }; });
   expect(await visual(first)).toEqual(await visual(fourth));
-  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await page.waitForTimeout(700); const fourthHover = await visual(fourth);
+  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(700); const fourthHover = await visual(fourth);
   expect(fourthHover.opacity).toBe(firstHover.opacity); expect(fourthHover.filter).toBe(firstHover.filter); expect(fourthHover.border).toBe(firstHover.border);
-  await expect(fourth.locator('.cover-animated')).toHaveAttribute('src', /\/media\/originals\/nv-044\.gif$/);
+  await expect(fourth.locator('.cover-animated')).toHaveAttribute('src', /nv-044\.gif$/);
 });
