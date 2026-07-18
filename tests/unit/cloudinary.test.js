@@ -52,7 +52,23 @@ describe('Cloudinary identity and URLs', () => {
     const url = 'https://res.cloudinary.com/demo/image/upload/v7/neuevault/public/icons/nv-1.jpg';
     expect(responsivePreviewSources(url)).toHaveLength(4);
     expect(applyCloudinaryTransformation(url, 'f_auto,q_auto,w_640,c_limit')).toContain('/upload/f_auto,q_auto,w_640,c_limit/v7/');
-    expect(originalDownloadUrl(url, 'asset.jpg')).toContain('/upload/fl_attachment:asset.jpg/v7/');
+    expect(originalDownloadUrl(url, 'asset.jpg')).toBe('https://res.cloudinary.com/demo/image/upload/fl_attachment:asset/v7/neuevault/public/icons/nv-1.jpg');
+  });
+  it.each([
+    ['JPEG', 'jpg'],
+    ['PNG', 'png'],
+    ['GIF', 'gif'],
+    ['animated WebP', 'webp'],
+  ])('preserves the original %s format outside the attachment flag', (_label, extension) => {
+    const src = `https://res.cloudinary.com/demo/image/upload/v42/neuevault/public/nested/folder/nv-1.${extension}`;
+    const result = originalDownloadUrl(src, `Archive image.${extension}`);
+    expect(result).toBe(`https://res.cloudinary.com/demo/image/upload/fl_attachment:Archive-image/v42/neuevault/public/nested/folder/nv-1.${extension}`);
+    expect(result).not.toMatch(new RegExp(`fl_attachment:[^/]*\\.${extension}(?:/|$)`, 'i'));
+    expect(result).not.toContain('f_auto');
+  });
+  it('sanitizes a supplied filename without changing versioned nested public IDs', () => {
+    const src = 'https://res.cloudinary.com/demo/image/upload/v123/neuevault/public/folder.with-dots/nv-9.png';
+    expect(originalDownloadUrl(src, 'nested/path/Météor.final.png')).toBe('https://res.cloudinary.com/demo/image/upload/fl_attachment:Meteor-final/v123/neuevault/public/folder.with-dots/nv-9.png');
   });
 });
 
@@ -63,7 +79,7 @@ describe('Cloudinary synchronization', () => {
     expect(first.uploaded).toEqual(['nv-public', 'nv-restricted']); expect(transport.uploads).toHaveLength(3);
     expect(transport.uploads.map(item => item.options.type)).toEqual(['upload', 'authenticated', 'upload']);
     const restricted = first.assets.find(asset => asset.id === 'nv-restricted');
-    expect(restricted).toMatchObject({ src: null, cloudinaryDeliveryType: 'authenticated', protectedDownloadPath: '/api/assets/nv-restricted/download' });
+    expect(restricted).toMatchObject({ src: null, downloadUrl: null, cloudinaryDeliveryType: 'authenticated', protectedDownloadPath: '/api/assets/nv-restricted/download' });
     expect(restricted.previewUrl).toContain('/upload/'); expect(restricted.previewUrl).not.toContain('/restricted/');
     const second = await syncCloudinary({ transport, config: fixture.config, stateFile: fixture.stateFile });
     expect(second.uploaded).toEqual([]); expect(second.skipped).toHaveLength(2); expect(transport.uploads).toHaveLength(3);

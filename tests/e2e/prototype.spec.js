@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import sharp from 'sharp';
 
 test('mobile navigation keeps Collections and sign-in unavailable reachable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile');
@@ -22,11 +23,29 @@ test('sign-in remains an unavailable boundary without backend requests', async (
   await expect(page.locator('#auth-title')).toHaveText('Authentication unavailable'); expect(protectedRequests).toEqual([]);
 });
 
-test('public download requests the public original', async ({ page }) => {
-  const [asset] = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8')); let requested = false;
-  page.on('request', request => { if (request.url().includes(asset.src)) requested = true; });
-  await page.goto(`/#/asset/${asset.id}`); await page.getByRole('button', { name: /Download original/ }).click();
-  await expect.poll(() => requested).toBe(true);
+test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
+  const assets = ['JPG', 'PNG', 'GIF'].map(fileType => manifest.find(asset => asset.fileType === fileType && !asset.requiresDiscordAuth));
+  const consoleErrors = []; const restrictedRequests = [];
+  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+  page.on('request', request => { if (/\/(?:authenticated|restricted)\//.test(request.url())) restrictedRequests.push(request.url()); });
+  for (const asset of assets) {
+    await page.goto(`/#/asset/${asset.id}`);
+    const responsePromise = page.waitForResponse(response => response.url() === asset.downloadUrl);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: /Download original/ }).click();
+    const [response, download] = await Promise.all([responsePromise, downloadPromise]);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['access-control-allow-origin']).toBe('*');
+    expect(response.headers()['content-disposition']).toMatch(/^attachment;/);
+    expect(await download.suggestedFilename()).toBe(`${asset.id}-${asset.slug}.${asset.fileType.toLowerCase()}`);
+    if (asset.fileType === 'GIF') {
+      const metadata = await sharp(await response.body(), { animated: true }).metadata();
+      expect(metadata.format).toBe('gif'); expect(metadata.pages).toBeGreaterThan(1);
+    }
+  }
+  expect(restrictedRequests).toEqual([]); expect(consoleErrors).toEqual([]);
 });
 
 test('an ingested manifest asset appears in the gallery and opens its modal', async ({ page }) => {
@@ -61,7 +80,7 @@ test('public animated cover loads only during hover or focus and returns static'
   await expect(animated).not.toHaveAttribute('src'); await card.hover();
   await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
   await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await page.waitForTimeout(250); await expect(animated).not.toHaveAttribute('src');
-  await card.focus(); await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await page.keyboard.press('Tab'); await expect(card).not.toHaveClass(/cover-playing/);
+  await card.focus(); await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await page.keyboard.press('Tab'); await page.waitForTimeout(250); await expect(card).not.toHaveClass(/cover-playing/);
 });
 
 test('reduced motion and restricted cover policy remain static', async ({ page }, testInfo) => {

@@ -16,8 +16,10 @@ export function responsivePreviewSources(previewUrl, { staticFrame = false } = {
 
 export function originalDownloadUrl(src, filename) {
   if (!src?.includes('res.cloudinary.com')) return src || '';
-  const safeName = String(filename).replace(/[^a-zA-Z0-9._-]+/g, '-');
-  return applyCloudinaryTransformation(src, `fl_attachment:${encodeURIComponent(safeName)}`);
+  const leafName = String(filename || '').split(/[\\/]/).pop() || '';
+  const baseName = leafName.replace(/\.[^.]+$/, '');
+  const safeName = baseName.normalize('NFKD').replace(/[^\x00-\x7F]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'download';
+  return applyCloudinaryTransformation(src, `fl_attachment:${safeName}`);
 }
 
 export function animatedCoverUrl(asset) {
