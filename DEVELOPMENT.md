@@ -111,7 +111,7 @@ The generator rebuilds the public-original directory on every run, preventing a 
 
 Previews retain natural aspect ratio and use an inside-fit maximum of 1200×1200. Transparent or animated sources produce WebP previews; other sources produce optimized JPEG previews. Animated originals are preserved unchanged when public, while their gallery preview is static. Output paths are based on stable asset IDs.
 
-Animated dimensions describe one displayed frame, never Sharp’s vertically stacked multi-page image. Generation prefers `pageHeight` and uses `height / pages` only for confirmed GIF/WebP multi-frame metadata with an integral result. Ratios outside the safe `0.05–20` UI range fail validation. Public animated category and collection covers keep the static preview until hover or keyboard focus, then lazily load an animated delivery; restricted covers and reduced-motion sessions remain static.
+Animated dimensions describe one displayed frame, never Sharp’s vertically stacked multi-page image. Generation prefers `pageHeight` and uses `height / pages` only for confirmed GIF/WebP multi-frame metadata with an integral result. Ratios outside the safe `0.05–20` UI range fail validation. Public gallery cards lazily load their animated delivery after reaching the viewport threshold and unload it after leaving the viewport. Public animated category and collection covers keep the static preview until hover or keyboard focus. Restricted media and reduced-motion sessions remain static, and route disposal disconnects both gallery and cover observers.
 
 Collection and category card copy is composed at render time as `count + authored description`. Counts are not written into descriptions, and a pre-existing numeric prefix is replaced to prevent duplicates.
 

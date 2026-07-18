@@ -5,6 +5,7 @@ import { parseRoute } from './src/routing/routes.js';
 import { AssetModal } from './src/overlays/AssetModal.js';
 import { AuthDialog } from './src/overlays/AuthDialog.js';
 import { trapDialogKey } from './src/overlays/dialog.js';
+import { disposeAnimatedCovers } from './src/components/cards.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
@@ -29,7 +30,7 @@ function closeMenu() {
 }
 
 function route() {
-  pageCleanup?.(); pageCleanup = null; assetModal.close({ restoreFocus: false }); authDialog.close(); disposeAssetGrids(app);
+  pageCleanup?.(); pageCleanup = null; assetModal.close({ restoreFocus: false }); authDialog.close(); disposeAssetGrids(app); disposeAnimatedCovers(app);
   const current = parseRoute(location.hash);
   document.querySelectorAll('.main-nav a').forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current.path}`));
   if (current.name === 'home') pages.home();

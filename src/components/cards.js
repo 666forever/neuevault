@@ -1,5 +1,6 @@
 import { escapeHtml, safeUrl } from '../utils/escape.js';
 import { countDescription } from '../utils/content.js';
+const coverBindings = new Map();
 
 function coverMedia(item) {
   const staticCover = item.cover || item.image || '';
@@ -16,14 +17,22 @@ export function categoryCard(category) {
 }
 
 export function bindAnimatedCovers(scope = document) {
+  disposeAnimatedCovers(scope);
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cleanups = []; const observer = !reducedMotion && 'IntersectionObserver' in window ? new IntersectionObserver(entries => entries.forEach(entry => { if (!entry.isIntersecting) entry.target.__stopAnimatedCover?.(); })) : null;
   scope.querySelectorAll('[data-animated-src]').forEach(animated => {
     const card = animated.closest('.collection-card, .category-card'); if (!card || reducedMotion) return;
     let removeTimer;
     const visible = () => { const rect = card.getBoundingClientRect(); return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth; };
     const start = () => { if (!visible() || document.hidden) return; clearTimeout(removeTimer); if (!animated.src) animated.src = animated.dataset.animatedSrc; if (animated.complete) card.classList.add('cover-playing'); else animated.onload = () => card.classList.add('cover-playing'); };
     const stop = () => { card.classList.remove('cover-playing'); clearTimeout(removeTimer); removeTimer = setTimeout(() => animated.removeAttribute('src'), 220); };
-    card.addEventListener('pointerenter', start); card.addEventListener('pointerleave', stop); card.addEventListener('focusin', start); card.addEventListener('focusout', event => { if (!card.contains(event.relatedTarget)) stop(); });
-    if ('IntersectionObserver' in window) new IntersectionObserver(entries => { if (!entries[0].isIntersecting) stop(); }).observe(card);
+    const focusout = event => { if (!card.contains(event.relatedTarget)) stop(); };
+    card.addEventListener('pointerenter', start); card.addEventListener('pointerleave', stop); card.addEventListener('focusin', start); card.addEventListener('focusout', focusout); card.__stopAnimatedCover = stop; observer?.observe(card);
+    cleanups.push(() => { card.removeEventListener('pointerenter', start); card.removeEventListener('pointerleave', stop); card.removeEventListener('focusin', start); card.removeEventListener('focusout', focusout); clearTimeout(removeTimer); card.classList.remove('cover-playing'); animated.removeAttribute('src'); delete card.__stopAnimatedCover; });
   });
+  coverBindings.set(scope, { observer, cleanup: () => { observer?.disconnect(); cleanups.forEach(cleanup => cleanup()); } });
 }
+
+export function disposeAnimatedCovers(scope = document) { coverBindings.get(scope)?.cleanup(); coverBindings.delete(scope); }
+export const activeCoverBindingCount = () => coverBindings.size;
+export const activeCoverObserverCount = () => [...coverBindings.values()].filter(binding => binding.observer).length;

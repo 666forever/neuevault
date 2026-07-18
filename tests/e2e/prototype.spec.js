@@ -72,3 +72,33 @@ test('reduced motion and restricted cover policy remain static', async ({ page }
   const restrictedUrl = await page.evaluate(async () => (await import('/src/data/mediaUrls.js')).animatedCoverUrl({ animated: true, requiresDiscordAuth: true, src: null }));
   expect(restrictedUrl).toBe(''); expect(protectedRequests).toEqual([]);
 });
+
+test('gallery animation follows viewport visibility and observers clean up', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/#/recent'); const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); const animated = card.locator('.asset-animated'); const staticImage = card.locator('.asset-static');
+  await card.evaluate(element => window.scrollTo(0, element.offsetTop + 1200)); await page.waitForTimeout(300);
+  await expect(animated).not.toHaveAttribute('src'); await expect(staticImage).toHaveAttribute('src', /\/media\/previews\//);
+  await card.scrollIntoViewIfNeeded(); await expect(animated).toHaveAttribute('src', /\/media\/originals\/.*\.gif$/); await expect(card).toHaveClass(/asset-playing/);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(300);
+  await expect(animated).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
+  await page.goto('/#/about');
+  const observers = await page.evaluate(async () => (await import('/src/components/AssetGrid.js')).activeAnimationObserverCount());
+  const coverObservers = await page.evaluate(async () => (await import('/src/components/cards.js')).activeCoverObserverCount());
+  expect(observers).toBe(0); expect(coverObservers).toBe(0);
+});
+
+test('reduced motion keeps visible gallery GIFs static', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop'); await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#/recent');
+  const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
+  await expect(card.locator('.asset-animated')).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
+});
+
+test('category cards share base and hover visual treatment', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop'); await page.goto('/');
+  const first = page.locator('a[href="#/category/ethereal"]'); const fourth = page.locator('a[href="#/category/matching"]');
+  const visual = card => card.evaluate(element => { const image = [...element.querySelectorAll('img')].find(node => Number(getComputedStyle(node).opacity) > 0); const style = getComputedStyle(image); return { opacity: style.opacity, filter: style.filter, border: getComputedStyle(element).borderColor, transform: style.transform }; });
+  expect(await visual(first)).toEqual(await visual(fourth));
+  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await page.waitForTimeout(700); const fourthHover = await visual(fourth);
+  expect(fourthHover.opacity).toBe(firstHover.opacity); expect(fourthHover.filter).toBe(firstHover.filter); expect(fourthHover.border).toBe(firstHover.border);
+  await expect(fourth.locator('.cover-animated')).toHaveAttribute('src', /\/media\/originals\/nv-044\.gif$/);
+});
