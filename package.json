@@ -10,10 +10,15 @@
     "test:e2e": "playwright test",
     "generate:assets": "node scripts/generate-assets.mjs",
     "validate:assets": "node scripts/validate-assets.mjs",
-    "clean:generated": "node scripts/clean-generated.mjs"
+    "clean:generated": "node scripts/clean-generated.mjs",
+    "cloudinary:sync": "node scripts/cloudinary-sync.mjs",
+    "cloudinary:verify": "node scripts/cloudinary-verify.mjs",
+    "cloudinary:prune": "node scripts/cloudinary-prune.mjs",
+    "audit:cloudinary-secrets": "node scripts/audit-cloudinary-secrets.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
+    "cloudinary": "^2.10.0",
     "sharp": "^0.35.3",
     "vite": "^7.0.5",
     "vitest": "^3.2.4",

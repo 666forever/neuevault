@@ -9,7 +9,8 @@ const formatBytes = bytes => bytes < 1_000_000 ? `${Math.max(1, Math.round(bytes
 
 const assets = generated.assets.map(asset => ({
   ...asset,
-  preview: asset.previewFile,
+  preview: asset.previewUrl || asset.previewFile,
+  previewSrcSet: asset.previewSources?.map(source => `${source.url} ${source.width}w`).join(', ') || '',
   collection: asset.collectionSlugs[0] || '',
   fileSizeBytes: asset.fileSize,
   fileSize: formatBytes(asset.fileSize),

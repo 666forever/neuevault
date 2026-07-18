@@ -44,7 +44,7 @@ export class AssetModal {
     if (!canDownloadOriginal(asset)) { this.toast('This original is not publicly available.'); return; }
     this.toast('Preparing original file…');
     try {
-      const response = await fetch(safeUrl(asset.src)); if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const response = await fetch(safeUrl(asset.downloadUrl || asset.src)); if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob(); const url = URL.createObjectURL(blob); const link = document.createElement('a');
       link.href = url; link.download = `${asset.id}-${slugify(asset.title)}.${asset.fileType.toLowerCase()}`; document.body.append(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000); this.toast('Original download started.');

@@ -46,7 +46,7 @@ function duplicates(items, key, report, label) {
   const seen = new Map(); for (const item of items) { const value = item[key]; if (seen.has(value)) report.error(`Duplicate ${label} "${value}" (${seen.get(value)} and ${item.sourceFile || item.title})`); else seen.set(value, item.sourceFile || item.title); }
 }
 
-export async function generateAssets({ config = pipelineConfig, writeOutput = true, clean = false } = {}) {
+export async function generateAssets({ config = pipelineConfig, writeOutput = true, writeManifests = true, clean = false } = {}) {
   const report = new PipelineReport();
   let authoredFile; let collectionsFile; let categoriesFile;
   try { authoredFile = authoredAssetsFileSchema.parse(await readJson(path.join(config.metadataRoot, 'assets.json'))); } catch (error) { report.error(`Invalid assets metadata: ${error.message}`); report.assertValid(); }
@@ -84,9 +84,11 @@ export async function generateAssets({ config = pipelineConfig, writeOutput = tr
     for (const preview of await walkFiles(config.publicPreviewRoot)) if (!expectedPreviews.has(path.resolve(preview))) await rm(preview, { force: true });
     await mkdir(config.generatedRoot, { recursive: true });
     for (const authored of authoredFile.assets) await buildAsset(authored, config, report, true);
-    await writeFile(path.join(config.generatedRoot, 'assets.json'), `${JSON.stringify(sortedAssets, null, 2)}\n`);
-    await writeFile(path.join(config.generatedRoot, 'collections.json'), `${JSON.stringify(collections, null, 2)}\n`);
-    await writeFile(path.join(config.generatedRoot, 'categories.json'), `${JSON.stringify(categories, null, 2)}\n`);
+    if (writeManifests) {
+      await writeFile(path.join(config.generatedRoot, 'assets.json'), `${JSON.stringify(sortedAssets, null, 2)}\n`);
+      await writeFile(path.join(config.generatedRoot, 'collections.json'), `${JSON.stringify(collections, null, 2)}\n`);
+      await writeFile(path.join(config.generatedRoot, 'categories.json'), `${JSON.stringify(categories, null, 2)}\n`);
+    }
   }
   return { assets: sortedAssets, collections, categories, report };
 }

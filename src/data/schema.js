@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
 const generatedAssetSchema = z.object({
-  id: z.string(), title: z.string(), slug: z.string(), sourceFile: z.string(), previewFile: z.string().startsWith('/media/previews/'),
-  src: z.string().startsWith('/media/originals/').nullable(), category: z.string(), collectionSlugs: z.array(z.string()), tags: z.array(z.string()),
+  id: z.string(), title: z.string(), slug: z.string(), sourceFile: z.string(), previewFile: z.string().startsWith('/media/previews/'), previewUrl: z.string().url().optional(),
+  previewSources: z.array(z.object({ width: z.number(), url: z.string().url() })).optional(), src: z.union([z.string().startsWith('/media/originals/'), z.string().url()]).nullable(), downloadUrl: z.string().url().nullable().optional(), category: z.string(), collectionSlugs: z.array(z.string()), tags: z.array(z.string()),
   width: z.number().positive(), height: z.number().positive(), aspectRatio: z.number().positive(), orientation: z.enum(['Square', 'Landscape', 'Portrait']),
   fileType: z.string(), mimeType: z.string().startsWith('image/'), fileSize: z.number().nonnegative(), uploadDate: z.iso.date(), animated: z.boolean(),
   requiresDiscordAuth: z.boolean(), protectedDownloadPath: z.string().startsWith('/').optional(), attribution: z.string().optional(), sourceNote: z.string().optional(),
+  cloudinaryAssetId: z.string().optional(), cloudinaryPublicId: z.string().optional(), cloudinaryVersion: z.number().optional(), cloudinaryDeliveryType: z.enum(['upload', 'private', 'authenticated']).optional(), originalDelivery: z.object({ url: z.string().url().optional(), resourceType: z.string(), deliveryType: z.string() }).optional(),
 }).superRefine((asset, context) => {
   if (asset.requiresDiscordAuth && asset.src !== null) context.addIssue({ code: 'custom', path: ['src'], message: 'Restricted originals must not have a public src.' });
   if (!asset.requiresDiscordAuth && !asset.src) context.addIssue({ code: 'custom', path: ['src'], message: 'Public assets require an original src.' });

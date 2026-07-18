@@ -7,7 +7,8 @@ const registry = new Map();
 
 function card(asset, index, id) {
   const title = escapeHtml(asset.title);
-  return `<button class="asset-card" data-grid-id="${id}" data-asset-index="${index}" type="button" aria-label="Open ${title}" style="--asset-ratio:${Number(asset.width)}/${Number(asset.height)}"><span class="asset-thumb"><img src="${escapeHtml(safeUrl(asset.preview))}" alt="${title}" loading="lazy" decoding="async" width="${Number(asset.width)}" height="${Number(asset.height)}" data-image-fallback></span>${asset.animated ? '<span class="format-badge">GIF</span>' : ''}${isRestricted(asset) ? '<span class="lock" aria-label="Restricted original">●</span>' : ''}<span class="asset-overlay"><strong>${title}</strong><span>${escapeHtml(asset.category)} · ${Number(asset.width)}×${Number(asset.height)}</span></span></button>`;
+  const srcset = asset.previewSrcSet ? ` srcset="${escapeHtml(asset.previewSrcSet)}" sizes="(max-width: 700px) 50vw, (max-width: 1400px) 25vw, 320px"` : '';
+  return `<button class="asset-card" data-grid-id="${id}" data-asset-index="${index}" type="button" aria-label="Open ${title}" style="--asset-ratio:${Number(asset.width)}/${Number(asset.height)}"><span class="asset-thumb"><img src="${escapeHtml(safeUrl(asset.preview))}"${srcset} alt="${title}" loading="lazy" decoding="async" width="${Number(asset.width)}" height="${Number(asset.height)}" data-image-fallback></span>${asset.animated ? '<span class="format-badge">GIF</span>' : ''}${isRestricted(asset) ? '<span class="lock" aria-label="Restricted original">●</span>' : ''}<span class="asset-overlay"><strong>${title}</strong><span>${escapeHtml(asset.category)} · ${Number(asset.width)}×${Number(asset.height)}</span></span></button>`;
 }
 
 export function renderAssetGrid(items, { batchSize = 8 } = {}) {
