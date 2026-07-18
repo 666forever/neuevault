@@ -40,3 +40,35 @@ test('restricted source remains outside public and built output', async () => {
   const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
   for (const asset of manifest.filter(item => item.requiresDiscordAuth)) for (const root of ['public', 'dist']) await expect(access(path.resolve(root, asset.src || `media/originals/${path.basename(asset.sourceFile)}`))).rejects.toThrow();
 });
+
+test('animated gallery cards use bounded single-frame dimensions', async ({ page }) => {
+  await page.goto('/#/recent');
+  const animated = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first();
+  await expect(animated).toBeVisible();
+  const box = await animated.boundingBox(); expect(box.height).toBeLessThan(900);
+  await expect(animated.locator('.asset-overlay')).toContainText(/800×320|720×433|[1-9]\d*×[1-9]\d*/);
+});
+
+test('collection cards compose count and description without legacy count copy', async ({ page }) => {
+  await page.goto('/#/collections');
+  await expect(page.locator('a[href="#/collection/noface-icons"] .collection-meta p')).toHaveText('25 Anonymous and melancholic icons.');
+  await expect(page.getByText('in full archive')).toHaveCount(0);
+});
+
+test('public animated cover loads only during hover or focus and returns static', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/#/collections'); const card = page.locator('a[href="#/collection/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
+  await expect(animated).not.toHaveAttribute('src'); await card.hover();
+  await expect(animated).toHaveAttribute('src', /\/media\/originals\/nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
+  await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await page.waitForTimeout(250); await expect(animated).not.toHaveAttribute('src');
+  await card.focus(); await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await page.keyboard.press('Tab'); await expect(card).not.toHaveClass(/cover-playing/);
+});
+
+test('reduced motion and restricted cover policy remain static', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  const protectedRequests = []; page.on('request', request => { if (request.url().includes('/restricted/') || request.url().includes('/authenticated/')) protectedRequests.push(request.url()); });
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#/collections'); const card = page.locator('a[href="#/collection/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
+  await card.hover(); await expect(animated).not.toHaveAttribute('src');
+  const restrictedUrl = await page.evaluate(async () => (await import('/src/data/mediaUrls.js')).animatedCoverUrl({ animated: true, requiresDiscordAuth: true, src: null }));
+  expect(restrictedUrl).toBe(''); expect(protectedRequests).toEqual([]);
+});

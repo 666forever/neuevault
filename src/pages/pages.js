@@ -1,36 +1,37 @@
 import { renderAssetGrid, disposeAssetGrids, mountAssetGrids } from '../components/AssetGrid.js';
-import { collectionCard } from '../components/cards.js';
+import { bindAnimatedCovers, categoryCard, collectionCard } from '../components/cards.js';
 import { bindImageErrors } from '../components/images.js';
 import { debounce, escapeHtml, safeUrl } from '../utils/escape.js';
 import { filterAssets, sortAssets } from '../utils/filter.js';
+import { countDescription } from '../utils/content.js';
 
 export function createPages(repository, app, openAsset) {
   const assets = repository.getAssets();
   const collections = repository.getCollections();
   const categories = repository.getCategories();
-  const mount = () => { mountAssetGrids(app, openAsset); bindImageErrors(app); };
+  const mount = () => { mountAssetGrids(app, openAsset); bindImageErrors(app); bindAnimatedCovers(app); };
 
   function home() {
     const featured = collections.filter(collection => collection.featured).slice(0, 3);
-    const categorySection = categories.length ? `<section class="category-grid" aria-label="Browse categories">${categories.map(category => `<a class="category-card" href="#/category/${encodeURIComponent(category.slug)}"><img src="${escapeHtml(safeUrl(category.image))}" alt="" loading="lazy" data-image-fallback><span class="category-copy"><small>${Number(category.count)} in full archive</small><h2>${escapeHtml(category.title)}</h2></span></a>`).join('')}</section>` : '';
+    const categorySection = categories.length ? `<section class="category-grid" aria-label="Browse categories">${categories.map(categoryCard).join('')}</section>` : '';
     const collectionSection = featured.length ? `<section class="section"><div class="section-head"><div><h2>Popular Collections</h2><p>Curated packs worth keeping close.</p></div><a class="text-link" href="#/collections">View all</a></div><div class="collection-grid">${featured.map(collectionCard).join('')}</div></section>` : '';
     app.innerHTML = `<div class="page"><section class="hero"><div class="hero-content"><p class="eyebrow">The independent visual archive</p><h1>Collecting the Best Images on the Internet</h1><p>Neuevault® is a growing visual archive shaped by careful curation. Discover icons, banners, animations, wallpapers, and themed collections.</p><a class="button button-accent" href="#/recent">↯ Browse the vault</a></div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link" href="#/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
     mount();
   }
   function collectionsPage() {
     const content = collections.length ? `<div class="collection-grid">${collections.map(collectionCard).join('')}</div>` : '<div class="empty-state"><h2>No public collections yet.</h2><p>Collections will appear here when they are marked public in the local content manager.</p></div>';
-    app.innerHTML = `<div class="page"><div class="page-title"><p class="eyebrow">Curated sets</p><h1>Collections</h1><p>Counts describe the full archive; cards inside this prototype are labeled as previews.</p></div>${content}</div>`; bindImageErrors(app);
+    app.innerHTML = `<div class="page"><div class="page-title"><p class="eyebrow">Curated sets</p><h1>Collections</h1><p>Counts reflect current membership in the local archive.</p></div>${content}</div>`; bindImageErrors(app); bindAnimatedCovers(app);
   }
   function categoryPage(slug) {
     const category = repository.getCategory(slug); if (!category) return notFound();
     const list = repository.getAssetsForCategory(category);
-    app.innerHTML = `<div class="page"><div class="page-title"><a class="back-link" href="#/">← Home</a><p class="eyebrow">Category</p><h1>${escapeHtml(category.title)}</h1>${category.description ? `<p>${escapeHtml(category.description)}</p>` : ''}<p>${list.length} preview asset${list.length === 1 ? '' : 's'} shown.</p></div>${list.length ? renderAssetGrid(list) : '<div class="empty-state"><h2>This category is empty.</h2><p>Its filter can be edited in the local content manager.</p></div>'}</div>`;
+    app.innerHTML = `<div class="page"><div class="page-title"><a class="back-link" href="#/">← Home</a><p class="eyebrow">Category</p><h1>${escapeHtml(category.title)}</h1><p>${escapeHtml(countDescription(category.count, category.description))}</p></div>${list.length ? renderAssetGrid(list) : '<div class="empty-state"><h2>This category is empty.</h2><p>Its filter can be edited in the local content manager.</p></div>'}</div>`;
     mount();
   }
   function collectionPage(slug) {
     const collection = repository.getCollection(slug); if (!collection) return notFound();
     const list = assets.filter(asset => asset.collectionSlugs.includes(slug));
-    app.innerHTML = `<div class="page"><section class="route-hero"><img src="${escapeHtml(safeUrl(collection.cover))}" alt="" data-image-fallback><div class="route-copy"><a class="back-link" href="#/collections">← All collections</a><h1>${escapeHtml(collection.title)}</h1><p>${escapeHtml(collection.description)} ${Number(collection.count)} assets in the full archive.</p><div class="tags">${collection.tags.map(tag => `<a class="tag" href="#/search?tag=${encodeURIComponent(tag)}">${escapeHtml(tag)}</a>`).join('')}${collection.restricted ? '<span class="tag">Includes restricted originals</span>' : ''}</div></div></section><div class="toolbar"><p>${list.length} preview asset${list.length === 1 ? '' : 's'} shown</p><label for="sort-assets">Sort</label><select class="select" id="sort-assets"><option value="new">Newest first</option><option value="title">Title A–Z</option></select></div><div id="collection-assets">${renderAssetGrid(list)}</div></div>`;
+    app.innerHTML = `<div class="page"><section class="route-hero"><img src="${escapeHtml(safeUrl(collection.cover))}" alt="" data-image-fallback><div class="route-copy"><a class="back-link" href="#/collections">← All collections</a><h1>${escapeHtml(collection.title)}</h1><p>${escapeHtml(countDescription(collection.count, collection.description))}</p><div class="tags">${collection.tags.map(tag => `<a class="tag" href="#/search?tag=${encodeURIComponent(tag)}">${escapeHtml(tag)}</a>`).join('')}${collection.restricted ? '<span class="tag">Includes restricted originals</span>' : ''}</div></div></section><div class="toolbar"><p>${list.length} preview asset${list.length === 1 ? '' : 's'} shown</p><label for="sort-assets">Sort</label><select class="select" id="sort-assets"><option value="new">Newest first</option><option value="title">Title A–Z</option></select></div><div id="collection-assets">${renderAssetGrid(list)}</div></div>`;
     const result = app.querySelector('#collection-assets');
     app.querySelector('#sort-assets').onchange = event => { disposeAssetGrids(result); result.innerHTML = renderAssetGrid(sortAssets(list, event.target.value)); mountAssetGrids(result, openAsset); };
     mount();

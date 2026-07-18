@@ -3,6 +3,7 @@ import generatedCollections from '../generated/collections.json';
 import generatedCategories from '../generated/categories.json';
 import { validateGeneratedData } from './schema.js';
 import { StaticAssetRepository } from './AssetRepository.js';
+import { animatedCoverUrl } from './mediaUrls.js';
 
 const generated = validateGeneratedData({ assets: generatedAssets, collections: generatedCollections, categories: generatedCategories });
 const formatBytes = bytes => bytes < 1_000_000 ? `${Math.max(1, Math.round(bytes / 1000))} KB` : `${(bytes / 1_000_000).toFixed(1)} MB`;
@@ -19,11 +20,13 @@ const assetById = new Map(assets.map(asset => [asset.id, asset]));
 const collections = generated.collections.filter(collection => collection.public).map(collection => ({
   ...collection,
   cover: assetById.get(collection.coverAssetId)?.preview || '',
+  coverAnimated: animatedCoverUrl(assetById.get(collection.coverAssetId)),
   restricted: collection.assetIds.some(id => assetById.get(id)?.requiresDiscordAuth),
 }));
 const categories = generated.categories.filter(category => category.visible).map(category => ({
   ...category,
   image: assetById.get(category.coverAssetId)?.preview || category.image || '',
+  coverAnimated: animatedCoverUrl(assetById.get(category.coverAssetId)),
 })).sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 
 export const repository = new StaticAssetRepository({ assets, collections, categories });

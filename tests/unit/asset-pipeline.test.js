@@ -4,7 +4,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { afterEach, describe, expect, it } from 'vitest';
 import { generateAssets } from '../../scripts/asset-pipeline/generator.mjs';
-import { normalizeSlug, stableAssetId, titleFromFilename } from '../../scripts/asset-pipeline/normalize.mjs';
+import { frameDimensions, normalizeSlug, stableAssetId, titleFromFilename } from '../../scripts/asset-pipeline/normalize.mjs';
 
 const temporaryRoots = [];
 afterEach(async () => Promise.all(temporaryRoots.splice(0).map(root => rm(root, { recursive: true, force: true }))));
@@ -23,6 +23,16 @@ async function fixture({ files = [{ name: 'icons/fixture.jpg', color: '#a7ff1e' 
 }
 
 describe('asset metadata normalization', () => {
+  it('uses pageHeight and safe stacked-frame dimensions for GIF and animated WebP metadata', () => {
+    expect(frameDimensions({ format: 'gif', width: 540, height: 7910, pageHeight: 226, pages: 35 })).toEqual({ width: 540, height: 226, aspectRatio: 2.389381 });
+    expect(frameDimensions({ format: 'gif', width: 200, height: 2000, pages: 10 })).toEqual({ width: 200, height: 200, aspectRatio: 1 });
+    expect(frameDimensions({ format: 'webp', width: 320, height: 1920, pageHeight: 240, pages: 8 })).toEqual({ width: 320, height: 240, aspectRatio: 1.333333 });
+  });
+  it('rejects invalid and extreme displayed-frame ratios', () => {
+    expect(() => frameDimensions({ format: 'gif', width: 0, height: 100 })).toThrow(/Invalid displayed-frame/);
+    expect(() => frameDimensions({ format: 'gif', width: 100, height: 10000 })).toThrow(/Invalid displayed-frame/);
+    expect(() => frameDimensions({ format: 'webp', width: Number.NaN, height: 100 })).toThrow(/Invalid displayed-frame/);
+  });
   it('keeps content-derived IDs stable across filename and title edits', () => {
     const bytes = Buffer.from('same image bytes'); expect(stableAssetId(bytes)).toBe(stableAssetId(bytes));
     expect(normalizeSlug('  Äfter Image!  ')).toBe('after-image'); expect(titleFromFilename('my_asset-file.jpg')).toBe('My Asset File');

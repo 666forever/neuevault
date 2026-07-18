@@ -19,3 +19,8 @@ export function originalDownloadUrl(src, filename) {
   const safeName = String(filename).replace(/[^a-zA-Z0-9._-]+/g, '-');
   return applyCloudinaryTransformation(src, `fl_attachment:${encodeURIComponent(safeName)}`);
 }
+
+export function animatedCoverUrl(asset) {
+  if (!asset?.animated || asset.requiresDiscordAuth || !asset.src) return '';
+  return asset.src.includes('res.cloudinary.com') ? applyCloudinaryTransformation(asset.src, 'f_auto,q_auto,w_1200,c_limit') : asset.src;
+}

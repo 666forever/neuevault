@@ -54,7 +54,9 @@
       "sourceFile": "animated/226d6ff7c636c3e4ebf96bbbafffd3d1.gif",
       "title": "226d6ff7c636c3e4ebf96bbbafffd3d1",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2025-08-25",
       "requiresDiscordAuth": false,
@@ -66,7 +68,9 @@
       "sourceFile": "animated/26a50a2babfcb429a99fb0a2ae2ba0a2.gif",
       "title": "26a50a2babfcb429a99fb0a2ae2ba0a2",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-18",
       "requiresDiscordAuth": false,
@@ -126,7 +130,9 @@
       "sourceFile": "animated/3628d650f943460ffbd42b92260aa69f.gif",
       "title": "3628d650f943460ffbd42b92260aa69f",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -150,7 +156,9 @@
       "sourceFile": "animated/38907a417cd7e510aae3e5e72a30f2f5.gif",
       "title": "38907a417cd7e510aae3e5e72a30f2f5",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "anime-girl-icons"
+      ],
       "tags": [],
       "uploadDate": "2025-08-24",
       "requiresDiscordAuth": false,
@@ -162,7 +170,9 @@
       "sourceFile": "animated/390947ca036ccf7e9c39902e2ab3afc3.gif",
       "title": "390947ca036ccf7e9c39902e2ab3afc3",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -186,7 +196,9 @@
       "sourceFile": "animated/45401f987d132b2a7d46eb300edba233.gif",
       "title": "45401f987d132b2a7d46eb300edba233",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "anime-girl-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-02-11",
       "requiresDiscordAuth": false,
@@ -354,7 +366,9 @@
       "sourceFile": "animated/845a6cda0911613bbb69cc3e4ab2428c6.gif",
       "title": "845a6cda0911613bbb69cc3e4ab2428c6",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "anime-girl-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-04-19",
       "requiresDiscordAuth": false,
@@ -402,7 +416,9 @@
       "sourceFile": "animated/a_7691976a5ed7d961d7d5b7756d08957d.gif",
       "title": "A 7691976a5ed7d961d7d5b7756d08957d",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -450,7 +466,9 @@
       "sourceFile": "animated/b8b1551cd0fd04dca22ea5e663b23caa.gif",
       "title": "B8b1551cd0fd04dca22ea5e663b23caa",
       "category": "Animated",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "anime-girl-icons"
+      ],
       "tags": [],
       "uploadDate": "2025-08-24",
       "requiresDiscordAuth": false,
@@ -618,7 +636,9 @@
       "sourceFile": "banners/0484b382850fea7a8641a09d08998e70.jpg",
       "title": "0484b382850fea7a8641a09d08998e70",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2025-12-11",
       "requiresDiscordAuth": false,
@@ -642,7 +662,9 @@
       "sourceFile": "banners/14bbbbaf6a74f9cc190d5f91e1103ba9.jpg",
       "title": "14bbbbaf6a74f9cc190d5f91e1103ba9",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -834,7 +856,9 @@
       "sourceFile": "banners/68eb35a20b6aee23d60f2439c205d71e.jpg",
       "title": "68eb35a20b6aee23d60f2439c205d71e",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2025-12-11",
       "requiresDiscordAuth": false,
@@ -966,7 +990,9 @@
       "sourceFile": "banners/9980c457416a223865fcedfc13cf0d3f.jpg",
       "title": "9980c457416a223865fcedfc13cf0d3f",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2025-12-11",
       "requiresDiscordAuth": false,
@@ -1110,7 +1136,9 @@
       "sourceFile": "banners/ca51eedff835e7cd0f696849ef2ee5ae_1.jpg",
       "title": "Ca51eedff835e7cd0f696849ef2ee5ae 1",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -1242,7 +1270,9 @@
       "sourceFile": "banners/IMG_5437.jpg",
       "title": "IMG 5437",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -1254,7 +1284,9 @@
       "sourceFile": "banners/IMG_5438.jpg",
       "title": "IMG 5438",
       "category": "Banners",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "white-minimal-banners"
+      ],
       "tags": [],
       "uploadDate": "2026-03-10",
       "requiresDiscordAuth": false,
@@ -1278,7 +1310,9 @@
       "sourceFile": "icons/01607cb953695b461c5437fc5cda1168.jpg",
       "title": "01607cb953695b461c5437fc5cda1168",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1290,7 +1324,9 @@
       "sourceFile": "icons/08155149aa7c6ca2a5a3fda8d86550f5.jpg",
       "title": "08155149aa7c6ca2a5a3fda8d86550f5",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1314,7 +1350,9 @@
       "sourceFile": "icons/13d357aebcad9fbe887083bd8dd63d81.jpg",
       "title": "13d357aebcad9fbe887083bd8dd63d81",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1326,7 +1364,9 @@
       "sourceFile": "icons/18963aa12ba2b102ae69eb75b3c3d70c.jpg",
       "title": "18963aa12ba2b102ae69eb75b3c3d70c",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1338,7 +1378,9 @@
       "sourceFile": "icons/207bf8cb29e57d4a388290d949567315.jpg",
       "title": "207bf8cb29e57d4a388290d949567315",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-10",
       "requiresDiscordAuth": false,
@@ -1386,7 +1428,9 @@
       "sourceFile": "icons/2f83fe33b9f97b8a044944f16b369b13.jpg",
       "title": "2f83fe33b9f97b8a044944f16b369b13",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1410,7 +1454,9 @@
       "sourceFile": "icons/340bc5259ee31062af66356dba00b633.jpg",
       "title": "340bc5259ee31062af66356dba00b633",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1434,7 +1480,9 @@
       "sourceFile": "icons/3bb2bf0e486f7917d9ab74b56d0f9730.jpg",
       "title": "3bb2bf0e486f7917d9ab74b56d0f9730",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1470,7 +1518,9 @@
       "sourceFile": "icons/495c434ec619989aad0e4d1d9bbd7488.jpg",
       "title": "495c434ec619989aad0e4d1d9bbd7488",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1506,7 +1556,9 @@
       "sourceFile": "icons/53cd299836ff4ce8018397c6a0035491.jpg",
       "title": "53cd299836ff4ce8018397c6a0035491",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-16",
       "requiresDiscordAuth": false,
@@ -1530,7 +1582,9 @@
       "sourceFile": "icons/577ea78b07db6ecab2ed27c9dea0dacd.jpg",
       "title": "577ea78b07db6ecab2ed27c9dea0dacd",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1554,7 +1608,9 @@
       "sourceFile": "icons/6190bb25c04a557e35557f72f4701f50.jpg",
       "title": "6190bb25c04a557e35557f72f4701f50",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-11",
       "requiresDiscordAuth": false,
@@ -1566,7 +1622,9 @@
       "sourceFile": "icons/68b959562673fe3cf9232c6baf8e10c3.jpg",
       "title": "68b959562673fe3cf9232c6baf8e10c3",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-13",
       "requiresDiscordAuth": false,
@@ -1578,7 +1636,9 @@
       "sourceFile": "icons/68d2891a1a4a2b291551cbcb54cc34f8.jpg",
       "title": "68d2891a1a4a2b291551cbcb54cc34f8",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-16",
       "requiresDiscordAuth": false,
@@ -1590,7 +1650,9 @@
       "sourceFile": "icons/6ece9cfaa326da99e6827200a8db67a5.jpg",
       "title": "6ece9cfaa326da99e6827200a8db67a5",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "anime-girl-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-23",
       "requiresDiscordAuth": false,
@@ -1614,7 +1676,9 @@
       "sourceFile": "icons/72e782eca7b49dc224a9de72fc3c690f.jpg",
       "title": "72e782eca7b49dc224a9de72fc3c690f",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-09",
       "requiresDiscordAuth": false,
@@ -1662,7 +1726,9 @@
       "sourceFile": "icons/8627ce9d9afd8ce28cd3c092834f79a8.jpg",
       "title": "8627ce9d9afd8ce28cd3c092834f79a8",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-26",
       "requiresDiscordAuth": false,
@@ -1674,7 +1740,9 @@
       "sourceFile": "icons/8957105843a5fbc7bf264d9824ccda07.jpg",
       "title": "8957105843a5fbc7bf264d9824ccda07",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1686,7 +1754,9 @@
       "sourceFile": "icons/8a55715615c0e1a7f5c37297442681e5.jpg",
       "title": "8a55715615c0e1a7f5c37297442681e5",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-16",
       "requiresDiscordAuth": false,
@@ -1794,7 +1864,9 @@
       "sourceFile": "icons/ceeaf1c8afa452231cc74b9bf8a4bfc8.jpg",
       "title": "Ceeaf1c8afa452231cc74b9bf8a4bfc8",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-06-26",
       "requiresDiscordAuth": false,
@@ -1818,7 +1890,9 @@
       "sourceFile": "icons/e1544ab80b8d398aa58523c1f3688d1c.jpg",
       "title": "E1544ab80b8d398aa58523c1f3688d1c",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "imvu-pack-01"
+      ],
       "tags": [],
       "uploadDate": "2026-06-16",
       "requiresDiscordAuth": false,
@@ -1830,7 +1904,9 @@
       "sourceFile": "icons/e89119fe8c7d136825dced3a0d5a0565.jpg",
       "title": "E89119fe8c7d136825dced3a0d5a0565",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-12",
       "requiresDiscordAuth": false,
@@ -1842,7 +1918,9 @@
       "sourceFile": "icons/ee285c50b6d2d67e0cf61c66e1ac8486.jpg",
       "title": "Ee285c50b6d2d67e0cf61c66e1ac8486",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,
@@ -1866,7 +1944,9 @@
       "sourceFile": "icons/f566b59cac3c933320af551720d36c78.jpg",
       "title": "F566b59cac3c933320af551720d36c78",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-12",
       "requiresDiscordAuth": false,
@@ -1914,7 +1994,9 @@
       "sourceFile": "icons/fcbba05f6ecee65504a14c5299a19e09.jpg",
       "title": "Fcbba05f6ecee65504a14c5299a19e09",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-10",
       "requiresDiscordAuth": false,
@@ -1926,7 +2008,9 @@
       "sourceFile": "icons/feb14b9df4eb28384f92021e5f301fa7.jpg",
       "title": "Feb14b9df4eb28384f92021e5f301fa7",
       "category": "Icons",
-      "collectionSlugs": [],
+      "collectionSlugs": [
+        "noface-icons"
+      ],
       "tags": [],
       "uploadDate": "2026-07-08",
       "requiresDiscordAuth": false,

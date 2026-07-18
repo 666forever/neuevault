@@ -8,6 +8,7 @@ const generatedAssetSchema = z.object({
   requiresDiscordAuth: z.boolean(), protectedDownloadPath: z.string().startsWith('/').optional(), attribution: z.string().optional(), sourceNote: z.string().optional(),
   cloudinaryAssetId: z.string().optional(), cloudinaryPublicId: z.string().optional(), cloudinaryVersion: z.number().optional(), cloudinaryDeliveryType: z.enum(['upload', 'private', 'authenticated']).optional(), originalDelivery: z.object({ url: z.string().url().optional(), resourceType: z.string(), deliveryType: z.string() }).optional(),
 }).superRefine((asset, context) => {
+  if (!Number.isFinite(asset.aspectRatio) || asset.aspectRatio < 0.05 || asset.aspectRatio > 20) context.addIssue({ code: 'custom', path: ['aspectRatio'], message: 'Asset aspect ratio is outside safe UI bounds.' });
   if (asset.requiresDiscordAuth && asset.src !== null) context.addIssue({ code: 'custom', path: ['src'], message: 'Restricted originals must not have a public src.' });
   if (!asset.requiresDiscordAuth && !asset.src) context.addIssue({ code: 'custom', path: ['src'], message: 'Public assets require an original src.' });
 });

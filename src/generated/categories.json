@@ -3,64 +3,74 @@
     "id": "cat-001",
     "slug": "ethereal",
     "title": "Ethereal / Angelic Icons",
-    "coverAssetId": "nv-003",
-    "visible": false,
+    "description": "",
+    "coverAssetId": "nv-142",
+    "visible": true,
     "order": 1,
     "filter": {
       "type": "tags",
       "tags": [
-        "angelic"
+        "angelic",
+        "ethereal",
+        "angel"
       ]
     },
     "count": 0,
-    "image": ""
+    "image": "/media/previews/nv-142.jpg"
   },
   {
     "id": "cat-002",
     "slug": "gothic",
     "title": "Dark / Gothic Icons",
-    "coverAssetId": "nv-005",
-    "visible": false,
+    "description": "",
+    "coverAssetId": "nv-170",
+    "visible": true,
     "order": 2,
     "filter": {
       "type": "tags",
       "tags": [
-        "gothic"
+        "dark",
+        "emo",
+        "goth"
       ]
     },
     "count": 0,
-    "image": ""
+    "image": "/media/previews/nv-170.jpg"
   },
   {
     "id": "cat-003",
     "slug": "anime",
     "title": "Anime / Girl Icons",
-    "coverAssetId": "nv-006",
-    "visible": false,
+    "description": "",
+    "coverAssetId": "nv-172",
+    "visible": true,
     "order": 3,
     "filter": {
       "type": "tags",
       "tags": [
-        "anime"
+        "anime",
+        "girl"
       ]
     },
     "count": 0,
-    "image": ""
+    "image": "/media/previews/nv-172.jpg"
   },
   {
     "id": "cat-004",
     "slug": "matching",
     "title": "Matching / Couple Icons",
-    "coverAssetId": "nv-012",
-    "visible": false,
+    "description": "",
+    "coverAssetId": "nv-044",
+    "visible": true,
     "order": 4,
     "filter": {
       "type": "tags",
       "tags": [
-        "matching"
+        "matching",
+        "couple"
       ]
     },
     "count": 0,
-    "image": ""
+    "image": "/media/previews/nv-044.webp"
   }
 ]

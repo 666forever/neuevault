@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { pipelineConfig } from './config.mjs';
 import { PipelineReport } from './errors.mjs';
 import { exists, readJson, walkFiles } from './filesystem.mjs';
-import { mimeFor, normalizePath, normalizeSlug, orientationFor, stableAssetId, titleFromFilename } from './normalize.mjs';
+import { frameDimensions, mimeFor, normalizePath, normalizeSlug, orientationFor, stableAssetId, titleFromFilename } from './normalize.mjs';
 import { authoredAssetsFileSchema, authoredCategoriesFileSchema, authoredCollectionsFileSchema } from './schema.mjs';
 import { assetsForCategory, assetsForCollection } from './counts.mjs';
 
@@ -21,7 +21,7 @@ async function buildAsset(authored, config, report, writeOutput) {
   const extension = path.extname(absolute).toLowerCase();
   if (!config.supportedExtensions.has(extension)) { report.error(`Unsupported source file: ${authored.sourceFile}`); return null; }
   const buffer = await readFile(absolute); const image = sharp(buffer, { animated: true }); const metadata = await image.metadata();
-  if (!metadata.width || !metadata.height) { report.error(`Unreadable dimensions: ${authored.sourceFile}`); return null; }
+  let dimensions; try { dimensions = frameDimensions(metadata); } catch (error) { report.error(`${authored.sourceFile}: ${error.message}`); return null; }
   const id = authored.id || stableAssetId(buffer); const title = authored.title || titleFromFilename(absolute); const slug = authored.slug || normalizeSlug(title);
   const directory = relativeSource(absolute, config).split('/')[0].toLowerCase(); const category = authored.category || categoryByDirectory[directory];
   if (!category) { report.error(`Cannot infer category from ${authored.sourceFile}`); return null; }
@@ -40,7 +40,7 @@ async function buildAsset(authored, config, report, writeOutput) {
     if (!authored.requiresDiscordAuth) { await mkdir(config.publicOriginalRoot, { recursive: true }); await copyFile(absolute, path.join(config.publicOriginalRoot, originalName)); }
   }
   const fileStat = await stat(absolute);
-  return { id, title, slug, sourceFile: authored.sourceFile, previewFile: `/media/previews/${previewName}`, src: authored.requiresDiscordAuth ? null : `/media/originals/${originalName}`, category, collectionSlugs: authored.collectionSlugs, tags: [...new Set(authored.tags.map(tag => tag.toLowerCase()))].sort(), width: metadata.width, height: metadata.height, aspectRatio: Number((metadata.width / metadata.height).toFixed(6)), orientation: orientationFor(metadata.width, metadata.height), fileType: extension.slice(1).toUpperCase().replace('JPEG', 'JPG'), mimeType: mimeFor(extension), fileSize: fileStat.size, uploadDate: authored.uploadDate || new Date(fileStat.mtimeMs).toISOString().slice(0, 10), animated, requiresDiscordAuth: authored.requiresDiscordAuth, ...(authored.protectedDownloadPath ? { protectedDownloadPath: authored.protectedDownloadPath } : {}), ...(authored.attribution ? { attribution: authored.attribution } : {}), ...(authored.sourceNote ? { sourceNote: authored.sourceNote } : {}) };
+  return { id, title, slug, sourceFile: authored.sourceFile, previewFile: `/media/previews/${previewName}`, src: authored.requiresDiscordAuth ? null : `/media/originals/${originalName}`, category, collectionSlugs: authored.collectionSlugs, tags: [...new Set(authored.tags.map(tag => tag.toLowerCase()))].sort(), width: dimensions.width, height: dimensions.height, aspectRatio: dimensions.aspectRatio, orientation: orientationFor(dimensions.width, dimensions.height), fileType: extension.slice(1).toUpperCase().replace('JPEG', 'JPG'), mimeType: mimeFor(extension), fileSize: fileStat.size, uploadDate: authored.uploadDate || new Date(fileStat.mtimeMs).toISOString().slice(0, 10), animated, requiresDiscordAuth: authored.requiresDiscordAuth, ...(authored.protectedDownloadPath ? { protectedDownloadPath: authored.protectedDownloadPath } : {}), ...(authored.attribution ? { attribution: authored.attribution } : {}), ...(authored.sourceNote ? { sourceNote: authored.sourceNote } : {}) };
 }
 
 function duplicates(items, key, report, label) {
