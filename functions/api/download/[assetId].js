@@ -11,5 +11,18 @@ export async function onRequest({ request, env, params }) {
   if (!asset?.requiresDiscordAuth || asset.src !== null) return errorResponse(404, 'Restricted original unavailable.');
   if (!['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'].every(name => env[name])) return errorResponse(503, 'Protected delivery is not configured.');
   const location = await protectedDownloadUrl(asset, env); if (!location) return errorResponse(404, 'Restricted original unavailable.');
-  return new Response(null, { status: 302, headers: { Location: location, 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } });
+  const upstream = await fetch(location, { redirect: 'follow' });
+  if (!upstream.ok || !upstream.body) return errorResponse(502, 'Protected original could not be delivered.');
+
+  // Proxy the authenticated response so Cloudinary delivery identifiers and signed URLs stay server-only.
+  const headers = new Headers({
+    'Cache-Control': 'private, no-store',
+    'Content-Disposition': `attachment; filename="${asset.id}.${String(asset.fileType).toLowerCase()}"`,
+    'Content-Type': upstream.headers.get('Content-Type') || asset.mimeType || 'application/octet-stream',
+    'Referrer-Policy': 'no-referrer',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  const contentLength = upstream.headers.get('Content-Length');
+  if (contentLength) headers.set('Content-Length', contentLength);
+  return new Response(upstream.body, { status: 200, headers });
 }

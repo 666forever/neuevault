@@ -5,6 +5,7 @@ import { protectedDownloadUrl } from '../../server/cloudinary.js';
 import { onRequestGet as sessionHandler } from '../../functions/api/auth/session.js';
 import { SESSION_COOKIE } from '../../server/auth.js';
 import { getTrustedAsset } from '../../server/assets.js';
+import { onRequest as downloadHandler } from '../../functions/api/download/[assetId].js';
 
 describe('production authentication boundary', () => {
   it('signs sessions and rejects tampering', async () => {
@@ -33,5 +34,34 @@ describe('production authentication boundary', () => {
     const asset = getTrustedAsset('nv-166');
     expect(asset).toMatchObject({ id: 'nv-166', requiresDiscordAuth: true, src: null, cloudinaryDeliveryType: 'authenticated' });
     expect(asset.cloudinaryPublicId).toBeTruthy();
+  });
+  it('proxies protected downloads without exposing a signed delivery redirect', async () => {
+    const secret = 'a sufficiently long test secret';
+    const token = await signPayload({ user: { id: '1' }, csrf: 'csrf', exp: 9_999_999_999 }, secret);
+    const request = new Request('https://www.pfseeker.com/api/download/nv-166', {
+      headers: { Cookie: `${SESSION_COOKIE}=${encodeURIComponent(token)}` },
+    });
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(jpeg, {
+      status: 200,
+      headers: { 'Content-Type': 'image/jpeg', 'Content-Length': String(jpeg.byteLength) },
+    }));
+    const response = await downloadHandler({
+      request,
+      params: { assetId: 'nv-166' },
+      env: {
+        SESSION_SECRET: secret,
+        DISCORD_GUILD_ID: '',
+        DISCORD_ALLOWED_ROLE_IDS: '',
+        CLOUDINARY_CLOUD_NAME: 'cloud',
+        CLOUDINARY_API_KEY: 'key',
+        CLOUDINARY_API_SECRET: 'do-not-expose',
+      },
+    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Location')).toBeNull();
+    expect(response.headers.get('Content-Disposition')).toBe('attachment; filename="nv-166.jpg"');
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(jpeg);
+    fetchMock.mockRestore();
   });
 });
