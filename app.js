@@ -35,7 +35,7 @@ function route() {
   pageCleanup?.(); pageCleanup = null; assetModal.close({ restoreFocus: false }); authDialog.close(); disposeAssetGrids(app); disposeAnimatedCovers(app);
   const current = parseRoute(location.hash);
   document.querySelectorAll('.main-nav a').forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${current.path}`));
-  if (current.name === 'home') pages.home();
+  if (current.name === 'home') pageCleanup = pages.home();
   else if (current.name === 'collections') pages.collectionsPage();
   else if (current.name === 'collection') pages.collectionPage(current.params.slug);
   else if (current.name === 'category') pages.categoryPage(current.params.slug);
@@ -43,7 +43,7 @@ function route() {
   else if (current.name === 'search') pageCleanup = pages.searchPage(current.query);
   else if (current.name === 'about') pages.aboutPage();
   else if (current.name === 'asset') {
-    pages.home(); const asset = repository.getAsset(current.params.id);
+    pageCleanup = pages.home(); const asset = repository.getAsset(current.params.id);
     if (asset) assetModal.open(repository.getAssets(), repository.getAssets().findIndex(item => item.id === asset.id), app);
     else pages.notFound();
   } else pages.notFound();
@@ -56,7 +56,12 @@ menuToggle.onclick = () => {
 mainNav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
-    button.textContent = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in with Discord' : 'Sign in unavailable';
+    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in with Discord' : 'Sign in unavailable';
+    button.replaceChildren();
+    if (!auth.state.authenticated) {
+      const icon = document.createElement('span'); icon.className = 'nav-control-icon discord-icon'; icon.setAttribute('aria-hidden', 'true'); button.append(icon);
+    }
+    const text = document.createElement('span'); text.textContent = label; button.append(text);
     button.disabled = auth.state.loading; button.onclick = () => authDialog.open(repository.getAssets().find(asset => asset.requiresDiscordAuth));
   });
 }

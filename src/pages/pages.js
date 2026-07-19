@@ -5,6 +5,37 @@ import { debounce, escapeHtml, safeUrl } from '../utils/escape.js';
 import { filterAssets, sortAssets } from '../utils/filter.js';
 import { countDescription } from '../utils/content.js';
 
+export function mountHeroVideo(root) {
+  const video = root.querySelector('.hero-video');
+  if (!video) return () => {};
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const useLargeSource = window.innerWidth >= 1920 || (window.innerWidth >= 1200 && window.devicePixelRatio >= 1.5);
+  video.src = reducedMotion ? video.dataset.srcSmall : useLargeSource ? video.dataset.srcLarge : video.dataset.srcSmall;
+  video.autoplay = !reducedMotion;
+  if (reducedMotion) video.removeAttribute('autoplay');
+
+  let visible = true;
+  const updatePlayback = () => {
+    if (reducedMotion || !visible || document.hidden) video.pause();
+    else video.play().catch(() => {});
+  };
+  const observer = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    updatePlayback();
+  }, { threshold: 0.15, rootMargin: '80px 0px' });
+  const visibilityHandler = () => updatePlayback();
+  observer.observe(video);
+  document.addEventListener('visibilitychange', visibilityHandler);
+  video.addEventListener('loadeddata', updatePlayback, { once: true });
+  return () => {
+    observer.disconnect();
+    document.removeEventListener('visibilitychange', visibilityHandler);
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+  };
+}
+
 export function createPages(repository, app, openAsset) {
   const assets = repository.getAssets();
   const collections = repository.getCollections();
@@ -15,8 +46,9 @@ export function createPages(repository, app, openAsset) {
     const featured = collections.filter(collection => collection.featured).slice(0, 3);
     const categorySection = categories.length ? `<section class="category-grid" aria-label="Browse categories">${categories.map(categoryCard).join('')}</section>` : '';
     const collectionSection = featured.length ? `<section class="section"><div class="section-head"><div><h2>Popular Collections</h2><p>Curated packs worth keeping close.</p></div><a class="text-link" href="#/collections">View all</a></div><div class="collection-grid">${featured.map(collectionCard).join('')}</div></section>` : '';
-    app.innerHTML = `<div class="page"><section class="hero"><div class="hero-content"><p class="eyebrow">The independent visual archive</p><h1>Collecting the Best Images on the Internet</h1><p>Neuevault® is a growing visual archive shaped by careful curation. Discover icons, banners, animations, wallpapers, and themed collections.</p><a class="button button-accent" href="#/recent">↯ Browse the vault</a></div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link" href="#/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
+    app.innerHTML = `<div class="page"><section class="hero"><video class="hero-video" autoplay muted loop playsinline preload="metadata" data-src-small="/assets/video/furina-hero-1080p.mp4" data-src-large="/assets/video/furina-hero-1440p.mp4" aria-hidden="true"></video><div class="hero-gradient" aria-hidden="true"></div><div class="hero-grain" aria-hidden="true"></div><div class="hero-content"><p class="eyebrow">The independent visual archive</p><h1>Collecting the Best Images on the Internet</h1><p class="hero-description"><span>Neuevault® is a growing collection built from user selections.</span> <span>Discover &amp; Save alt and niche styles,</span> <span>No fillers.</span></p><a class="button hero-cta" href="#/recent"><span class="hero-cta-icon" aria-hidden="true"></span><span>Browse the vault</span></a></div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link" href="#/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
     mount();
+    return mountHeroVideo(app);
   }
   function collectionsPage() {
     const content = collections.length ? `<div class="collection-grid">${collections.map(collectionCard).join('')}</div>` : '<div class="empty-state"><h2>No public collections yet.</h2><p>Collections will appear here when they are marked public in the local content manager.</p></div>';

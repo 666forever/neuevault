@@ -10,6 +10,71 @@ test('mobile navigation keeps Collections and sign-in unavailable reachable', as
   await expect(page.getByRole('button', { name: 'Sign in unavailable' }).last()).toBeVisible();
 });
 
+test('homepage navbar assets and hero media preserve routes and exact copy', async ({ page }) => {
+  await page.goto('/');
+  const logo = page.locator('.brand-logo');
+  await expect(logo).toBeVisible();
+  await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
+  await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '#/collections');
+  await expect(page.getByRole('link', { name: 'Browse the vault' })).toHaveAttribute('href', '#/recent');
+  const description = page.locator('.hero-description');
+  expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Neuevault® is a growing collection built from user selections. Discover & Save alt and niche styles, No fillers.');
+  if (test.info().project.name === 'desktop') expect(await description.innerText()).toBe('Neuevault® is a growing collection built from user selections.\nDiscover & Save alt and niche styles,\nNo fillers.');
+  const video = page.locator('.hero-video');
+  await expect(video).toHaveCount(1);
+  expect(await video.evaluate(element => ({ autoplay: element.autoplay, muted: element.muted, loop: element.loop, playsInline: element.playsInline, preload: element.preload }))).toEqual({ autoplay: true, muted: true, loop: true, playsInline: true, preload: 'metadata' });
+  await expect(video).toHaveAttribute('src', /furina-hero-1080p\.mp4$/);
+  const grain = page.locator('.hero-grain');
+  await expect(grain).toHaveCSS('pointer-events', 'none');
+  await expect(grain).toHaveCSS('background-image', /hero-grain-1000px\.png/);
+  await page.goto('/#/recent');
+  await expect(page.locator('.hero-video')).toHaveCount(0);
+});
+
+test('large displays select only the 1440p hero source', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const requests = [];
+  page.on('request', request => { if (request.url().includes('furina-hero-')) requests.push(request.url()); });
+  await page.goto('/');
+  await expect(page.locator('.hero-video')).toHaveAttribute('src', /furina-hero-1440p\.mp4$/);
+  await page.waitForTimeout(400);
+  expect(requests.some(url => url.endsWith('furina-hero-1080p.mp4'))).toBe(false);
+});
+
+test('reduced motion keeps the hero video paused on a static first frame', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const video = page.locator('.hero-video');
+  await expect(video).not.toHaveAttribute('autoplay', '');
+  expect(await video.evaluate(element => ({ autoplay: element.autoplay, paused: element.paused, source: element.getAttribute('src') }))).toEqual({ autoplay: false, paused: true, source: '/assets/video/furina-hero-1080p.mp4' });
+});
+
+test('navbar and hero remain bounded across target responsive widths', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  for (const width of [320, 375, 768, 1024, 1440, 1920]) {
+    await page.setViewportSize({ width, height: width < 700 ? 780 : 900 });
+    await page.goto('/');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    await expect(page.locator('.brand-wordmark')).toBeVisible();
+    await expect(page.locator('.hero h1')).toBeVisible();
+    const heroBox = await page.locator('.hero').boundingBox();
+    const titleBox = await page.locator('.hero h1').boundingBox();
+    expect(titleBox.x).toBeGreaterThanOrEqual(heroBox.x);
+    expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
+    if (width < 1200) {
+      const toggle = page.getByRole('button', { name: 'Open navigation menu' });
+      await expect(toggle).toBeVisible(); await toggle.click();
+      await expect(page.locator('.main-nav')).toHaveClass(/open/);
+      await expect(page.locator('.mobile-nav-actions .collections-button')).toBeVisible();
+    } else {
+      await expect(page.locator('.main-nav')).toBeVisible();
+      await expect(page.locator('.nav-actions .collections-button')).toBeVisible();
+    }
+  }
+});
+
 test('modal keyboard steps and restores the opening card focus', async ({ page }) => {
   await page.goto('/'); const first = page.locator('.asset-card').first(); await first.focus(); await first.click();
   const initial = await page.locator('#modal-title').textContent(); await page.keyboard.press('ArrowRight');
