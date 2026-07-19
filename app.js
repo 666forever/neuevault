@@ -143,7 +143,7 @@ function renderAuthControls() {
     button.onclick = () => authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
   });
 }
-auth.addEventListener('change', renderAuthControls); renderAuthControls(); auth.load();
+auth.addEventListener('change', () => { renderAuthControls(); assetModal.syncAuthState(); }); renderAuthControls(); auth.load();
 
 document.addEventListener('keydown', event => {
   if (!authElement.hidden) { trapDialogKey(event, authElement, () => authDialog.close()); return; }

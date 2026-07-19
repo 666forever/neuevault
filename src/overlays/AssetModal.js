@@ -27,10 +27,15 @@ export class AssetModal {
     this.element.querySelector('.prev').onclick = () => this.step(-1);
     this.element.querySelector('.next').onclick = () => this.step(1);
     this.element.querySelector('.share-action').onclick = () => this.copyLink(asset);
-    const downloadAction = this.element.querySelector('.download-action');
+    this.syncAuthState();
+    this.element.querySelector('.modal-close').focus();
+  }
+  syncAuthState() {
+    const asset = this.items[this.index]; const downloadAction = this.element.querySelector('.download-action');
+    if (!asset || !downloadAction) return;
+    const restricted = isRestricted(asset);
     if (restricted) downloadAction.textContent = this.auth.state.authenticated ? '↓ Download restricted original' : this.auth.state.configured ? 'Sign in to download' : 'Authentication unavailable';
     downloadAction.onclick = () => restricted ? (this.auth.state.authenticated ? this.downloadRestricted(asset) : this.authDialog.open(asset)) : this.download(asset);
-    this.element.querySelector('.modal-close').focus();
   }
   step(delta) { this.index = (this.index + delta + this.items.length) % this.items.length; this.render(); this.routeHandlers.step?.(this.items[this.index]); }
   requestClose() { if (this.routeHandlers.close) this.routeHandlers.close(); else this.close(); }

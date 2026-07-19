@@ -137,6 +137,15 @@ test('authenticated session is reflected and logout is CSRF-protected', async ({
   await page.locator('.auth-logout').click(); await expect(signIn).toHaveText('Sign in');
 });
 
+test('a directly linked restricted panel refreshes after session discovery', async ({ page }) => {
+  await page.route('**/api/auth/session*', async route => {
+    await new Promise(resolve => setTimeout(resolve, 80));
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ configured: true, authenticated: true, user: { id: 'discord-1', displayName: 'Vault Member', avatarUrl: null }, csrfToken: 'csrf-test' }) });
+  });
+  await page.goto('/asset/nv-166/restricted-test');
+  await expect(page.locator('.download-action')).toHaveText('↓ Download restricted original');
+});
+
 test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":false,"authenticated":false,"user":null,"csrfToken":null}' }));
