@@ -56,12 +56,14 @@ menuToggle.onclick = () => {
 mainNav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
-    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in with Discord' : 'Sign in unavailable';
+    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in' : 'Sign in unavailable';
+    const accessibleLabel = auth.state.configured && !auth.state.authenticated ? 'Sign in with Discord' : label;
     button.replaceChildren();
     if (!auth.state.authenticated) {
       const icon = document.createElement('span'); icon.className = 'nav-control-icon discord-icon'; icon.setAttribute('aria-hidden', 'true'); button.append(icon);
     }
     const text = document.createElement('span'); text.textContent = label; button.append(text);
+    button.setAttribute('aria-label', accessibleLabel);
     button.disabled = auth.state.loading; button.onclick = () => authDialog.open(repository.getAssets().find(asset => asset.requiresDiscordAuth));
   });
 }

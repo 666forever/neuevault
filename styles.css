@@ -46,7 +46,7 @@ button {
   color: inherit;
 }
 .site-header {
-  height: 66px;
+  height: 62px;
   display: flex;
   align-items: center;
   position: relative;
@@ -54,7 +54,7 @@ button {
   background: var(--bg);
 }
 .nav-shell {
-  width: min(calc(100% - 40px), 1320px);
+  width: min(calc(100% - 32px), 1536px);
   margin: auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -117,7 +117,7 @@ button {
 }
 .main-nav {
   display: flex;
-  gap: clamp(15px, 1.65vw, 28px);
+  gap: 36px;
   align-items: center;
 }
 .main-nav a {
@@ -133,6 +133,11 @@ button {
 .main-nav a:hover,
 .main-nav a.active {
   color: var(--acid);
+}
+.main-nav a.active {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
 }
 .nav-actions {
   justify-self: end;
@@ -216,13 +221,13 @@ button {
   margin: 6px 0;
 }
 .page {
-  width: min(calc(100% - 18px), var(--max));
+  width: min(calc(100% - 24px), var(--max));
   margin: 0 auto;
 }
 .hero {
   height: min(46vw, 930px);
   min-height: 560px;
-  border-radius: 16px;
+  border-radius: 20px;
   position: relative;
   overflow: hidden;
   display: grid;
@@ -249,18 +254,19 @@ button {
   z-index: 1;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 57.69%),
-    radial-gradient(177.97% 93.94% at 50% 6.06%, rgba(0, 0, 0, 0.54) 8.65%, rgba(0, 0, 0, 0.89) 100%);
+    radial-gradient(177.97% 93.94% at 50% 6.06%, rgba(0, 0, 0, 0.58) 8.65%, rgba(0, 0, 0, 0.91) 100%);
 }
 .hero-grain {
   z-index: 2;
   background: url("/assets/textures/hero-grain-1000px.png") 0 0 / 500px 500px repeat;
+  opacity: 0.72;
 }
 .hero-content {
   position: relative;
   z-index: 3;
-  width: min(680px, 90%);
+  width: min(560px, 90%);
   text-align: center;
-  transform: none;
+  transform: translateY(2px);
 }
 .hero-content > .eyebrow { display: none; }
 .eyebrow {
@@ -281,11 +287,12 @@ button {
   color: #eee;
   text-shadow: 0 0 13px rgba(0, 0, 0, 0.5);
   margin: 0 auto 18px;
-  max-width: 680px;
+  max-width: 560px;
+  text-wrap: balance;
 }
 .hero .hero-description {
   max-width: 460px;
-  margin: 0 auto 30px;
+  margin: 0 auto 48px;
   color: #c3c4cc;
   font-family: "Inter", sans-serif;
   font-style: normal;
@@ -298,7 +305,7 @@ button {
 .hero-description span { display: block; }
 .hero .button { min-height: 40px; padding: 0 22px; }
 .hero-cta {
-  min-width: 158px;
+  min-width: 123px;
   color: #000;
   background: radial-gradient(182.59% 162.5% at 50% 100%, #c2f13c 0%, #fff 100%);
   font-family: "Inter", sans-serif;
@@ -812,6 +819,9 @@ footer {
   color: #eee;
   font-size: 14px;
 }
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .main-nav { gap: 20px; }
+}
 @media (max-width: 1199px) {
   .nav-shell {
     grid-template-columns: 1fr auto;
@@ -834,7 +844,7 @@ footer {
   .main-nav.open {
     display: flex;
     position: absolute;
-    top: 65px;
+    top: 61px;
     left: 16px;
     right: 16px;
     padding: 22px;
@@ -879,7 +889,7 @@ footer {
     letter-spacing: -2.35px;
     max-width: 560px;
   }
-  .hero-content { width: min(620px, 88%); }
+  .hero-content { width: min(560px, 88%); transform: none; }
   .hero .hero-description { max-width: 390px; }
   .hero-description span { display: inline; }
   .category-grid {

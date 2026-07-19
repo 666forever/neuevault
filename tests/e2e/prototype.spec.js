@@ -16,7 +16,7 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(logo).toBeVisible();
   await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
   await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '#/collections');
-  await expect(page.getByRole('link', { name: 'Browse the vault' })).toHaveAttribute('href', '#/recent');
+  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toHaveAttribute('href', '#/recent');
   const description = page.locator('.hero-description');
   expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Neuevault® is a growing collection built from user selections. Discover & Save alt and niche styles, No fillers.');
   if (test.info().project.name === 'desktop') expect(await description.innerText()).toBe('Neuevault® is a growing collection built from user selections.\nDiscover & Save alt and niche styles,\nNo fillers.');
@@ -27,6 +27,7 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   const grain = page.locator('.hero-grain');
   await expect(grain).toHaveCSS('pointer-events', 'none');
   await expect(grain).toHaveCSS('background-image', /hero-grain-1000px\.png/);
+  await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
   await page.goto('/#/recent');
   await expect(page.locator('.hero-video')).toHaveCount(0);
 });
@@ -40,6 +41,20 @@ test('large displays select only the 1440p hero source', async ({ page }, testIn
   await expect(page.locator('.hero-video')).toHaveAttribute('src', /furina-hero-1440p\.mp4$/);
   await page.waitForTimeout(400);
   expect(requests.some(url => url.endsWith('furina-hero-1080p.mp4'))).toBe(false);
+});
+
+test('signed-out copy stays compact while the Discord OAuth action remains explicit', async ({ page }, testInfo) => {
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.route('**/api/auth/discord**', route => route.fulfill({ status: 204 }));
+  await page.goto('/');
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible');
+  await expect(signIn).toHaveText('Sign in');
+  await expect(signIn).toHaveAttribute('aria-label', 'Sign in with Discord');
+  await signIn.click();
+  const oauthRequest = page.waitForRequest(request => new URL(request.url()).pathname === '/api/auth/discord');
+  await page.getByRole('button', { name: 'Continue with Discord' }).click();
+  expect(await oauthRequest).toBeTruthy();
 });
 
 test('reduced motion keeps the hero video paused on a static first frame', async ({ page }, testInfo) => {
@@ -59,6 +74,10 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await expect(page.locator('.brand-wordmark')).toBeVisible();
     await expect(page.locator('.hero h1')).toBeVisible();
+    if (width >= 1200) {
+      await expect(page.locator('.hero h1')).toHaveCSS('max-width', '560px');
+      expect(Math.round((await page.locator('.hero h1').boundingBox()).height)).toBe(96);
+    }
     const heroBox = await page.locator('.hero').boundingBox();
     const titleBox = await page.locator('.hero h1').boundingBox();
     expect(titleBox.x).toBeGreaterThanOrEqual(heroBox.x);
@@ -99,7 +118,7 @@ test('authenticated session is reflected and logout is CSRF-protected', async ({
   if ((page.viewportSize()?.width || 1000) < 700) await page.locator('.menu-toggle').click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible'); await expect(signIn).toHaveText('Vault Member');
   await signIn.click(); await expect(page.locator('#auth-title')).toHaveText('Signed in');
-  await page.locator('.auth-logout').click(); await expect(signIn).toHaveText('Sign in with Discord');
+  await page.locator('.auth-logout').click(); await expect(signIn).toHaveText('Sign in');
 });
 
 test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
