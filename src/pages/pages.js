@@ -54,7 +54,7 @@ export function createPages(repository, app, openAsset) {
     app.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => { app.querySelector('.filter.active')?.classList.remove('active'); button.classList.add('active'); current = button.dataset.filter; render(); }));
     render(); return () => debouncedRender.cancel();
   }
-  function aboutPage() { app.innerHTML = '<div class="page about-wrap"><div><p class="eyebrow">About the archive</p><h1>Saved with intent.</h1></div><div class="about-copy"><p>Neuevault is an independently curated visual archive for images worth returning to.</p><p>Most files are public. Restricted originals remain unavailable while production authentication is intentionally disabled.</p><p>No feed-chasing. No filler. Just a growing, human-made library.</p></div></div>'; }
+  function aboutPage() { app.innerHTML = '<div class="page about-wrap"><div><p class="eyebrow">About the archive</p><h1>Saved with intent.</h1></div><div class="about-copy"><p>Neuevault is an independently curated visual archive for images worth returning to.</p><p>Public originals need no account. Assets explicitly marked as restricted require Discord authentication and a server-side access decision.</p><p>No feed-chasing. No filler. Just a growing, human-made library.</p></div></div>'; }
   function notFound() { app.innerHTML = '<div class="page"><div class="page-title"><p class="eyebrow">404</p><h1>Nothing here.</h1><p>This corner of the vault is empty. <a class="text-link" href="#/">Return home</a></p></div></div>'; }
   return { home, collectionsPage, collectionPage, categoryPage, recentPage, searchPage, aboutPage, notFound, mount };
 }

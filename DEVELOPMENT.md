@@ -132,9 +132,9 @@ Common failures name the affected file or record: unsupported extension, missing
 
 ## Authentication boundary
 
-Production authentication remains intentionally disabled. There is no OAuth redirect, session lookup, signed-in user state, sign-out request, or protected-download request. Generated restricted records always have `src: null`, and only their previews enter Vite’s public tree.
+Production authentication is implemented behind Pages Functions, but it remains unavailable until all required encrypted production secrets are configured. Generated restricted records always have `src: null`, and only their previews enter Vite’s public tree.
 
-The future connection point remains beneath `src/data`: an API-backed repository and trusted download service must own Discord OAuth state/callbacks, HttpOnly sessions, authorization checks, and protected streaming or short-lived signed URLs. Only after that backend exists should the disabled dialog action connect to it. OAuth credentials and storage secrets never belong in this repository’s browser code.
+The production connection point is the Pages Functions layer in `functions/api`, supported by server-only modules in `server`. It owns Discord OAuth state/callbacks, HttpOnly sessions, authorization checks, and short-lived signed delivery URLs. OAuth credentials and storage secrets never belong in this repository’s browser code.
 
 ## Cloudinary storage
 
@@ -169,7 +169,7 @@ Restricted previews are generated locally at reduced size and uploaded as separa
 
 Public manifests contain the versioned original URL and an attachment delivery URL. Gallery images use `f_auto`, `q_auto`, `c_limit`, and explicit 320/640/960/1200 width variants without cropping. Public animated sources use a static first-frame grid preview while their original remains unchanged for download. Restricted previews are already static independent files.
 
-Restricted downloads remain disabled. A future trusted backend must authorize a real user and create a short-lived signed Cloudinary URL. Browser code must never sign URLs or receive the API secret.
+Restricted downloads are owned by the Pages Function boundary. It authorizes the session, resolves a trusted manifest record, and creates a short-lived signed Cloudinary URL. Browser code never signs URLs or receives the API secret.
 
 ### Verification and credential rotation
 
@@ -191,4 +191,25 @@ Execution requires an explicit `--execute` flag and an exact, current confirmati
 
 Cloudinary upload and Admin API behavior follows the official [Upload API](https://cloudinary.com/documentation/image_upload_api_reference), [Node upload](https://cloudinary.com/documentation/node_image_and_video_upload), and [Admin API](https://cloudinary.com/documentation/admin_api) documentation.
 
-Production authentication, Discord OAuth, sessions, user accounts, signed restricted delivery, and the owner dashboard all remain disabled.
+Discord OAuth, signed sessions, and protected delivery are implemented. The owner dashboard remains deferred, and no production asset is restricted until an explicit access-state decision is made.
+# Discord authentication and protected originals
+
+Authentication is implemented with Cloudflare Pages Functions under `/api`. Discord uses the OAuth authorization-code flow with the `identify` scope. The server validates a short-lived, signed state cookie, exchanges the code directly with Discord, fetches `/users/@me`, and creates a seven-day signed, HttpOnly session cookie. OAuth tokens and secret values are never returned to browser code.
+
+The production Discord redirect URI is exactly `https://www.pfseeker.com/api/auth/discord/callback`. Local testing may use an explicitly registered localhost URI; arbitrary callback origins and return URLs are rejected. Configure these encrypted Pages secrets in both the intended Preview and Production environments as appropriate:
+
+- `DISCORD_CLIENT_ID`
+- `DISCORD_CLIENT_SECRET`
+- `DISCORD_REDIRECT_URI`
+- `SESSION_SECRET`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+
+Never prefix these names with `VITE_`. `.env.example` contains names/placeholders only, while `.env` remains ignored. Run `npm run pages:dev` to exercise the built site and Functions locally.
+
+`GET /api/auth/session` exposes only configuration/authentication state, minimal display identity, and the CSRF value needed for logout. Logout requires same-origin JSON plus that CSRF value. The initial access policy in `server/auth.js` permits any authenticated Discord account; future guild/role rules belong solely in `canAccessRestricted`.
+
+Restricted records continue to require `src: null`. `GET /api/download/:assetId` resolves the stable ID from the generated server-side manifest, verifies the session and access policy, and creates a five-minute signed Cloudinary authenticated-delivery URL. It never accepts a public ID, delivery type, format, filename, or transformation from the client. Public downloads continue to use their existing public Cloudinary URLs without an account.
+
+There are currently no restricted assets in the 234-record production manifest. Protected-download behavior is therefore verified with synthetic test records; do not change a real asset's access state merely to test authentication.

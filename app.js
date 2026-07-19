@@ -6,6 +6,7 @@ import { AssetModal } from './src/overlays/AssetModal.js';
 import { AuthDialog } from './src/overlays/AuthDialog.js';
 import { trapDialogKey } from './src/overlays/dialog.js';
 import { disposeAnimatedCovers } from './src/components/cards.js';
+import { AuthClient } from './src/auth/AuthClient.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
@@ -19,8 +20,9 @@ const showToast = message => {
   clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toastElement.classList.remove('show'), 2200);
 };
 
-const assetModal = new AssetModal(modalElement, repository, showToast);
-const authDialog = new AuthDialog(authElement, assetModal);
+const auth = new AuthClient();
+const assetModal = new AssetModal(modalElement, repository, showToast, auth);
+const authDialog = new AuthDialog(authElement, assetModal, auth, showToast);
 assetModal.setAuthDialog(authDialog);
 const pages = createPages(repository, app, (items, index, trigger) => assetModal.open(items, index, trigger));
 let pageCleanup = null;
@@ -52,7 +54,13 @@ menuToggle.onclick = () => {
   const open = mainNav.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
 };
 mainNav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
-document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => button.onclick = () => authDialog.open(repository.getAssets().find(asset => asset.requiresDiscordAuth)));
+function renderAuthControls() {
+  document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
+    button.textContent = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in with Discord' : 'Sign in unavailable';
+    button.disabled = auth.state.loading; button.onclick = () => authDialog.open(repository.getAssets().find(asset => asset.requiresDiscordAuth));
+  });
+}
+auth.addEventListener('change', renderAuthControls); renderAuthControls(); auth.load();
 
 document.addEventListener('keydown', event => {
   if (!authElement.hidden) { trapDialogKey(event, authElement, () => authDialog.close()); return; }

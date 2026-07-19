@@ -16,7 +16,8 @@
     "cloudinary:prune": "node scripts/cloudinary-prune.mjs",
     "audit:cloudinary-secrets": "node scripts/audit-cloudinary-secrets.mjs",
     "assets:update": "node scripts/assets-update.mjs",
-    "manage:content": "node scripts/manage-content.mjs"
+    "manage:content": "node scripts/manage-content.mjs",
+    "pages:dev": "npm run build && wrangler pages dev dist"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
@@ -24,6 +25,7 @@
     "sharp": "^0.35.3",
     "vite": "^7.0.5",
     "vitest": "^3.2.4",
-    "zod": "^4.0.5"
+    "zod": "^4.0.5",
+    "wrangler": "^4.25.0"
   }
 }

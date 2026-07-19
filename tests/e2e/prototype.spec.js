@@ -17,14 +17,29 @@ test('modal keyboard steps and restores the opening card focus', async ({ page }
 });
 
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
-  const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/')) protectedRequests.push(request.url()); });
+  const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/') && !request.url().endsWith('/api/auth/session')) protectedRequests.push(request.url()); });
   await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
   await page.getByRole('button', { name: 'Sign in unavailable' }).last().click();
   await expect(page.locator('#auth-title')).toHaveText('Authentication unavailable'); expect(protectedRequests).toEqual([]);
 });
 
+test('authenticated session is reflected and logout is CSRF-protected', async ({ page }) => {
+  let authenticated = true;
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ configured: true, authenticated, user: authenticated ? { id: 'discord-1', displayName: 'Vault Member', avatarUrl: null } : null, csrfToken: authenticated ? 'csrf-test' : null }) }));
+  await page.route('**/api/auth/logout*', async route => {
+    expect(route.request().method()).toBe('POST'); expect(route.request().headers()['x-csrf-token']).toBe('csrf-test'); authenticated = false;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{"authenticated":false}' });
+  });
+  await page.goto('/');
+  if ((page.viewportSize()?.width || 1000) < 700) await page.locator('.menu-toggle').click();
+  const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible'); await expect(signIn).toHaveText('Vault Member');
+  await signIn.click(); await expect(page.locator('#auth-title')).toHaveText('Signed in');
+  await page.locator('.auth-logout').click(); await expect(signIn).toHaveText('Sign in with Discord');
+});
+
 test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":false,"authenticated":false,"user":null,"csrfToken":null}' }));
   const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
   const assets = ['JPG', 'PNG', 'GIF'].map(fileType => manifest.find(asset => asset.fileType === fileType && !asset.requiresDiscordAuth));
   const consoleErrors = []; const restrictedRequests = [];
