@@ -4,6 +4,8 @@
 
 Neuevault is a Vite application using native JavaScript modules. Pages never import generated JSON directly. `src/data/repository.js` converts generated canonical records into the stable `StaticAssetRepository` interface used by routing, pages, search, grids, and overlays.
 
+Public UI styling follows the token hierarchy and component rules in [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md). New interface work must reuse an existing token and primitive before introducing a new value.
+
 The archive has three ownership layers:
 
 ```text

@@ -36,7 +36,7 @@ describe('homepage presentation assets', () => {
     const html = await readFile(path.join(root, 'index.html'), 'utf8'); const css = await readFile(path.join(root, 'styles.css'), 'utf8');
     expect(html).toContain('<title>Banners &amp; Icons with intent</title>');
     expect(html).not.toContain('href="#/'); expect(html.match(/brand-logo-shell/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(css).toContain('--acid: #c2f13c'); expect(css).toContain('gap: 38px'); expect(css).toContain('letter-spacing: -0.05px');
+    expect(css).toContain('--color-acid: #c2f13c'); expect(css).toContain('--nav-gap: 38px'); expect(css).toContain('--tracking-nav: -0.05px');
     const manifest = JSON.parse(await readFile(path.join(root, 'public/assets/brand/site.webmanifest'), 'utf8'));
     expect(manifest.icons.every(icon => icon.src.startsWith('/assets/brand/'))).toBe(true);
   });

@@ -68,7 +68,7 @@ test('reduced motion keeps the hero video paused on a static first frame', async
 
 test('navbar and hero remain bounded across target responsive widths', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  for (const width of [320, 375, 768, 1024, 1440, 1920]) {
+  for (const width of [320, 375, 768, 1024, 1199, 1200, 1439, 1440, 1920]) {
     await page.setViewportSize({ width, height: width < 700 ? 780 : 900 });
     await page.goto('/');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
