@@ -4,24 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Neuevault — an independently curated visual archive.">
-  <title>Neuevault — Curated visual archive</title>
+  <title>Banners &amp; Icons with intent</title>
+  <link rel="canonical" id="canonical-url" href="https://www.pfseeker.com/">
+  <link rel="icon" href="/assets/brand/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/brand/site.webmanifest">
   <link rel="preconnect" href="https://images.unsplash.com">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="site-header">
     <div class="nav-shell">
-      <a class="brand" href="#/" aria-label="Neuevault home"><span class="brand-logo" aria-hidden="true"></span><span class="brand-wordmark">Neuevault.</span></a>
+      <a class="brand" href="/" aria-label="Neuevault home"><span class="brand-logo-shell" aria-hidden="true"><span class="brand-logo"></span></span><span class="brand-wordmark">Neuevault.</span></a>
       <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="main-nav"><span></span><span></span></button>
       <nav class="main-nav" id="main-nav" aria-label="Primary navigation">
-        <a href="#/recent">Recently Added</a><a href="#/search?type=Icons">Icons</a><a href="#/search?type=Banners">Banners</a><a href="#/search?type=Animated">Animated</a><a href="#/search?type=Wallpapers">Wallpapers</a><a href="#/search">Search</a><a href="#/about">About</a>
-        <div class="mobile-nav-actions"><button class="button button-light sign-in-mobile" type="button" aria-label="Sign in with Discord"><span class="nav-control-icon discord-icon" aria-hidden="true"></span><span>Checking sign in…</span></button><a class="button button-accent collections-button" href="#/collections"><span class="nav-control-icon bookmark-icon" aria-hidden="true"></span><span>Collections</span></a></div>
+        <a href="/recent" data-nav="recent">Recently Added</a><a href="/icons" data-nav="icons">Icons</a><a href="/banners" data-nav="banners">Banners</a><a href="/animated" data-nav="animated">Animated</a><a href="/wallpapers" data-nav="wallpapers">Wallpapers</a><a href="/search" data-nav="search">Search</a><a href="/about" data-nav="about">About</a>
+        <div class="mobile-nav-actions"><button class="button button-light sign-in-mobile" type="button" aria-label="Sign in with Discord"><span class="nav-control-icon discord-icon" aria-hidden="true"></span><span>Checking sign in…</span></button><a class="button button-accent collections-button" href="/collections" data-nav="collections"><span class="nav-control-icon bookmark-icon" aria-hidden="true"></span><span>Collections</span></a></div>
       </nav>
-      <div class="nav-actions"><button class="button button-light sign-in" type="button" aria-label="Sign in with Discord"><span class="nav-control-icon discord-icon" aria-hidden="true"></span><span>Checking sign in…</span></button><a class="button button-accent collections-button" href="#/collections"><span class="nav-control-icon bookmark-icon" aria-hidden="true"></span><span>Collections</span></a></div>
+      <div class="nav-actions"><button class="button button-light sign-in" type="button" aria-label="Sign in with Discord"><span class="nav-control-icon discord-icon" aria-hidden="true"></span><span>Checking sign in…</span></button><a class="button button-accent collections-button" href="/collections" data-nav="collections"><span class="nav-control-icon bookmark-icon" aria-hidden="true"></span><span>Collections</span></a></div>
     </div>
   </header>
   <main id="app" tabindex="-1"></main>
-  <footer><a class="brand brand-small" href="#/"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>Neuevault.</a><p>Independently curated. Built for discovery.</p><p>© 2026 Neuevault</p></footer>
+  <footer><a class="brand brand-small" href="/" aria-label="Neuevault home"><span class="brand-logo-shell" aria-hidden="true"><span class="brand-logo"></span></span><span>Neuevault.</span></a><p>Independently curated. Built for discovery.</p><p>© 2026 Neuevault</p></footer>
   <div class="modal" id="asset-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden></div>
   <div class="auth-dialog" id="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

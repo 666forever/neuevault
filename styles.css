@@ -12,7 +12,7 @@
   --line: #262626;
   --text: #f5f5f2;
   --muted: #969696;
-  --acid: #a7ff1e;
+  --acid: #c2f13c;
   --radius: 16px;
   --max: 2024px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -68,12 +68,18 @@ button {
   font-weight: 500;
   width: max-content;
 }
-.brand-logo {
-  width: 28px;
+.brand-logo-shell {
+  width: 54px;
   height: 28px;
-  flex: 0 0 28px;
-  border-radius: 9px;
-  color: #c2f13c;
+  flex: 0 0 54px;
+  border-radius: 16px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--acid);
+}
+.brand-logo {
+  width: 18px;
+  height: 18px;
   background: currentColor;
   -webkit-mask: url("/assets/brand/logo28x28.svg") center / contain no-repeat;
   mask: url("/assets/brand/logo28x28.svg") center / contain no-repeat;
@@ -91,42 +97,18 @@ button {
 .dot {
   color: var(--acid);
 }
-.brand-mark {
-  width: 20px;
-  height: 23px;
-  display: grid;
-  grid-template-columns: repeat(3, 4px);
-  gap: 2px;
-  align-items: center;
-  transform: rotate(-36deg);
-}
-.brand-mark i {
-  display: block;
-  width: 4px;
-  background: var(--acid);
-  border-radius: 6px;
-}
-.brand-mark i:nth-child(1) {
-  height: 11px;
-}
-.brand-mark i:nth-child(2) {
-  height: 18px;
-}
-.brand-mark i:nth-child(3) {
-  height: 24px;
-}
 .main-nav {
   display: flex;
-  gap: 36px;
+  gap: 38px;
   align-items: center;
 }
 .main-nav a {
   color: #eee;
   font-family: "Inter", sans-serif;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
-  letter-spacing: -1px;
+  letter-spacing: -0.05px;
   white-space: nowrap;
   transition: color 0.2s;
 }
@@ -181,7 +163,7 @@ button {
   font-family: "Inter", sans-serif;
   font-style: normal;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: -0.08px;
 }
 .nav-control-icon,
@@ -191,13 +173,13 @@ button {
   background: currentColor;
 }
 .discord-icon {
-  width: 17px;
-  height: 13px;
+  width: 22px;
+  height: 22px;
   -webkit-mask: url("/assets/icons/signin-discord.svg") center / contain no-repeat;
   mask: url("/assets/icons/signin-discord.svg") center / contain no-repeat;
 }
 .bookmark-icon {
-  width: 13px;
+  width: 16px;
   height: 16px;
   -webkit-mask: url("/assets/icons/collections-bookmark.svg") center / contain no-repeat;
   mask: url("/assets/icons/collections-bookmark.svg") center / contain no-repeat;
@@ -311,12 +293,12 @@ button {
   font-family: "Inter", sans-serif;
   font-style: normal;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: -0.08px;
 }
 .hero-cta-icon {
-  width: 13px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   -webkit-mask: url("/assets/icons/bolt.svg") center / contain no-repeat;
   mask: url("/assets/icons/bolt.svg") center / contain no-repeat;
 }
@@ -820,7 +802,7 @@ footer {
   font-size: 14px;
 }
 @media (min-width: 1200px) and (max-width: 1439px) {
-  .main-nav { gap: 20px; }
+  .main-nav { gap: 21px; }
 }
 @media (max-width: 1199px) {
   .nav-shell {

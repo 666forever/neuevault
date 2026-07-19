@@ -6,6 +6,9 @@ import { onRequestGet as sessionHandler } from '../../functions/api/auth/session
 import { SESSION_COOKIE } from '../../server/auth.js';
 import { getTrustedAsset } from '../../server/assets.js';
 import { onRequest as downloadHandler } from '../../functions/api/download/[assetId].js';
+import { onRequestGet as discordStartHandler } from '../../functions/api/auth/discord.js';
+import { onRequestGet as discordCallbackHandler } from '../../functions/api/auth/discord/callback.js';
+import { STATE_COOKIE } from '../../server/auth.js';
 
 describe('production authentication boundary', () => {
   it('signs sessions and rejects tampering', async () => {
@@ -14,8 +17,23 @@ describe('production authentication boundary', () => {
     expect(await verifyPayload(`${token}x`, 'a sufficiently long test secret')).toBeNull();
   });
   it('accepts only local return paths', () => {
-    expect(safeReturnPath('/#/asset/nv-1')).toBe('/#/asset/nv-1');
+    expect(safeReturnPath('/asset/nv-1/readable')).toBe('/asset/nv-1/readable');
     expect(safeReturnPath('https://evil.example')).toBe('/'); expect(safeReturnPath('//evil.example')).toBe('/');
+  });
+  it('canonicalizes apex OAuth before creating a host-only state cookie', async () => {
+    const response = await discordStartHandler({ request: new Request('https://pfseeker.com/api/auth/discord?returnTo=%2Fbanners'), env: {} });
+    expect(response.status).toBe(302); expect(response.headers.get('Location')).toBe('https://www.pfseeker.com/api/auth/discord?returnTo=%2Fbanners');
+    expect(response.headers.get('Set-Cookie')).toBeNull();
+  });
+  it('creates state only on the callback host and rejects malformed or expired callbacks', async () => {
+    const env = { SESSION_SECRET: 'a sufficiently long test secret for oauth state', DISCORD_CLIENT_ID: 'id', DISCORD_CLIENT_SECRET: 'secret', DISCORD_REDIRECT_URI: 'https://www.pfseeker.com/api/auth/discord/callback' };
+    const start = await discordStartHandler({ request: new Request('https://www.pfseeker.com/api/auth/discord?returnTo=%2Ficons'), env });
+    expect(start.headers.get('Set-Cookie')).toContain(`${STATE_COOKIE}=`); expect(start.headers.get('Set-Cookie')).not.toContain('Domain=');
+    const malformed = await discordCallbackHandler({ request: new Request('https://www.pfseeker.com/api/auth/discord/callback?code=x&state=x'), env });
+    expect(malformed.status).toBe(400);
+    const expiredToken = await signPayload({ nonce: 'n', returnPath: '/', exp: 1 }, env.SESSION_SECRET);
+    const expired = await discordCallbackHandler({ request: new Request('https://www.pfseeker.com/api/auth/discord/callback?code=x&state=n', { headers: { Cookie: `${STATE_COOKIE}=${encodeURIComponent(expiredToken)}` } }), env });
+    expect(expired.status).toBe(400); expect(expired.headers.get('Set-Cookie')).toContain('Max-Age=0');
   });
   it('returns only the minimum browser session shape', async () => {
     const secret = 'a sufficiently long test secret';

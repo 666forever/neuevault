@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { canDownloadOriginal, getDisplaySource, isRestricted } from '../../src/data/access.js';
 import { filterAssets, sortAssets } from '../../src/utils/filter.js';
-import { parseRoute } from '../../src/routing/routes.js';
+import { activeNavigation, assetRoute, legacyHashPath, parseRoute } from '../../src/routing/routes.js';
 import { countDescription } from '../../src/utils/content.js';
 import { animatedCoverUrl } from '../../src/data/mediaUrls.js';
 
@@ -23,9 +23,17 @@ describe('filtering and sorting', () => {
 
 describe('routes and access', () => {
   it('parses deep links and query values', () => {
-    expect(parseRoute('#/asset/nv-005')).toMatchObject({ name: 'asset', params: { id: 'nv-005' } });
-    expect(parseRoute('#/search?tag=gothic').query.get('tag')).toBe('gothic');
-    expect(parseRoute('#/category/icons')).toMatchObject({ name: 'category', params: { slug: 'icons' } });
+    expect(parseRoute('/asset/nv-005/readable-title')).toMatchObject({ name: 'asset', params: { id: 'nv-005', slug: 'readable-title' } });
+    expect(parseRoute('/search?tag=gothic').query.get('tag')).toBe('gothic');
+    expect(parseRoute('/categories/icons')).toMatchObject({ name: 'category', params: { slug: 'icons' } });
+    expect(parseRoute('/banners')).toMatchObject({ name: 'type', params: { type: 'Banners' } });
+    expect(assetRoute({ id: 'nv-005', title: 'Readable Title!' })).toBe('/asset/nv-005/readable-title');
+  });
+  it('migrates legacy hashes and resolves navigation state by route', () => {
+    expect(legacyHashPath('#/search?type=Banners')).toBe('/banners');
+    expect(legacyHashPath('#/collection/example')).toBe('/collections/example');
+    expect(activeNavigation(parseRoute('/wallpapers'))).toBe('wallpapers');
+    expect(activeNavigation(parseRoute('/asset/nv-1'), parseRoute('/recent'))).toBe('recent');
   });
   it('never exposes a restricted original', () => {
     expect(isRestricted(assets[1])).toBe(true);

@@ -1,5 +1,6 @@
 import { escapeHtml, safeUrl } from '../utils/escape.js';
 import { countDescription } from '../utils/content.js';
+import { categoryRoute, collectionRoute } from '../routing/routes.js';
 const coverBindings = new Map();
 
 function coverMedia(item) {
@@ -9,11 +10,11 @@ function coverMedia(item) {
 }
 
 export function collectionCard(collection) {
-  return `<a class="collection-card" href="#/collection/${encodeURIComponent(collection.slug)}"> <div class="collection-cover">${coverMedia(collection)}${collection.restricted ? '<span class="badge">Includes restricted originals</span>' : ''}</div><div class="collection-meta"><h3>${escapeHtml(collection.title)}</h3><p>${escapeHtml(countDescription(collection.count, collection.description))}</p></div></a>`;
+  return `<a class="collection-card" href="${collectionRoute(collection.slug)}"> <div class="collection-cover">${coverMedia(collection)}${collection.restricted ? '<span class="badge">Includes restricted originals</span>' : ''}</div><div class="collection-meta"><h3>${escapeHtml(collection.title)}</h3><p>${escapeHtml(countDescription(collection.count, collection.description))}</p></div></a>`;
 }
 
 export function categoryCard(category) {
-  return `<a class="category-card" href="#/category/${encodeURIComponent(category.slug)}">${coverMedia(category)}<span class="category-copy"><small>${escapeHtml(countDescription(category.count, category.description))}</small><h2>${escapeHtml(category.title)}</h2></span></a>`;
+  return `<a class="category-card" href="${categoryRoute(category.slug)}">${coverMedia(category)}<span class="category-copy"><small>${escapeHtml(countDescription(category.count, category.description))}</small><h2>${escapeHtml(category.title)}</h2></span></a>`;
 }
 
 export function bindAnimatedCovers(scope = document) {

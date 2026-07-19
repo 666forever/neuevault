@@ -12,7 +12,7 @@ export class AuthDialog {
     this.element.innerHTML = `<div class="auth-dialog-card"><button class="auth-close" type="button" aria-label="Close sign-in dialog">×</button><p class="eyebrow">Restricted access</p><h2 id="auth-title">${title}</h2><p>${context}</p>${action}<p class="integration-status">${status}</p></div>`;
     this.element.hidden = false; syncScrollLock(this.element, this.assetModal.element);
     this.element.querySelector('.auth-close').onclick = () => this.close();
-    this.element.querySelector('.auth-continue')?.addEventListener('click', () => this.auth.signIn(`${location.pathname}${location.hash}`));
+    this.element.querySelector('.auth-continue')?.addEventListener('click', event => { event.currentTarget.disabled = true; this.auth.signIn(`${location.pathname}${location.search}`); }, { once: true });
     this.element.querySelector('.auth-logout')?.addEventListener('click', async () => { try { await this.auth.logout(); this.close(); this.toast('Signed out.'); } catch { this.toast('Sign out could not be completed.'); } });
     this.element.querySelector('.auth-close').focus();
   }

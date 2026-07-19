@@ -12,11 +12,11 @@ test('mobile navigation keeps Collections and sign-in unavailable reachable', as
 
 test('homepage navbar assets and hero media preserve routes and exact copy', async ({ page }) => {
   await page.goto('/');
-  const logo = page.locator('.brand-logo');
+  const logo = page.locator('.site-header .brand-logo');
   await expect(logo).toBeVisible();
   await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
-  await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '#/collections');
-  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toHaveAttribute('href', '#/recent');
+  await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '/collections');
+  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toHaveAttribute('href', '/recent');
   const description = page.locator('.hero-description');
   expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Neuevault® is a growing collection built from user selections. Discover & Save alt and niche styles, No fillers.');
   if (test.info().project.name === 'desktop') expect(await description.innerText()).toBe('Neuevault® is a growing collection built from user selections.\nDiscover & Save alt and niche styles,\nNo fillers.');
@@ -28,7 +28,7 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(grain).toHaveCSS('pointer-events', 'none');
   await expect(grain).toHaveCSS('background-image', /hero-grain-1000px\.png/);
   await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
-  await page.goto('/#/recent');
+  await page.goto('/recent');
   await expect(page.locator('.hero-video')).toHaveCount(0);
 });
 
@@ -96,8 +96,24 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
 
 test('modal keyboard steps and restores the opening card focus', async ({ page }) => {
   await page.goto('/'); const first = page.locator('.asset-card').first(); await first.focus(); await first.click();
+  await expect(page).toHaveURL(/\/asset\/nv-\d+\//);
   const initial = await page.locator('#modal-title').textContent(); await page.keyboard.press('ArrowRight');
-  await expect(page.locator('#modal-title')).not.toHaveText(initial); await page.keyboard.press('Escape'); await expect(first).toBeFocused();
+  await expect(page.locator('#modal-title')).not.toHaveText(initial); await page.keyboard.press('Escape'); await expect(page).toHaveURL('/'); await expect(first).toBeFocused();
+  await page.goForward(); await expect(page.locator('#asset-modal')).toBeVisible();
+});
+
+test('clean routes, active navigation, deep links, and legacy migration work', async ({ page, request }) => {
+  for (const [pathName, label] of [['/recent', 'Recently Added'], ['/icons', 'Icons'], ['/banners', 'Banners'], ['/animated', 'Animated'], ['/wallpapers', 'Wallpapers'], ['/search', 'Search'], ['/about', 'About']]) {
+    const response = await request.get(pathName); expect(response.status()).toBe(200);
+    await page.goto(pathName); await expect(page.locator(`.main-nav [data-nav="${pathName.slice(1)}"]`)).toHaveAttribute('aria-current', 'page');
+  }
+  await page.goto('/#/search?type=Banners'); await expect(page).toHaveURL('/banners');
+  const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8')); const asset = manifest.find(item => item.category === 'Banners');
+  await page.goto(`/asset/${asset.id}/${asset.slug}`); await expect(page.locator('#modal-title')).toHaveText(asset.title);
+  await expect(page.locator('.main-nav [data-nav="banners"]')).toHaveAttribute('aria-current', 'page');
+  await page.reload(); await expect(page.locator('#modal-title')).toHaveText(asset.title);
+  await page.goto('/asset/not-a-real-id/missing'); await expect(page.getByRole('heading', { name: 'Nothing here.' })).toBeVisible();
+  expect(await page.locator('.main-nav a').evaluateAll(links => links.every(link => !link.getAttribute('href').includes('#/')))).toBe(true);
 });
 
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
@@ -130,7 +146,7 @@ test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async 
   page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   page.on('request', request => { if (/\/(?:authenticated|restricted)\//.test(request.url())) restrictedRequests.push(request.url()); });
   for (const asset of assets) {
-    await page.goto(`/#/asset/${asset.id}`);
+    await page.goto(`/asset/${asset.id}/${asset.slug}`);
     const responsePromise = page.waitForResponse(response => response.url() === asset.downloadUrl);
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: /Download original/ }).click();
@@ -160,7 +176,7 @@ test('restricted source remains outside public and built output', async () => {
 });
 
 test('animated gallery cards use bounded single-frame dimensions', async ({ page }) => {
-  await page.goto('/#/recent');
+  await page.goto('/recent');
   const animated = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first();
   await expect(animated).toBeVisible();
   const box = await animated.boundingBox(); expect(box.height).toBeLessThan(900);
@@ -168,14 +184,14 @@ test('animated gallery cards use bounded single-frame dimensions', async ({ page
 });
 
 test('collection cards compose count and description without legacy count copy', async ({ page }) => {
-  await page.goto('/#/collections');
-  await expect(page.locator('a[href="#/collection/noface-icons"] .collection-meta p')).toHaveText('25 Anonymous and melancholic icons.');
+  await page.goto('/collections');
+  await expect(page.locator('a[href="/collections/noface-icons"] .collection-meta p')).toHaveText('25 Anonymous and melancholic icons.');
   await expect(page.getByText('in full archive')).toHaveCount(0);
 });
 
 test('public animated cover loads only during hover or focus and returns static', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  await page.goto('/#/collections'); const card = page.locator('a[href="#/collection/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
+  await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
   await expect(animated).not.toHaveAttribute('src'); await card.hover();
   await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
   await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await page.waitForTimeout(250); await expect(animated).not.toHaveAttribute('src');
@@ -185,7 +201,7 @@ test('public animated cover loads only during hover or focus and returns static'
 test('reduced motion and restricted cover policy remain static', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/restricted/') || request.url().includes('/authenticated/')) protectedRequests.push(request.url()); });
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#/collections'); const card = page.locator('a[href="#/collection/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
   await card.hover(); await expect(animated).not.toHaveAttribute('src');
   const restrictedUrl = await page.evaluate(async () => (await import('/src/data/mediaUrls.js')).animatedCoverUrl({ animated: true, requiresDiscordAuth: true, src: null }));
   expect(restrictedUrl).toBe(''); expect(protectedRequests).toEqual([]);
@@ -193,27 +209,27 @@ test('reduced motion and restricted cover policy remain static', async ({ page }
 
 test('gallery animation follows viewport visibility and observers clean up', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  await page.goto('/#/recent'); const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); const animated = card.locator('.asset-animated'); const staticImage = card.locator('.asset-static');
+  await page.goto('/recent'); const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); const animated = card.locator('.asset-animated'); const staticImage = card.locator('.asset-static');
   await card.evaluate(element => window.scrollTo(0, element.offsetTop + 1200)); await page.waitForTimeout(300);
   await expect(animated).not.toHaveAttribute('src'); await expect(staticImage).toHaveAttribute('src', /(?:\/media\/previews\/|\/pg_1,)/);
   await card.scrollIntoViewIfNeeded(); await expect(animated).toHaveAttribute('src', /nv-\d+\.gif$/); await expect(card).toHaveClass(/asset-playing/);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(300);
   await expect(animated).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
-  await page.goto('/#/about');
+  await page.goto('/about');
   const observers = await page.evaluate(async () => (await import('/src/components/AssetGrid.js')).activeAnimationObserverCount());
   const coverObservers = await page.evaluate(async () => (await import('/src/components/cards.js')).activeCoverObserverCount());
   expect(observers).toBe(0); expect(coverObservers).toBe(0);
 });
 
 test('reduced motion keeps visible gallery GIFs static', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop'); await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/#/recent');
+  test.skip(testInfo.project.name !== 'desktop'); await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/recent');
   const card = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first(); await card.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
   await expect(card.locator('.asset-animated')).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
 });
 
 test('category cards share base and hover visual treatment', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop'); await page.goto('/');
-  const first = page.locator('a[href="#/category/ethereal"]'); const fourth = page.locator('a[href="#/category/matching"]');
+  const first = page.locator('a[href="/categories/ethereal"]'); const fourth = page.locator('a[href="/categories/matching"]');
   const visual = card => card.evaluate(element => { const image = [...element.querySelectorAll('img')].find(node => Number(getComputedStyle(node).opacity) > 0); const style = getComputedStyle(image); return { opacity: style.opacity, filter: style.filter, border: getComputedStyle(element).borderColor, transform: style.transform }; });
   expect(await visual(first)).toEqual(await visual(fourth));
   await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(700); const fourthHover = await visual(fourth);
