@@ -976,10 +976,10 @@ footer {
   display: block;
   position: relative;
   width: 100%;
-  aspect-ratio: var(--asset-ratio);
   background: #101010;
   overflow: hidden;
 }
+.asset-thumb .asset-static { height: auto; }
 .asset-thumb .asset-animated { position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s var(--ease); }
 .asset-thumb .asset-static { opacity: 1; transition: opacity 0.2s var(--ease), transform 0.5s var(--ease), filter 0.3s; }
 .asset-card.asset-playing .asset-animated { opacity: 1; }

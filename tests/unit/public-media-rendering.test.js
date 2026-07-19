@@ -8,7 +8,10 @@ const asset = overrides => ({ id: 'nv-gif', title: 'Animated', preview: '/media/
 
 describe('public animated media rendering', () => {
   it('renders a lazy animated layer only for public playback sources', () => {
-    expect(renderAssetCard(asset(), 0, 'grid')).toContain('data-gallery-animated-src="/media/originals/nv-gif.gif"');
+    const card = renderAssetCard(asset(), 0, 'grid');
+    expect(card).toContain('data-gallery-animated-src="/media/originals/nv-gif.gif"');
+    expect(card).not.toContain('style=');
+    expect(card).toContain('width="320" height="240"');
     expect(renderAssetCard(asset({ requiresDiscordAuth: true, animatedPlayback: '' }), 0, 'grid')).not.toContain('data-gallery-animated-src');
   });
 
