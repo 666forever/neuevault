@@ -2427,9 +2427,6 @@
       }
     ],
     "downloadUrl": null,
-    "cloudinaryAssetId": "e071ea1fe8250ecff44214712a622f58",
-    "cloudinaryPublicId": "neuevault/restricted/icons/nv-166",
-    "cloudinaryVersion": 1784427234,
     "cloudinaryDeliveryType": "authenticated",
     "originalDelivery": {
       "resourceType": "image",

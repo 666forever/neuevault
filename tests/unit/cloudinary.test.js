@@ -80,6 +80,7 @@ describe('Cloudinary synchronization', () => {
     expect(transport.uploads.map(item => item.options.type)).toEqual(['upload', 'authenticated', 'upload']);
     const restricted = first.assets.find(asset => asset.id === 'nv-restricted');
     expect(restricted).toMatchObject({ src: null, downloadUrl: null, cloudinaryDeliveryType: 'authenticated', protectedDownloadPath: '/api/assets/nv-restricted/download' });
+    expect(restricted).not.toHaveProperty('cloudinaryPublicId'); expect(restricted).not.toHaveProperty('cloudinaryAssetId');
     expect(restricted.previewUrl).toContain('/upload/'); expect(restricted.previewUrl).not.toContain('/restricted/');
     const second = await syncCloudinary({ transport, config: fixture.config, stateFile: fixture.stateFile });
     expect(second.uploaded).toEqual([]); expect(second.skipped).toHaveLength(2); expect(transport.uploads).toHaveLength(3);

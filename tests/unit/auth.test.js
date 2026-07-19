@@ -4,6 +4,7 @@ import { safeReturnPath } from '../../server/http.js';
 import { protectedDownloadUrl } from '../../server/cloudinary.js';
 import { onRequestGet as sessionHandler } from '../../functions/api/auth/session.js';
 import { SESSION_COOKIE } from '../../server/auth.js';
+import { getTrustedAsset } from '../../server/assets.js';
 
 describe('production authentication boundary', () => {
   it('signs sessions and rejects tampering', async () => {
@@ -27,5 +28,10 @@ describe('production authentication boundary', () => {
     const asset = { cloudinaryPublicId: 'neuevault/restricted/icons/nv-1', cloudinaryDeliveryType: 'authenticated', fileType: 'PNG', originalDelivery: { resourceType: 'image' } };
     const url = await protectedDownloadUrl(asset, { CLOUDINARY_CLOUD_NAME: 'cloud', CLOUDINARY_API_KEY: 'key', CLOUDINARY_API_SECRET: 'do-not-expose' }, 100);
     expect(url).toContain('type=authenticated'); expect(url).toContain('expires_at=400'); expect(url).toContain('timestamp=100'); expect(url).not.toContain('do-not-expose');
+  });
+  it('keeps the protected delivery identifier server-only', () => {
+    const asset = getTrustedAsset('nv-166');
+    expect(asset).toMatchObject({ id: 'nv-166', requiresDiscordAuth: true, src: null, cloudinaryDeliveryType: 'authenticated' });
+    expect(asset.cloudinaryPublicId).toBeTruthy();
   });
 });
