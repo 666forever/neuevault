@@ -32,7 +32,7 @@ Media darkness, hero gradients, cover grayscale, and readability overlays remain
 - Brand: `--font-brand` (`TBJ Neuetra`)
 - Scale: `--text-xs` through `--text-hero`
 - Weights: regular, medium, semibold, bold, and heavy
-- Semantic roles: body, nav, button, caption, card title, modal title, and hero title/copy
+- Semantic roles: body, nav, button, caption, card title, modal/auth title, and hero title/copy
 
 Use a semantic type role when a component contract exists. Use a primitive size for secondary copy that does not form a repeated role. Preserve the existing tracking tokens for brand, navigation, buttons, and compact labels.
 
@@ -77,7 +77,7 @@ Layer order:
 - Authentication dialog: `--z-auth-dialog`
 - Toast: `--z-toast`
 
-Media overlays use the low `--z-content-overlay` and `--z-control-overlay` roles.
+Media overlays use the low `--z-content-overlay` and `--z-control-overlay` roles. Hero copy sits above both through `--z-hero-content`.
 
 ## Component primitives
 
@@ -113,6 +113,8 @@ The asset and authentication overlays use separate layer tokens and layouts. Ass
 ### Navigation
 
 Navigation uses `--type-nav-*`, `--nav-gap`, semantic link colors, and a visible underline plus color for the active route. The intermediate desktop gap uses `--nav-gap-compact`; mobile menu spacing remains inside the shared breakpoint.
+
+Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-content-max`, `--tracking-hero-title`, and `--hero-title-copy-gap`. Keep unique crop, overlay, and optical adjustments local rather than expanding this set mechanically.
 
 ## Responsive and reduced motion
 

@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const root = path.resolve('.');
 const css = await readFile(path.join(root, 'styles.css'), 'utf8');
+const development = await readFile(path.join(root, 'DEVELOPMENT.md'), 'utf8');
 
 describe('public design system', () => {
   it('declares the required primitive, semantic, component, layout, motion, and layer tokens', () => {
@@ -12,7 +13,9 @@ describe('public design system', () => {
       '--border-subtle', '--focus-ring', '--font-body', '--font-ui', '--font-brand', '--type-nav-size', '--type-button-size',
       '--space-4', '--radius-card', '--radius-brand', '--radius-pill', '--control-height-sm', '--control-height-field',
       '--icon-md', '--shadow-hero-title', '--duration-normal', '--duration-card', '--duration-fade', '--ease-standard', '--container-nav',
-      '--container-page', '--page-gutter', '--section-space', '--z-header', '--z-modal', '--z-auth-dialog', '--z-toast',
+      '--container-page', '--page-gutter', '--section-space', '--brand-gap', '--nav-actions-gap', '--hero-content-max',
+      '--tracking-hero-title', '--hero-title-copy-gap', '--type-auth-title-mobile-size', '--z-header', '--z-hero-content',
+      '--z-modal', '--z-auth-dialog', '--z-toast',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 
@@ -38,5 +41,21 @@ describe('public design system', () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition:\s*none !important/);
     const urls = [...css.matchAll(/url\("(\/[^"?]+)"\)/g)].map(match => match[1]);
     await Promise.all(urls.map(url => expect(access(path.join(root, 'public', url))).resolves.toBeUndefined()));
+  });
+
+  it('keeps production authentication, restricted access, and derived counts documented accurately', () => {
+    expect(development).toContain('Discord OAuth is configured and active in production');
+    expect(development).toContain('Authentication canonicalizes through `www.pfseeker.com`');
+    expect(development).toContain('`nv-166` is currently the first production restricted asset');
+    expect(development).toContain('public manifest retains `src: null`');
+    expect(development).toContain('any authenticated Discord account');
+    expect(development).not.toContain('Optionally supply `archiveCount`');
+    expect(development).not.toContain('There are currently no restricted assets');
+  });
+
+  it('does not use spacing tokens for typography or raw values for named hero layers', () => {
+    expect(css).not.toMatch(/font-size:\s*var\(--space-/);
+    expect(css).toContain('.auth-dialog-card h2 { font-size: var(--type-auth-title-mobile-size); }');
+    expect(css).toMatch(/\.hero-content\s*\{[\s\S]*?z-index:\s*var\(--z-hero-content\)/);
   });
 });

@@ -93,7 +93,7 @@ The public homepage and archive routes render only visible categories, public co
 
 1. Add a unique record to `content/collections/collections.json` with `slug`, `title`, `description`, `coverAssetId`, tags, feature state/order, and public visibility.
 2. Add the collection slug to each member asset’s `collectionSlugs` array.
-3. Optionally supply `archiveCount` when the full archive count is larger than the local preview set. Otherwise count is generated from members.
+3. Do not author `archiveCount`. Collection counts are always derived from current membership, and category counts are always derived from their configured matching rules.
 4. Run generation and validation. Missing covers, missing explicitly referenced assets, duplicate slugs, and unknown asset collection slugs fail.
 
 Featured collections sort by `featuredOrder`, then slug, so ordering is deterministic. A restricted cover is safe because collection covers always resolve to generated public previews, never originals.
@@ -134,7 +134,7 @@ Common failures name the affected file or record: unsupported extension, missing
 
 ## Authentication boundary
 
-Production authentication is implemented behind Pages Functions, but it remains unavailable until all required encrypted production secrets are configured. Generated restricted records always have `src: null`, and only their previews enter Vite’s public tree.
+Discord OAuth is configured and active in production. Authentication canonicalizes through `www.pfseeker.com`; signed sessions, CSRF-protected logout, and protected delivery are active. Required credentials remain server-only encrypted Cloudflare Pages secrets and never enter browser code. Generated restricted records always have `src: null`, and only their previews enter Vite’s public tree.
 
 The production connection point is the Pages Functions layer in `functions/api`, supported by server-only modules in `server`. It owns Discord OAuth state/callbacks, HttpOnly sessions, authorization checks, and short-lived signed delivery URLs. OAuth credentials and storage secrets never belong in this repository’s browser code.
 
@@ -193,7 +193,7 @@ Execution requires an explicit `--execute` flag and an exact, current confirmati
 
 Cloudinary upload and Admin API behavior follows the official [Upload API](https://cloudinary.com/documentation/image_upload_api_reference), [Node upload](https://cloudinary.com/documentation/node_image_and_video_upload), and [Admin API](https://cloudinary.com/documentation/admin_api) documentation.
 
-Discord OAuth, signed sessions, and protected delivery are implemented. The owner dashboard remains deferred, and no production asset is restricted until an explicit access-state decision is made.
+Discord OAuth, signed sessions, and protected delivery are active in production. The owner dashboard remains deferred. `nv-166` is the first production restricted asset; its preview remains public while its original remains behind authenticated delivery.
 # Discord authentication and protected originals
 
 Authentication is implemented with Cloudflare Pages Functions under `/api`. Discord uses the OAuth authorization-code flow with the `identify` scope. The server validates a short-lived, signed state cookie, exchanges the code directly with Discord, fetches `/users/@me`, and creates a seven-day signed, HttpOnly session cookie. OAuth tokens and secret values are never returned to browser code.
@@ -214,4 +214,4 @@ Never prefix these names with `VITE_`. `.env.example` contains names/placeholder
 
 Restricted records continue to require `src: null`. `GET /api/download/:assetId` resolves the stable ID from the generated server-side manifest, verifies the session and access policy, and creates a five-minute signed Cloudinary authenticated-delivery URL. It never accepts a public ID, delivery type, format, filename, or transformation from the client. Public downloads continue to use their existing public Cloudinary URLs without an account.
 
-There are currently no restricted assets in the 234-record production manifest. Protected-download behavior is therefore verified with synthetic test records; do not change a real asset's access state merely to test authentication.
+`nv-166` is currently the first production restricted asset. Its public manifest retains `src: null`, its static preview is public, and its original is delivered only through the authenticated Pages Function. The current access policy permits any authenticated Discord account; future guild or role restrictions must remain server-side in `canAccessRestricted`.

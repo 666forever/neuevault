@@ -84,9 +84,11 @@
   --type-section-title-size: 15px;
   --type-card-title-size: var(--text-md);
   --type-modal-title-size: var(--text-2xl);
+  --type-auth-title-mobile-size: 24px;
   --type-hero-size: var(--text-hero);
   --type-hero-line: var(--line-hero);
   --type-hero-copy-size: 13px;
+  --tracking-hero-title: -3px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -152,12 +154,17 @@
   --footer-gutter: 24px;
   --header-height: 62px;
   --hero-min-height: 560px;
+  --hero-content-max: 560px;
+  --hero-title-copy-gap: 18px;
+  --brand-gap: 10px;
   --nav-gap: 38px;
   --nav-gap-compact: 21px;
+  --nav-actions-gap: 9px;
 
   --z-header: 20;
   --z-content-overlay: 1;
   --z-control-overlay: 2;
+  --z-hero-content: 3;
   --z-modal: 100;
   --z-auth-dialog: 150;
   --z-toast: 200;
@@ -262,7 +269,7 @@ button {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--brand-gap);
   font-size: 15px;
   font-weight: var(--weight-medium);
   width: max-content;
@@ -323,7 +330,7 @@ button {
 .nav-actions {
   justify-self: end;
   display: flex;
-  gap: 9px;
+  gap: var(--nav-actions-gap);
 }
 .mobile-nav-actions { display: none; }
 .sign-in,
@@ -408,8 +415,8 @@ button {
 }
 .hero-content {
   position: relative;
-  z-index: 3;
-  width: min(560px, 90%);
+  z-index: var(--z-hero-content);
+  width: min(var(--hero-content-max), 90%);
   text-align: center;
   transform: translateY(2px);
 }
@@ -420,11 +427,11 @@ button {
   font-weight: var(--weight-semibold);
   font-size: var(--type-hero-size);
   line-height: var(--type-hero-line);
-  letter-spacing: -3px;
+  letter-spacing: var(--tracking-hero-title);
   color: var(--gray-100);
   text-shadow: var(--shadow-hero-title);
-  margin: 0 auto 18px;
-  max-width: 560px;
+  margin: 0 auto var(--hero-title-copy-gap);
+  max-width: var(--hero-content-max);
   text-wrap: balance;
 }
 .hero .hero-description {
@@ -1084,9 +1091,9 @@ footer {
     font-size: clamp(36px, 10vw, 42px);
     line-height: 1;
     letter-spacing: -2.35px;
-    max-width: 560px;
+    max-width: var(--hero-content-max);
   }
-  .hero-content { width: min(560px, 88%); transform: none; }
+  .hero-content { width: min(var(--hero-content-max), 88%); transform: none; }
   .hero .hero-description { max-width: 390px; }
   .hero-description span { display: inline; }
   .category-grid {
@@ -1158,7 +1165,7 @@ footer {
   }
   .grid-progress { min-height: var(--control-height-auth); }
   .auth-dialog-card { padding: 26px 22px; }
-  .auth-dialog-card h2 { font-size: var(--space-6); }
+  .auth-dialog-card h2 { font-size: var(--type-auth-title-mobile-size); }
   .nav-actions .user-menu { display: none; }
 }
 /* 18. Reduced motion */
