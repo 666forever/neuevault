@@ -709,16 +709,28 @@
     "nv-166": {
       "sourceHash": "fedc4dfa15cfe954dbc340d58f65f9def17c509034592d9e389386405f6d36e2",
       "original": {
-        "assetId": "3eaa3757c10e02f2846b4f04cbcd39a9",
-        "publicId": "neuevault/public/icons/nv-166",
-        "version": 1784375498,
+        "assetId": "e071ea1fe8250ecff44214712a622f58",
+        "publicId": "neuevault/restricted/icons/nv-166",
+        "version": 1784427234,
         "format": "jpg",
         "bytes": 11307,
         "width": 320,
         "height": 320,
         "resourceType": "image",
+        "deliveryType": "authenticated",
+        "secureUrl": "https://res.cloudinary.com/ayghsuks/image/authenticated/s--mYxL1qFf--/v1784427234/neuevault/restricted/icons/nv-166.jpg"
+      },
+      "preview": {
+        "assetId": "2e4fd6faa8350e49a76a3271891178d0",
+        "publicId": "neuevault/previews/icons/nv-166",
+        "version": 1784427234,
+        "format": "jpg",
+        "bytes": 9184,
+        "width": 320,
+        "height": 320,
+        "resourceType": "image",
         "deliveryType": "upload",
-        "secureUrl": "https://res.cloudinary.com/ayghsuks/image/upload/v1784375498/neuevault/public/icons/nv-166.jpg"
+        "secureUrl": "https://res.cloudinary.com/ayghsuks/image/upload/v1784427234/neuevault/previews/icons/nv-166.jpg"
       }
     },
     "nv-167": {

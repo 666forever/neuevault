@@ -26,6 +26,6 @@ describe('production authentication boundary', () => {
   it('creates a short-lived authenticated Cloudinary URL without exposing the API secret', async () => {
     const asset = { cloudinaryPublicId: 'neuevault/restricted/icons/nv-1', cloudinaryDeliveryType: 'authenticated', fileType: 'PNG', originalDelivery: { resourceType: 'image' } };
     const url = await protectedDownloadUrl(asset, { CLOUDINARY_CLOUD_NAME: 'cloud', CLOUDINARY_API_KEY: 'key', CLOUDINARY_API_SECRET: 'do-not-expose' }, 100);
-    expect(url).toContain('type=authenticated'); expect(url).toContain('expires_at=400'); expect(url).not.toContain('do-not-expose');
+    expect(url).toContain('type=authenticated'); expect(url).toContain('expires_at=400'); expect(url).toContain('timestamp=100'); expect(url).not.toContain('do-not-expose');
   });
 });

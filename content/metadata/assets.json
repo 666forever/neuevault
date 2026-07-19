@@ -1819,7 +1819,7 @@
       "collectionSlugs": [],
       "tags": [],
       "uploadDate": "2026-06-27",
-      "requiresDiscordAuth": false,
+      "requiresDiscordAuth": true,
       "animated": false,
       "sourceHash": "fedc4dfa15cfe954dbc340d58f65f9def17c509034592d9e389386405f6d36e2"
     },

@@ -2393,7 +2393,7 @@
     "slug": "b6df7c961256bcebc4b169c2ddbd96c5",
     "sourceFile": "icons/b6df7c961256bcebc4b169c2ddbd96c5.jpg",
     "previewFile": "/media/previews/nv-166.jpg",
-    "src": "https://res.cloudinary.com/ayghsuks/image/upload/v1784375498/neuevault/public/icons/nv-166.jpg",
+    "src": null,
     "category": "Icons",
     "collectionSlugs": [],
     "tags": [],
@@ -2406,35 +2406,34 @@
     "fileSize": 11307,
     "uploadDate": "2026-06-27",
     "animated": false,
-    "requiresDiscordAuth": false,
-    "previewUrl": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1784375498/neuevault/public/icons/nv-166.jpg",
+    "requiresDiscordAuth": true,
+    "previewUrl": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1784427234/neuevault/previews/icons/nv-166.jpg",
     "previewSources": [
       {
         "width": 320,
-        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_320,c_limit/v1784375498/neuevault/public/icons/nv-166.jpg"
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_320,c_limit/v1784427234/neuevault/previews/icons/nv-166.jpg"
       },
       {
         "width": 640,
-        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_640,c_limit/v1784375498/neuevault/public/icons/nv-166.jpg"
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_640,c_limit/v1784427234/neuevault/previews/icons/nv-166.jpg"
       },
       {
         "width": 960,
-        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_960,c_limit/v1784375498/neuevault/public/icons/nv-166.jpg"
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_960,c_limit/v1784427234/neuevault/previews/icons/nv-166.jpg"
       },
       {
         "width": 1200,
-        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1784375498/neuevault/public/icons/nv-166.jpg"
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1784427234/neuevault/previews/icons/nv-166.jpg"
       }
     ],
-    "downloadUrl": "https://res.cloudinary.com/ayghsuks/image/upload/fl_attachment:b6df7c961256bcebc4b169c2ddbd96c5/v1784375498/neuevault/public/icons/nv-166.jpg",
-    "cloudinaryAssetId": "3eaa3757c10e02f2846b4f04cbcd39a9",
-    "cloudinaryPublicId": "neuevault/public/icons/nv-166",
-    "cloudinaryVersion": 1784375498,
-    "cloudinaryDeliveryType": "upload",
+    "downloadUrl": null,
+    "cloudinaryAssetId": "e071ea1fe8250ecff44214712a622f58",
+    "cloudinaryPublicId": "neuevault/restricted/icons/nv-166",
+    "cloudinaryVersion": 1784427234,
+    "cloudinaryDeliveryType": "authenticated",
     "originalDelivery": {
-      "url": "https://res.cloudinary.com/ayghsuks/image/upload/v1784375498/neuevault/public/icons/nv-166.jpg",
       "resourceType": "image",
-      "deliveryType": "upload"
+      "deliveryType": "authenticated"
     }
   },
   {
