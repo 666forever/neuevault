@@ -181,8 +181,8 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   const before = await collections.boundingBox();
   await collections.hover();
   await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.01s');
-  await expect(collections.locator('.roll-text-layer').last()).toHaveCSS('animation-name', 'roll-text-in-from-above');
-  await expect(collections.locator('.roll-icon-layer').last()).toHaveCSS('animation-name', 'roll-icon-in-from-below');
+  await expect(collections.locator('.roll-text-layer').last().locator('.roll-layer-content')).toHaveCSS('animation-name', 'roll-text-settle');
+  await expect(collections.locator('.roll-icon-layer').last().locator('.roll-layer-content')).toHaveCSS('animation-name', 'roll-icon-settle');
   await expect(collections).toHaveCSS('transform', 'none');
   await page.waitForTimeout(380);
   const motion = await collections.evaluate(element => ({ text: getComputedStyle(element.querySelector('.roll-text-layer')).transform, icon: getComputedStyle(element.querySelector('.roll-icon-layer')).transform, incomingText: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transform, incomingIcon: getComputedStyle(element.querySelector('.roll-icon-layer:last-child')).transform }));
@@ -199,6 +199,58 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
   await nav.focus(); await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
   expect(await nav.evaluate(element => getComputedStyle(element, '::before').transitionDelay)).toBe('0s');
+});
+
+test('rolling controls keep text and paired icons visible throughout pointer exit', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.goto('/');
+  const control = page.locator('.nav-actions .collections-button');
+  await control.hover(); await page.waitForTimeout(380);
+  const shellBefore = await control.boundingBox();
+  await page.locator('.hero').hover();
+  const samples = [];
+  for (const delay of [0, 50, 100, 140]) {
+    if (delay) await page.waitForTimeout(delay);
+    samples.push(await control.evaluate(element => {
+      const intersects = (viewport, selector) => {
+        const frame = viewport.getBoundingClientRect();
+        return [...viewport.querySelectorAll(selector)].some(layer => {
+          const rect = layer.getBoundingClientRect();
+          return rect.bottom > frame.top && rect.top < frame.bottom;
+        });
+      };
+      const textViewport = element.querySelector('.roll-text');
+      const iconViewport = element.querySelector('.roll-icon');
+      return {
+        textVisible: intersects(textViewport, '.roll-text-layer'),
+        iconVisible: intersects(iconViewport, '.roll-icon-layer'),
+        delay: getComputedStyle(element.querySelector('.roll-text-layer')).transitionDelay,
+        textAnimation: getComputedStyle(element.querySelector('.roll-text-layer:last-child .roll-layer-content')).animationName,
+      };
+    }));
+  }
+  expect(samples.every(sample => sample.textVisible && sample.iconVisible)).toBe(true);
+  expect(samples.every(sample => sample.delay === '0s')).toBe(true);
+  expect(samples.every(sample => sample.textAnimation === 'none')).toBe(true);
+  await page.waitForTimeout(30);
+  const final = await control.evaluate(element => ({
+    textPrimary: getComputedStyle(element.querySelector('.roll-text-layer:first-child')).transform,
+    textDuplicate: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transform,
+    iconPrimary: getComputedStyle(element.querySelector('.roll-icon-layer:first-child')).transform,
+    iconDuplicate: getComputedStyle(element.querySelector('.roll-icon-layer:last-child')).transform,
+  }));
+  expect(final).toEqual({ textPrimary: 'matrix(1, 0, 0, 1, 0, 0)', textDuplicate: 'matrix(1, 0, 0, 1, 0, -40)', iconPrimary: 'matrix(1, 0, 0, 1, 0, 0)', iconDuplicate: 'matrix(1, 0, 0, 1, 0, 40)' });
+  const shellAfter = await control.boundingBox();
+  expect({ width: shellAfter.width, height: shellAfter.height }).toEqual({ width: shellBefore.width, height: shellBefore.height });
+  const nav = page.locator('.main-nav > a').first();
+  await nav.hover(); await page.waitForTimeout(180);
+  await page.locator('.hero').hover();
+  const pillStart = Number(await nav.evaluate(element => getComputedStyle(element, '::before').opacity));
+  await page.waitForTimeout(180);
+  const pillEnd = Number(await nav.evaluate(element => getComputedStyle(element, '::before').opacity));
+  expect(pillStart).toBeGreaterThan(pillEnd);
+  expect(pillEnd).toBe(0);
 });
 
 test('rolling controls and Lenis remain enhancement-only for touch and reduced motion', async ({ page }, testInfo) => {

@@ -328,16 +328,26 @@ button {
   position: relative;
   display: inline-grid;
   overflow: hidden;
+  height: var(--roll-travel);
+  align-items: center;
   line-height: inherit;
   flex: 0 0 auto;
 }
 .roll-text-layer,
 .roll-icon-layer {
   grid-area: 1 / 1;
-  display: block;
+  display: grid;
+  align-items: center;
+  height: var(--roll-travel);
   color: inherit;
   transition: transform var(--duration-link-roll) var(--ease-link-roll);
   transition-delay: 0ms;
+}
+.roll-layer-content {
+  display: inherit;
+  place-items: inherit;
+  color: inherit;
+  transform: translateY(0) rotate(0);
 }
 .roll-text-layer { white-space: nowrap; }
 .roll-text-layer:first-child { transform: translateY(0); }
@@ -361,23 +371,21 @@ button {
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:last-child { transform: translateY(0); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:first-child { transform: translateY(calc(var(--roll-travel) * -1)); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:last-child { transform: translateY(0); }
-.has-roll-animation:not(:disabled):hover .roll-text-layer:last-child {
-  animation: roll-text-in-from-above var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent) both;
+.has-roll-animation:not(:disabled):hover .roll-text-layer:last-child .roll-layer-content {
+  animation: roll-text-settle var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent);
 }
-.has-roll-animation:not(:disabled):hover .roll-icon-layer:last-child {
-  animation: roll-icon-in-from-below var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent) both;
+.has-roll-animation:not(:disabled):hover .roll-icon-layer:last-child .roll-layer-content {
+  animation: roll-icon-settle var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent);
 }
-.has-roll-animation:not(:disabled):focus-visible .roll-text-layer:last-child {
-  animation: roll-text-in-from-above var(--duration-link-roll) var(--ease-link-roll) 0ms both;
+.has-roll-animation:not(:disabled):focus-visible .roll-text-layer:last-child .roll-layer-content {
+  animation: roll-text-settle var(--duration-link-roll) var(--ease-link-roll);
 }
-.has-roll-animation:not(:disabled):focus-visible .roll-icon-layer:last-child {
-  animation: roll-icon-in-from-below var(--duration-link-roll) var(--ease-link-roll) 0ms both;
+.has-roll-animation:not(:disabled):focus-visible .roll-icon-layer:last-child .roll-layer-content {
+  animation: roll-icon-settle var(--duration-link-roll) var(--ease-link-roll);
 }
 @media (hover: hover) {
-  .has-roll-animation:hover :is(.roll-text-layer, .roll-icon-layer),
-  .has-roll-animation:focus-visible :is(.roll-text-layer, .roll-icon-layer) { will-change: transform; }
-  .main-nav a:hover::before,
-  .main-nav a:focus-visible::before { will-change: opacity; }
+  .has-roll-animation :is(.roll-text-layer, .roll-icon-layer) { will-change: transform; }
+  .main-nav a::before { will-change: opacity; }
 }
 
 /* 8. Header and navigation */
@@ -1412,6 +1420,7 @@ footer {
   .has-roll-animation .roll-icon-layer:first-child { transform: none; }
   .has-roll-animation .roll-text-layer:last-child,
   .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none; animation: none !important; }
+  .has-roll-animation .roll-layer-content { animation: none !important; transform: none; }
   .main-nav a:hover:not(.active)::before { opacity: 0; transition: none; }
   .main-nav a.active::before,
   .main-nav a:focus-visible::before { opacity: 1; }
@@ -1433,18 +1442,19 @@ footer {
   .has-roll-animation .roll-icon-layer:first-child { transform: none !important; }
   .has-roll-animation .roll-text-layer:last-child,
   .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; animation: none !important; }
+  .has-roll-animation .roll-layer-content { animation: none !important; transform: none !important; }
   .main-nav a::before { transition: none !important; }
 }
 
 /* 19. Keyframes */
-@keyframes roll-text-in-from-above {
-  0% { transform: translateY(calc(var(--roll-travel) * -1)) rotate(-0.18deg); }
+@keyframes roll-text-settle {
+  0%, 70% { transform: translateY(0) rotate(0); }
   82% { transform: translateY(1.5px) rotate(0.04deg); }
   92% { transform: translateY(-0.5px) rotate(-0.02deg); }
   100% { transform: translateY(0) rotate(0); }
 }
-@keyframes roll-icon-in-from-below {
-  0% { transform: translateY(var(--roll-travel)); }
+@keyframes roll-icon-settle {
+  0%, 70% { transform: translateY(0); }
   82% { transform: translateY(-1.5px); }
   92% { transform: translateY(0.5px); }
   100% { transform: translateY(0); }

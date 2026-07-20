@@ -17,7 +17,10 @@ function createTextRoll(label) {
   const viewport = document.createElement('span');
   viewport.className = 'roll-text';
   const primary = document.createElement('span');
-  primary.className = 'roll-text-layer'; primary.textContent = label;
+  primary.className = 'roll-text-layer';
+  const primaryContent = document.createElement('span');
+  primaryContent.className = 'roll-layer-content'; primaryContent.textContent = label;
+  primary.append(primaryContent);
   const duplicate = primary.cloneNode(true);
   duplicate.setAttribute('aria-hidden', 'true');
   viewport.append(primary, duplicate);
@@ -28,7 +31,10 @@ function createIconRoll(icon) {
   const viewport = document.createElement('span');
   viewport.className = 'roll-icon'; viewport.setAttribute('aria-hidden', 'true');
   const primary = document.createElement('span');
-  primary.className = 'roll-icon-layer'; primary.append(icon);
+  primary.className = 'roll-icon-layer';
+  const primaryContent = document.createElement('span');
+  primaryContent.className = 'roll-layer-content'; primaryContent.append(icon);
+  primary.append(primaryContent);
   const duplicate = primary.cloneNode(true);
   viewport.append(primary, duplicate);
   return viewport;
