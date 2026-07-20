@@ -144,13 +144,34 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   await expect(page.getByRole('button', { name: 'Sign in with Discord', exact: true })).toHaveCount(1);
   await expect(nav.locator('.roll-icon-layer')).toHaveCount(0);
   await expect(signIn.locator('.roll-icon-layer')).toHaveCount(2);
+  const gapBefore = await page.locator('.main-nav').evaluate(element => getComputedStyle(element).gap);
+  const navBefore = await nav.boundingBox();
+  const navRest = await nav.evaluate(element => ({
+    incomingText: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transform,
+    pillHeight: getComputedStyle(element, '::before').height,
+    pillBackground: getComputedStyle(element, '::before').backgroundColor,
+    pillDuration: getComputedStyle(element, '::before').transitionDuration,
+    pillTiming: getComputedStyle(element, '::before').transitionTimingFunction,
+  }));
+  expect(navRest.incomingText).toContain('-40');
+  expect(navRest.pillHeight).toBe('40px');
+  expect(navRest.pillBackground).toBe('rgb(18, 18, 18)');
+  expect(navRest.pillDuration).toBe('0.3s');
+  expect(navRest.pillTiming).toBe('cubic-bezier(0.76, 0, 0.24, 1)');
   const before = await collections.boundingBox();
   await collections.hover();
-  await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.07s');
+  await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.01s');
   await page.waitForTimeout(380);
   const motion = await collections.evaluate(element => ({ text: getComputedStyle(element.querySelector('.roll-text-layer')).transform, icon: getComputedStyle(element.querySelector('.roll-icon-layer')).transform }));
-  expect(motion.text).not.toBe('none'); expect(motion.icon).not.toBe('none');
+  expect(motion.text).toContain('40'); expect(motion.icon).toContain('-40');
   const after = await collections.boundingBox(); expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
+  await nav.hover();
+  await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.01s');
+  await page.waitForTimeout(380);
+  expect(await nav.evaluate(element => getComputedStyle(element.querySelector('.roll-text-layer:first-child')).transform)).toContain('40');
+  const navAfter = await nav.boundingBox();
+  expect({ width: navAfter.width, height: navAfter.height }).toEqual({ width: navBefore.width, height: navBefore.height });
+  expect(await page.locator('.main-nav').evaluate(element => getComputedStyle(element).gap)).toBe(gapBefore);
   await page.locator('.hero').hover();
   await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
   await nav.focus(); await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
@@ -161,6 +182,7 @@ test('rolling controls and Lenis remain enhancement-only for touch and reduced m
   await expect(page.locator('html')).not.toHaveClass(/lenis/);
   const hero = page.locator('.hero-cta');
   await expect(hero.locator('.roll-text-layer').last()).toHaveCSS('visibility', 'hidden');
+  expect(await page.locator('.main-nav > a').first().evaluate(element => getComputedStyle(element, '::before').transitionDuration)).toBe('0s');
   if (testInfo.project.name === 'mobile') {
     await hero.tap(); await expect(page).toHaveURL(/\/recent$/);
   }

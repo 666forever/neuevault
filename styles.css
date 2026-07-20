@@ -160,9 +160,13 @@
   --duration-cover: 600ms;
   --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
   --duration-link-roll: 300ms;
-  --delay-hover-intent: 70ms;
+  --delay-hover-intent: 10ms;
   --ease-link-roll: cubic-bezier(0.76, 0, 0.24, 1);
-  --roll-distance: 100%;
+  --roll-travel: 40px;
+  --nav-hover-pill-height: 40px;
+  --nav-hover-pill-bg: var(--bg-surface);
+  --nav-hover-pill-radius: var(--radius-pill);
+  --nav-hover-pill-padding-inline: 16px;
 
   --container-page: 2024px;
   --container-nav: 1536px;
@@ -334,22 +338,22 @@ button {
 }
 .roll-text-layer { white-space: nowrap; }
 .roll-text-layer:first-child { transform: translateY(0); }
-.roll-text-layer:last-child { transform: translateY(var(--roll-distance)); }
+.roll-text-layer:last-child { transform: translateY(calc(var(--roll-travel) * -1)); }
 .roll-icon-layer {
   display: inline-grid;
   place-items: center;
 }
 .roll-icon-layer:first-child { transform: translateY(0); }
-.roll-icon-layer:last-child { transform: translateY(calc(0% - var(--roll-distance))); }
+.roll-icon-layer:last-child { transform: translateY(var(--roll-travel)); }
 .has-roll-animation:not(:disabled):hover :is(.roll-text-layer, .roll-icon-layer) {
   transition-delay: var(--delay-hover-intent);
 }
 .has-roll-animation:not(:disabled):focus-visible :is(.roll-text-layer, .roll-icon-layer) {
   transition-delay: 0ms;
 }
-.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:first-child { transform: translateY(calc(0% - var(--roll-distance))); }
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:first-child { transform: translateY(var(--roll-travel)); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:last-child { transform: translateY(0); }
-.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:first-child { transform: translateY(var(--roll-distance)); }
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:first-child { transform: translateY(calc(var(--roll-travel) * -1)); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:last-child { transform: translateY(0); }
 
 /* 8. Header and navigation */
@@ -411,6 +415,12 @@ button {
   align-items: center;
 }
 .main-nav a {
+  position: relative;
+  isolation: isolate;
+  height: var(--nav-hover-pill-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--gray-100);
   font-family: var(--font-ui);
   font-style: normal;
@@ -419,6 +429,35 @@ button {
   letter-spacing: var(--tracking-nav);
   white-space: nowrap;
   transition: color var(--duration-fast) var(--ease-standard);
+}
+.main-nav a::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: calc(var(--nav-hover-pill-padding-inline) * -1);
+  right: calc(var(--nav-hover-pill-padding-inline) * -1);
+  height: var(--nav-hover-pill-height);
+  border-radius: var(--nav-hover-pill-radius);
+  background: var(--nav-hover-pill-bg);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity var(--duration-link-roll) var(--ease-link-roll);
+  transition-delay: 0ms;
+  pointer-events: none;
+}
+.main-nav a > * { position: relative; z-index: 1; }
+.main-nav a .roll-text {
+  height: var(--nav-hover-pill-height);
+  align-items: center;
+}
+.main-nav a:hover::before {
+  opacity: 1;
+  transition-delay: var(--delay-hover-intent);
+}
+.main-nav a:focus-visible::before {
+  opacity: 1;
+  transition-delay: 0ms;
 }
 .main-nav a:hover,
 .main-nav a.active {
@@ -1222,9 +1261,12 @@ footer {
     gap: 0;
   }
   .main-nav.open a {
-    padding: 13px 5px;
+    min-height: 48px;
+    height: auto;
+    padding: 4px 5px;
     border-bottom: 1px solid var(--gray-825);
   }
+  .main-nav.open a::before { left: 0; right: 0; }
   .main-nav.open .mobile-nav-actions { display: grid; gap: 10px; padding-top: 16px; }
   .main-nav.open .mobile-nav-actions a { border-bottom: 0; }
   .category-grid {
@@ -1346,6 +1388,8 @@ footer {
   .has-roll-animation .roll-icon-layer:first-child { transform: none; }
   .has-roll-animation .roll-text-layer:last-child,
   .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none; }
+  .main-nav a:hover::before { opacity: 0; transition: none; }
+  .main-nav a:focus-visible::before { opacity: 1; }
   .category-card:not(.cover-playing) img.cover-static {
     opacity: var(--category-image-active-opacity);
   }
@@ -1364,6 +1408,7 @@ footer {
   .has-roll-animation .roll-icon-layer:first-child { transform: none !important; }
   .has-roll-animation .roll-text-layer:last-child,
   .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; }
+  .main-nav a::before { transition: none !important; }
 }
 
 /* 19. Keyframes */

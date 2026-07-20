@@ -132,9 +132,9 @@ Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actio
 
 ### Rolling control labels
 
-`.has-roll-animation` is the shared hover/focus treatment for primary navigation, Sign in, Collections, the hero CTA, and equivalent text actions such as load-more and modal action buttons. `.roll-text` clips two identical visual layers: the readable first layer moves upward and the duplicate `aria-hidden` layer enters from below. Paired masked icons use `.roll-icon` and move downward over the same 300ms duration and `cubic-bezier(.76,0,.24,1)` easing.
+`.has-roll-animation` is the shared hover/focus treatment for primary navigation, Sign in, Collections, the hero CTA, and equivalent text actions such as load-more and modal action buttons. `.roll-text` clips two identical visual layers across a fixed 40px travel: the readable first layer exits downward while the duplicate `aria-hidden` layer enters from above. Paired masked icons use `.roll-icon` in the opposite direction, with the current icon exiting upward and its duplicate entering from below. Both use the same 300ms duration and `cubic-bezier(.76,0,.24,1)` easing.
 
-Pointer entry waits 70ms to avoid fly-over activation; pointer exit and keyboard focus have no delay. Active navigation color and underline remain on the link itself. Touch and reduced-motion environments show only the normal layer, so a first tap always activates the control. Never apply the primitive to headings, copy, labels, category titles, metadata, form fields, identity text, disabled controls, or icon-only controls.
+Pointer entry waits 10ms; pointer exit and keyboard focus have no delay. Navbar links add an independently fading 40px-high `--bg-surface` pill without changing link width, the navigation gap, or the 62px header. Its opacity uses the roll duration, easing, and entry delay. Active acid color and underline remain on the link itself and are never duplicated or animated. Touch environments show only the normal layer and do not retain the hover pill, so a first tap always activates the control. Reduced-motion environments hide duplicate layers and switch the pill immediately. Never apply the primitive to headings, copy, labels, category titles, metadata, form fields, identity text, disabled controls, or icon-only controls.
 
 ### Smooth scrolling
 
