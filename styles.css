@@ -140,7 +140,6 @@
   --control-padding-wide: 18px;
   --control-gap: 8px;
   --control-disabled-opacity: 0.52;
-  --control-hover-lift: -2px;
   --modal-actions-bottom: 0;
 
   --icon-sm: 14px;
@@ -160,11 +159,13 @@
   --duration-cover: 600ms;
   --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
   --duration-link-roll: 300ms;
+  --duration-nav-pill: 150ms;
   --delay-hover-intent: 10ms;
   --ease-link-roll: cubic-bezier(0.76, 0, 0.24, 1);
   --roll-travel: 40px;
+  --roll-axis: 49% 50%;
   --nav-hover-pill-height: 40px;
-  --nav-hover-pill-bg: var(--bg-surface);
+  --nav-hover-pill-bg: #151515;
   --nav-hover-pill-radius: var(--radius-pill);
   --nav-hover-pill-padding-inline: 16px;
 
@@ -246,6 +247,10 @@
 }
 html {
   scroll-behavior: smooth;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 body {
   margin: 0;
@@ -308,12 +313,10 @@ button {
   font-size: 11px;
   cursor: pointer;
   transition:
-    transform var(--duration-fast) var(--ease-standard),
     background var(--duration-fast) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard),
     color var(--duration-fast) var(--ease-standard);
 }
-.button:hover { transform: translateY(var(--control-hover-lift)); }
 .button:disabled { cursor: not-allowed; opacity: var(--control-disabled-opacity); transform: none; }
 :where(a, button, input, select):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .button-light { background: var(--gray-100); color: #050505; }
@@ -338,7 +341,10 @@ button {
 }
 .roll-text-layer { white-space: nowrap; }
 .roll-text-layer:first-child { transform: translateY(0); }
-.roll-text-layer:last-child { transform: translateY(calc(var(--roll-travel) * -1)); }
+.roll-text-layer:last-child {
+  transform: translateY(calc(var(--roll-travel) * -1));
+  transform-origin: var(--roll-axis);
+}
 .roll-icon-layer {
   display: inline-grid;
   place-items: center;
@@ -355,6 +361,24 @@ button {
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:last-child { transform: translateY(0); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:first-child { transform: translateY(calc(var(--roll-travel) * -1)); }
 .has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:last-child { transform: translateY(0); }
+.has-roll-animation:not(:disabled):hover .roll-text-layer:last-child {
+  animation: roll-text-in-from-above var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent) both;
+}
+.has-roll-animation:not(:disabled):hover .roll-icon-layer:last-child {
+  animation: roll-icon-in-from-below var(--duration-link-roll) var(--ease-link-roll) var(--delay-hover-intent) both;
+}
+.has-roll-animation:not(:disabled):focus-visible .roll-text-layer:last-child {
+  animation: roll-text-in-from-above var(--duration-link-roll) var(--ease-link-roll) 0ms both;
+}
+.has-roll-animation:not(:disabled):focus-visible .roll-icon-layer:last-child {
+  animation: roll-icon-in-from-below var(--duration-link-roll) var(--ease-link-roll) 0ms both;
+}
+@media (hover: hover) {
+  .has-roll-animation:hover :is(.roll-text-layer, .roll-icon-layer),
+  .has-roll-animation:focus-visible :is(.roll-text-layer, .roll-icon-layer) { will-change: transform; }
+  .main-nav a:hover::before,
+  .main-nav a:focus-visible::before { will-change: opacity; }
+}
 
 /* 8. Header and navigation */
 .site-header {
@@ -385,8 +409,10 @@ button {
   height: 28px;
   flex: 0 0 54px;
   border-radius: var(--radius-brand);
+  overflow: hidden;
   display: inline-grid;
   place-items: center;
+  background: var(--bg-surface);
   color: var(--text-accent);
 }
 .brand-logo {
@@ -442,7 +468,7 @@ button {
   background: var(--nav-hover-pill-bg);
   opacity: 0;
   transform: translateY(-50%);
-  transition: opacity var(--duration-link-roll) var(--ease-link-roll);
+  transition: opacity var(--duration-nav-pill) var(--ease-link-roll);
   transition-delay: 0ms;
   pointer-events: none;
 }
@@ -459,14 +485,12 @@ button {
   opacity: 1;
   transition-delay: 0ms;
 }
-.main-nav a:hover,
 .main-nav a.active {
-  color: var(--text-accent);
+  color: var(--text-primary);
 }
-.main-nav a.active {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 5px;
+.main-nav a.active::before {
+  opacity: 1;
+  transition-delay: 0ms;
 }
 .nav-actions {
   justify-self: end;
@@ -1387,8 +1411,9 @@ footer {
   .has-roll-animation .roll-text-layer:first-child,
   .has-roll-animation .roll-icon-layer:first-child { transform: none; }
   .has-roll-animation .roll-text-layer:last-child,
-  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none; }
-  .main-nav a:hover::before { opacity: 0; transition: none; }
+  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none; animation: none !important; }
+  .main-nav a:hover:not(.active)::before { opacity: 0; transition: none; }
+  .main-nav a.active::before,
   .main-nav a:focus-visible::before { opacity: 1; }
   .category-card:not(.cover-playing) img.cover-static {
     opacity: var(--category-image-active-opacity);
@@ -1407,11 +1432,23 @@ footer {
   .has-roll-animation .roll-text-layer:first-child,
   .has-roll-animation .roll-icon-layer:first-child { transform: none !important; }
   .has-roll-animation .roll-text-layer:last-child,
-  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; }
+  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; animation: none !important; }
   .main-nav a::before { transition: none !important; }
 }
 
 /* 19. Keyframes */
+@keyframes roll-text-in-from-above {
+  0% { transform: translateY(calc(var(--roll-travel) * -1)) rotate(-0.18deg); }
+  82% { transform: translateY(1.5px) rotate(0.04deg); }
+  92% { transform: translateY(-0.5px) rotate(-0.02deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+@keyframes roll-icon-in-from-below {
+  0% { transform: translateY(var(--roll-travel)); }
+  82% { transform: translateY(-1.5px); }
+  92% { transform: translateY(0.5px); }
+  100% { transform: translateY(0); }
+}
 @keyframes grid-spin {
   to { transform: rotate(360deg); }
 }

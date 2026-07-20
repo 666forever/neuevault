@@ -6,12 +6,18 @@ const read = file => readFile(file, 'utf8');
 describe('shared interaction system', () => {
   it('defines one tokenized rolling-control primitive with accessible duplicate layers', async () => {
     const [css, source] = await Promise.all([read('styles.css'), read('src/components/rollingControls.js')]);
-    for (const token of ['--duration-link-roll: 300ms', '--delay-hover-intent: 10ms', '--ease-link-roll: cubic-bezier(0.76, 0, 0.24, 1)', '--roll-travel: 40px', '--nav-hover-pill-height: 40px', '--nav-hover-pill-bg: var(--bg-surface)', '--nav-hover-pill-radius: var(--radius-pill)']) expect(css).toContain(token);
+    for (const token of ['--duration-link-roll: 300ms', '--duration-nav-pill: 150ms', '--delay-hover-intent: 10ms', '--ease-link-roll: cubic-bezier(0.76, 0, 0.24, 1)', '--roll-travel: 40px', '--roll-axis: 49% 50%', '--nav-hover-pill-height: 40px', '--nav-hover-pill-bg: #151515', '--nav-hover-pill-radius: var(--radius-pill)']) expect(css).toContain(token);
     expect(css).not.toContain('--roll-distance');
     expect(css).not.toContain('--delay-hover-intent: 70ms');
     expect(css).toMatch(/\.roll-text-layer:last-child\s*\{\s*transform:\s*translateY\(calc\(var\(--roll-travel\) \* -1\)\)/);
     expect(css).toMatch(/\.roll-icon-layer:last-child\s*\{\s*transform:\s*translateY\(var\(--roll-travel\)\)/);
-    expect(css).toMatch(/\.main-nav a::before\s*\{[\s\S]*?height:\s*var\(--nav-hover-pill-height\)[\s\S]*?background:\s*var\(--nav-hover-pill-bg\)[\s\S]*?transition:\s*opacity var\(--duration-link-roll\) var\(--ease-link-roll\)/);
+    expect(css).toMatch(/\.main-nav a::before\s*\{[\s\S]*?height:\s*var\(--nav-hover-pill-height\)[\s\S]*?background:\s*var\(--nav-hover-pill-bg\)[\s\S]*?transition:\s*opacity var\(--duration-nav-pill\) var\(--ease-link-roll\)/);
+    expect(css).toMatch(/@keyframes roll-text-in-from-above[\s\S]*?82%\s*\{\s*transform:\s*translateY\(1\.5px\)[\s\S]*?92%\s*\{\s*transform:\s*translateY\(-0\.5px\)[\s\S]*?100%\s*\{\s*transform:\s*translateY\(0\) rotate\(0\)/);
+    expect(css).toMatch(/@keyframes roll-icon-in-from-below[\s\S]*?translateY\(-1\.5px\)[\s\S]*?translateY\(0\.5px\)[\s\S]*?translateY\(0\)/);
+    expect(css).not.toContain('--control-hover-lift');
+    expect(css).not.toMatch(/\.button:hover\s*\{[^}]*transform/);
+    expect(css).not.toMatch(/\.main-nav a:hover\s*,\s*\.main-nav a\.active/);
+    expect(css).not.toMatch(/\.main-nav a:hover\s*\{\s*color:/);
     expect(source).toContain("duplicate.setAttribute('aria-hidden', 'true')");
     expect(source).toContain("'.main-nav > a'");
     expect(source).not.toContain('.category-card');

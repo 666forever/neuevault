@@ -53,4 +53,14 @@ describe('homepage presentation assets', () => {
     expect(css).toMatch(/@media \(max-width: 700px\)[\s\S]*?\.hero h1 span,[\s\S]*?\.hero-description span\s*\{\s*display:\s*inline/);
     expect(css).not.toMatch(/\.hero h1\s*\{[^}]*text-wrap:\s*balance/);
   });
+
+  it('uses accurate local variable-font faces without italic production references', async () => {
+    const css = await readFile(path.join(root, 'styles.css'), 'utf8');
+    expect(css).toMatch(/Archivo-VariableFont_wdth,wght\.woff2[\s\S]*?font-weight:\s*100 900[\s\S]*?font-stretch:\s*62% 125%/);
+    expect(css).toMatch(/Arimo-VariableFont_wght\.woff2[\s\S]*?font-weight:\s*400 700/);
+    expect(css).toMatch(/tbj-neuetra-vf\.woff2[\s\S]*?font-weight:\s*100 900/);
+    expect(css).not.toContain('Italic-VariableFont');
+    expect(css).toContain('font-synthesis: none');
+    expect(css).toContain('text-rendering: optimizeLegibility');
+  });
 });

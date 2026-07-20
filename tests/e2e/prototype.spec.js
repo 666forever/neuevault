@@ -14,6 +14,10 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await page.goto('/');
   const logo = page.locator('.site-header .brand-logo');
   await expect(logo).toBeVisible();
+  const logoShell = page.locator('.site-header .brand-logo-shell');
+  expect(await logoShell.evaluate(element => { const style = getComputedStyle(element); return { width: style.width, height: style.height, radius: style.borderRadius, overflow: style.overflow, background: style.backgroundColor }; })).toEqual({ width: '54px', height: '28px', radius: '16px', overflow: 'hidden', background: 'rgb(18, 18, 18)' });
+  await expect(logo).toHaveCSS('width', '18px');
+  await expect(logo).toHaveCSS('height', '18px');
   await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
   await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '/collections');
   const eyebrow = page.locator('.hero-eyebrow');
@@ -38,6 +42,20 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
   await page.goto('/recent');
   await expect(page.locator('.hero-video')).toHaveCount(0);
+});
+
+test('tracked variable fonts load without italic fallbacks', async ({ page }) => {
+  const fontResponses = [];
+  page.on('response', response => { if (response.url().includes('/fonts/')) fontResponses.push({ url: response.url(), status: response.status(), type: response.headers()['content-type'] || '' }); });
+  await page.goto('/'); await page.evaluate(() => document.fonts.ready);
+  for (const file of ['Archivo-VariableFont_wdth,wght.woff2', 'Arimo-VariableFont_wght.woff2', 'tbj-neuetra-vf.woff2']) {
+    const response = fontResponses.find(item => item.url.endsWith(file));
+    expect(response).toBeTruthy(); expect(response.status).toBe(200); expect(response.type).toContain('font/woff2');
+  }
+  expect(fontResponses.some(item => item.url.includes('Italic-VariableFont'))).toBe(false);
+  expect(await page.locator('.brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('TBJ Neuetra');
+  expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Arimo');
+  expect(await page.locator('.hero-eyebrow').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Archivo');
 });
 
 test('large displays select only the 1440p hero source', async ({ page }, testInfo) => {
@@ -148,22 +166,27 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   const navBefore = await nav.boundingBox();
   const navRest = await nav.evaluate(element => ({
     incomingText: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transform,
+    incomingOrigin: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transformOrigin,
     pillHeight: getComputedStyle(element, '::before').height,
     pillBackground: getComputedStyle(element, '::before').backgroundColor,
     pillDuration: getComputedStyle(element, '::before').transitionDuration,
     pillTiming: getComputedStyle(element, '::before').transitionTimingFunction,
   }));
   expect(navRest.incomingText).toContain('-40');
+  expect(navRest.incomingOrigin).not.toBe('50% 50%');
   expect(navRest.pillHeight).toBe('40px');
-  expect(navRest.pillBackground).toBe('rgb(18, 18, 18)');
-  expect(navRest.pillDuration).toBe('0.3s');
+  expect(navRest.pillBackground).toBe('rgb(21, 21, 21)');
+  expect(navRest.pillDuration).toBe('0.15s');
   expect(navRest.pillTiming).toBe('cubic-bezier(0.76, 0, 0.24, 1)');
   const before = await collections.boundingBox();
   await collections.hover();
   await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.01s');
+  await expect(collections.locator('.roll-text-layer').last()).toHaveCSS('animation-name', 'roll-text-in-from-above');
+  await expect(collections.locator('.roll-icon-layer').last()).toHaveCSS('animation-name', 'roll-icon-in-from-below');
+  await expect(collections).toHaveCSS('transform', 'none');
   await page.waitForTimeout(380);
-  const motion = await collections.evaluate(element => ({ text: getComputedStyle(element.querySelector('.roll-text-layer')).transform, icon: getComputedStyle(element.querySelector('.roll-icon-layer')).transform }));
-  expect(motion.text).toContain('40'); expect(motion.icon).toContain('-40');
+  const motion = await collections.evaluate(element => ({ text: getComputedStyle(element.querySelector('.roll-text-layer')).transform, icon: getComputedStyle(element.querySelector('.roll-icon-layer')).transform, incomingText: getComputedStyle(element.querySelector('.roll-text-layer:last-child')).transform, incomingIcon: getComputedStyle(element.querySelector('.roll-icon-layer:last-child')).transform }));
+  expect(motion.text).toContain('40'); expect(motion.icon).toContain('-40'); expect(motion.incomingText).toBe('matrix(1, 0, 0, 1, 0, 0)'); expect(motion.incomingIcon).toBe('matrix(1, 0, 0, 1, 0, 0)');
   const after = await collections.boundingBox(); expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
   await nav.hover();
   await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.01s');
@@ -175,6 +198,7 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   await page.locator('.hero').hover();
   await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
   await nav.focus(); await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
+  expect(await nav.evaluate(element => getComputedStyle(element, '::before').transitionDelay)).toBe('0s');
 });
 
 test('rolling controls and Lenis remain enhancement-only for touch and reduced motion', async ({ page }, testInfo) => {
@@ -219,6 +243,11 @@ test('clean routes, active navigation, deep links, and legacy migration work', a
     const response = await request.get(pathName); expect(response.status()).toBe(200);
     await page.goto(pathName); await expect(page.locator(`.main-nav [data-nav="${pathName.slice(1)}"]`)).toHaveAttribute('aria-current', 'page');
   }
+  await page.goto('/recent');
+  const activeNav = page.locator('.main-nav [data-nav="recent"]');
+  await expect(activeNav).toHaveCSS('color', 'rgb(245, 245, 242)');
+  await expect.poll(() => activeNav.evaluate(element => getComputedStyle(element, '::before').opacity)).toBe('1');
+  expect(await activeNav.evaluate(element => getComputedStyle(element).textDecorationLine)).toBe('none');
   await page.goto('/#/search?type=Banners'); await expect(page).toHaveURL('/banners');
   const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8')); const asset = manifest.find(item => item.category === 'Banners');
   await page.goto(`/asset/${asset.id}/${asset.slug}`); await expect(page.locator('#modal-title')).toHaveText(asset.title);
