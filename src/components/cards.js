@@ -14,7 +14,8 @@ export function collectionCard(collection) {
 }
 
 export function categoryCard(category) {
-  return `<a class="category-card" href="${categoryRoute(category.slug)}">${coverMedia(category)}<span class="category-copy"><small>${escapeHtml(countDescription(category.count, category.description))}</small><h2>${escapeHtml(category.title)}</h2></span></a>`;
+  const title = escapeHtml(category.title);
+  return `<a class="category-card" href="${categoryRoute(category.slug)}" aria-label="${title}">${coverMedia(category)}<span class="category-copy"><span class="category-copy-inner"><small>${escapeHtml(countDescription(category.count, category.description))}</small><h2>${title}</h2></span></span></a>`;
 }
 
 export function bindAnimatedCovers(scope = document) {

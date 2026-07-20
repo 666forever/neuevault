@@ -16,6 +16,9 @@ describe('public design system', () => {
       '--container-page', '--page-gutter', '--section-space', '--brand-gap', '--nav-actions-gap', '--hero-content-max',
       '--tracking-hero-title', '--hero-title-copy-gap', '--type-auth-title-mobile-size', '--z-header', '--z-hero-content',
       '--z-modal', '--z-auth-dialog', '--z-toast',
+      '--font-category', '--category-grid-max', '--category-grid-gap', '--category-card-ratio', '--category-card-radius',
+      '--category-copy-max', '--category-copy-min-height', '--category-count-size', '--category-title-size',
+      '--category-copy-line', '--category-copy-weight', '--category-image-rest-opacity', '--category-image-active-opacity',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 
@@ -57,5 +60,15 @@ describe('public design system', () => {
     expect(css).not.toMatch(/font-size:\s*var\(--space-/);
     expect(css).toContain('.auth-dialog-card h2 { font-size: var(--type-auth-title-mobile-size); }');
     expect(css).toMatch(/\.hero-content\s*\{[\s\S]*?z-index:\s*var\(--z-hero-content\)/);
+  });
+
+  it('defines the responsive category-card contract without Figma positioning', () => {
+    expect(css).toContain('font-family: "Arimo"');
+    expect(css).toContain('font-weight: 400 700');
+    expect(css).toMatch(/\.category-grid\s*\{[\s\S]*?width:\s*min\(100%, var\(--category-grid-max\)\)[\s\S]*?gap:\s*var\(--category-grid-gap\)/);
+    expect(css).toMatch(/\.category-card\s*\{[\s\S]*?aspect-ratio:\s*var\(--category-card-ratio\)[\s\S]*?border-radius:\s*var\(--category-card-radius\)/);
+    expect(css).toMatch(/\.category-copy-inner\s*\{[\s\S]*?filter:\s*var\(--category-copy-shadow\)/);
+    expect(css).toMatch(/@media \(hover: none\)[\s\S]*?category-card:not\(\.cover-playing\)/);
+    expect(css).not.toMatch(/\.category-copy(?:-inner)?\s*\{[^}]*\b(?:left|top):/);
   });
 });

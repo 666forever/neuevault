@@ -19,6 +19,7 @@ describe('public animated media rendering', () => {
     const first = categoryCard({ id: 'cat-001', slug: 'one', title: 'One', count: 0, description: '', image: '/one.jpg' });
     const fourth = categoryCard({ id: 'cat-004', slug: 'four', title: 'Four', count: 0, description: '', image: '/four.jpg', coverAnimated: '/four.gif' });
     expect(first).toContain('class="category-card"'); expect(fourth).toContain('class="category-card"');
+    expect(first).toContain('aria-label="One"'); expect(first).toContain('class="category-copy-inner"');
     expect(fourth).not.toContain('cat-004'); expect(fourth).not.toContain('style=');
   });
 

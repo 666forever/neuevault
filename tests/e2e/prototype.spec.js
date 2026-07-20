@@ -239,9 +239,27 @@ test('reduced motion keeps visible gallery GIFs static', async ({ page }, testIn
 test('category cards share base and hover visual treatment', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop'); await page.goto('/');
   const first = page.locator('a[href="/categories/ethereal"]'); const fourth = page.locator('a[href="/categories/matching"]');
-  const visual = card => card.evaluate(element => { const image = [...element.querySelectorAll('img')].find(node => Number(getComputedStyle(node).opacity) > 0); const style = getComputedStyle(image); return { opacity: style.opacity, filter: style.filter, border: getComputedStyle(element).borderColor, transform: style.transform }; });
-  expect(await visual(first)).toEqual(await visual(fourth));
-  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(700); const fourthHover = await visual(fourth);
-  expect(fourthHover.opacity).toBe(firstHover.opacity); expect(fourthHover.filter).toBe(firstHover.filter); expect(fourthHover.border).toBe(firstHover.border);
+  const visual = card => card.evaluate(element => { const style = getComputedStyle(element.querySelector('.cover-static')); return { opacity: style.opacity, filter: style.filter, border: getComputedStyle(element).borderColor, transform: style.transform, overlay: getComputedStyle(element, '::after').backgroundColor }; });
+  expect(await visual(first)).toEqual(await visual(fourth)); expect((await visual(first)).opacity).toBe('0');
+  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); expect(firstHover.opacity).toBe('1'); expect(firstHover.filter).toBe('none'); expect(firstHover.overlay).toBe('rgba(0, 0, 0, 0.08)');
+  await page.locator('.hero').hover(); await first.focus(); await page.waitForTimeout(450); expect((await visual(first)).opacity).toBe('1');
+  await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(700); const fourthHover = await fourth.locator('.cover-animated').evaluate(element => getComputedStyle(element).opacity);
+  expect(fourthHover).toBe('1');
   await expect(fourth.locator('.cover-animated')).toHaveAttribute('src', /nv-044\.gif$/);
+});
+
+test('category cards honor the Figma geometry and remain usable on touch', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: testInfo.project.name === 'desktop' ? 1920 : 320, height: 900 }); await page.goto('/');
+  const grid = page.locator('.category-grid'); const card = page.locator('a[href="/categories/ethereal"]'); const title = card.locator('h2'); const count = card.locator('small');
+  if (testInfo.project.name === 'desktop') {
+    const geometry = await grid.evaluate(element => { const card = element.querySelector('.category-card'); const gridStyle = getComputedStyle(element); const cardStyle = getComputedStyle(card); const rect = card.getBoundingClientRect(); return { gridWidth: element.getBoundingClientRect().width, columns: gridStyle.gridTemplateColumns.split(' ').length, gap: gridStyle.gap, cardWidth: rect.width, cardHeight: rect.height, radius: cardStyle.borderRadius }; });
+    expect(geometry).toEqual({ gridWidth: 1888, columns: 4, gap: '16px', cardWidth: 460, cardHeight: 478, radius: '20px' });
+    await expect(title).toHaveCSS('font-family', /Arimo/); await expect(title).toHaveCSS('font-size', '24px'); await expect(title).toHaveCSS('line-height', '29px');
+    await expect(count).toHaveCSS('font-family', /Arimo/); await expect(count).toHaveCSS('font-size', '12px'); await expect(count).toHaveCSS('line-height', '29px');
+    expect(await page.evaluate(() => document.fonts.check('621 24px Arimo'))).toBe(true);
+  } else {
+    await expect(card.locator('.cover-static')).toHaveCSS('opacity', '1');
+    expect(await title.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.parentElement.clientHeight)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });

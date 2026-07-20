@@ -102,6 +102,10 @@ Use a modifier or semantic parent rule for a genuine variant. Do not recreate th
 
 Category, collection, and asset cards share semantic surfaces, subtle borders, radius roles, overflow behavior, and motion tokens. Their media ratios and interaction treatments intentionally remain distinct. Modal and authentication panels use the same surface and border roles without being forced into gallery-card geometry.
 
+Homepage category cards use a dedicated responsive contract derived from the Figma composition: `--category-grid-max` is 1888px, the desktop gap is 16px, cards use the 460/478 ratio and a 20px radius, and the centered copy block is capped at 225px. Count and title copy use the locally served Arimo variable font at weight 621, with 12px and 24px sizes respectively and a shared 29px line height. The copy block owns the subtle drop shadow.
+
+On hover-capable devices, category media rests at zero opacity and reveals at full opacity on hover or keyboard focus, with original color and only an 8% readability veil. Non-hover devices keep the static preview visible so the cards do not depend on pointer hover. Public animated covers still load only during hover/focus, unload afterward, and stay static for reduced motion or restricted media. Figma absolute coordinates describe the reference frame only and must never be copied into responsive production components.
+
 ### Badges and pills
 
 `.badge`, `.format-badge`, `.lock`, `.tag`, `.filter`, `.user-menu`, and `.sign-out` use the shared pill radius and compact type roles. Preserve format/lock placement and access meaning.
