@@ -3,6 +3,7 @@ import { assetRoute } from '../routing/routes.js';
 import { escapeHtml, safeUrl, slugify } from '../utils/escape.js';
 import { bindImageErrors } from '../components/images.js';
 import { syncScrollLock } from './dialog.js';
+import { enhanceRollingControls } from '../components/rollingControls.js';
 
 export class AssetModal {
   constructor(element, repository, toast, auth) {
@@ -20,7 +21,7 @@ export class AssetModal {
     const collection = this.repository.getCollection(asset.collection);
     const restricted = isRestricted(asset);
     const source = safeUrl(getDisplaySource(asset));
-    this.element.innerHTML = `<div class="modal-shell"><div class="modal-preview"><img src="${escapeHtml(source)}" alt="${escapeHtml(asset.title)}" data-image-fallback><button class="modal-close" type="button" aria-label="Close viewer">×</button><button class="modal-nav prev" type="button" aria-label="Previous asset">←</button><button class="modal-nav next" type="button" aria-label="Next asset">→</button></div><aside class="modal-info"><p class="eyebrow">${restricted ? 'Restricted preview' : 'Public download'}</p><h2 id="modal-title">${escapeHtml(asset.title)}</h2><dl class="meta-list"><div class="meta-row"><dt>Category</dt><dd>${escapeHtml(asset.category)}</dd></div><div class="meta-row"><dt>Collection</dt><dd>${escapeHtml(collection?.title || 'Independent')}</dd></div><div class="meta-row"><dt>Dimensions</dt><dd>${Number(asset.width)} × ${Number(asset.height)}</dd></div><div class="meta-row"><dt>File</dt><dd>${escapeHtml(asset.fileType)} · ${escapeHtml(asset.fileSize)}</dd></div><div class="meta-row"><dt>Uploaded</dt><dd>${escapeHtml(new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(`${asset.uploadDate}T12:00:00`)))}</dd></div></dl><div class="modal-actions"><button class="button button-accent download-action" type="button">${restricted ? 'Restricted original' : '↓ Download original'}</button><button class="button button-dark share-action" type="button">↗ Copy link</button></div>${restricted ? '<p class="auth-note">The preview is public. The original is available only after server-side authentication and authorization.</p>' : ''}</aside></div>`;
+    this.element.innerHTML = `<div class="modal-shell"><div class="modal-preview"><img src="${escapeHtml(source)}" alt="${escapeHtml(asset.title)}" data-image-fallback><button class="modal-close" type="button" aria-label="Close viewer">×</button><button class="modal-nav prev" type="button" aria-label="Previous asset">←</button><button class="modal-nav next" type="button" aria-label="Next asset">→</button></div><aside class="modal-info" data-lenis-prevent><p class="eyebrow">${restricted ? 'Restricted preview' : 'Public download'}</p><h2 id="modal-title">${escapeHtml(asset.title)}</h2><dl class="meta-list"><div class="meta-row"><dt>Category</dt><dd>${escapeHtml(asset.category)}</dd></div><div class="meta-row"><dt>Collection</dt><dd>${escapeHtml(collection?.title || 'Independent')}</dd></div><div class="meta-row"><dt>Dimensions</dt><dd>${Number(asset.width)} × ${Number(asset.height)}</dd></div><div class="meta-row"><dt>File</dt><dd>${escapeHtml(asset.fileType)} · ${escapeHtml(asset.fileSize)}</dd></div><div class="meta-row"><dt>Uploaded</dt><dd>${escapeHtml(new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(`${asset.uploadDate}T12:00:00`)))}</dd></div></dl><div class="modal-actions"><button class="button button-accent download-action" type="button">${restricted ? 'Restricted original' : '↓ Download original'}</button><button class="button button-dark share-action" type="button">↗ Copy link</button></div>${restricted ? '<p class="auth-note">The preview is public. The original is available only after server-side authentication and authorization.</p>' : ''}</aside></div>`;
     this.element.hidden = false; syncScrollLock(this.element, this.authDialog?.element);
     bindImageErrors(this.element);
     this.element.querySelector('.modal-close').onclick = () => this.requestClose();
@@ -28,13 +29,17 @@ export class AssetModal {
     this.element.querySelector('.next').onclick = () => this.step(1);
     this.element.querySelector('.share-action').onclick = () => this.copyLink(asset);
     this.syncAuthState();
+    enhanceRollingControls(this.element);
     this.element.querySelector('.modal-close').focus();
   }
   syncAuthState() {
     const asset = this.items[this.index]; const downloadAction = this.element.querySelector('.download-action');
     if (!asset || !downloadAction) return;
     const restricted = isRestricted(asset);
-    if (restricted) downloadAction.textContent = this.auth.state.authenticated ? '↓ Download restricted original' : this.auth.state.configured ? 'Sign in to download' : 'Authentication unavailable';
+    if (restricted) {
+      const label = this.auth.state.authenticated ? '↓ Download restricted original' : this.auth.state.configured ? 'Sign in to download' : 'Authentication unavailable';
+      downloadAction.classList.remove('has-roll-animation'); downloadAction.textContent = label; downloadAction.setAttribute('aria-label', label); enhanceRollingControls(this.element);
+    }
     downloadAction.onclick = () => restricted ? (this.auth.state.authenticated ? this.downloadRestricted(asset) : this.authDialog.open(asset)) : this.download(asset);
   }
   step(delta) { this.index = (this.index + delta + this.items.length) % this.items.length; this.render(); this.routeHandlers.step?.(this.items[this.index]); }

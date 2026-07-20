@@ -159,6 +159,10 @@
   --duration-media: 500ms;
   --duration-cover: 600ms;
   --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-link-roll: 300ms;
+  --delay-hover-intent: 70ms;
+  --ease-link-roll: cubic-bezier(0.76, 0, 0.24, 1);
+  --roll-distance: 100%;
 
   --container-page: 2024px;
   --container-nav: 1536px;
@@ -311,6 +315,42 @@ button {
 .button-light { background: var(--gray-100); color: #050505; }
 .button-accent { background: var(--color-acid); color: #071000; }
 .button-dark { background: var(--bg-control-hover); border: var(--border-default); }
+
+.roll-text,
+.roll-icon {
+  position: relative;
+  display: inline-grid;
+  overflow: hidden;
+  line-height: inherit;
+  flex: 0 0 auto;
+}
+.roll-text-layer,
+.roll-icon-layer {
+  grid-area: 1 / 1;
+  display: block;
+  color: inherit;
+  transition: transform var(--duration-link-roll) var(--ease-link-roll);
+  transition-delay: 0ms;
+}
+.roll-text-layer { white-space: nowrap; }
+.roll-text-layer:first-child { transform: translateY(0); }
+.roll-text-layer:last-child { transform: translateY(var(--roll-distance)); }
+.roll-icon-layer {
+  display: inline-grid;
+  place-items: center;
+}
+.roll-icon-layer:first-child { transform: translateY(0); }
+.roll-icon-layer:last-child { transform: translateY(calc(0% - var(--roll-distance))); }
+.has-roll-animation:not(:disabled):hover :is(.roll-text-layer, .roll-icon-layer) {
+  transition-delay: var(--delay-hover-intent);
+}
+.has-roll-animation:not(:disabled):focus-visible :is(.roll-text-layer, .roll-icon-layer) {
+  transition-delay: 0ms;
+}
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:first-child { transform: translateY(calc(0% - var(--roll-distance))); }
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-text-layer:last-child { transform: translateY(0); }
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:first-child { transform: translateY(var(--roll-distance)); }
+.has-roll-animation:not(:disabled):is(:hover, :focus-visible) .roll-icon-layer:last-child { transform: translateY(0); }
 
 /* 8. Header and navigation */
 .site-header {
@@ -1297,6 +1337,10 @@ footer {
   .nav-actions .user-menu { display: none; }
 }
 @media (hover: none) {
+  .has-roll-animation .roll-text-layer:first-child,
+  .has-roll-animation .roll-icon-layer:first-child { transform: none; }
+  .has-roll-animation .roll-text-layer:last-child,
+  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none; }
   .category-card:not(.cover-playing) img.cover-static {
     opacity: var(--category-image-active-opacity);
   }
@@ -1311,6 +1355,10 @@ footer {
     transition: none !important;
   }
   .hero-video { animation: none !important; }
+  .has-roll-animation .roll-text-layer:first-child,
+  .has-roll-animation .roll-icon-layer:first-child { transform: none !important; }
+  .has-roll-animation .roll-text-layer:last-child,
+  .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; }
 }
 
 /* 19. Keyframes */

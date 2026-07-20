@@ -1,7 +1,11 @@
+import { setSmoothScrollLocked } from '../scroll/lenis.js';
+
 const selectors = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function syncScrollLock(...dialogs) {
-  document.body.classList.toggle('modal-open', dialogs.some(dialog => !dialog.hidden));
+  const locked = dialogs.some(dialog => !dialog.hidden);
+  document.body.classList.toggle('modal-open', locked);
+  setSmoothScrollLocked(locked);
 }
 
 export function trapDialogKey(event, dialog, onEscape) {

@@ -7,6 +7,8 @@ import { AuthDialog } from './src/overlays/AuthDialog.js';
 import { trapDialogKey } from './src/overlays/dialog.js';
 import { disposeAnimatedCovers } from './src/components/cards.js';
 import { AuthClient } from './src/auth/AuthClient.js';
+import { enhanceRollingControls } from './src/components/rollingControls.js';
+import { initSmoothScroll, scrollToPosition, scrollToTop } from './src/scroll/lenis.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
@@ -16,6 +18,8 @@ const menuToggle = document.querySelector('.menu-toggle');
 const mainNav = document.querySelector('.main-nav');
 const BASE_TITLE = 'Banners & Icons with intent';
 const allAssets = repository.getAssets();
+initSmoothScroll();
+enhanceRollingControls(document);
 
 const showToast = message => {
   toastElement.textContent = message; toastElement.classList.add('show');
@@ -56,7 +60,9 @@ function disposePage() {
 const pages = createPages(repository, app, (items, index, trigger) => {
   const asset = items[index]; if (!asset) return;
   const backgroundUrl = currentUrl();
-  history.pushState({ assetModal: true, backgroundUrl }, '', assetRoute(asset));
+  const scrollY = window.scrollY;
+  history.replaceState({ ...history.state, scrollY }, '');
+  history.pushState({ assetModal: true, backgroundUrl, scrollY }, '', assetRoute(asset));
   assetModal.open(items, index, trigger); updateRouteMetadata(parseRoute(location));
 });
 
@@ -105,7 +111,7 @@ function route({ scroll = true } = {}) {
     assetModal.close(); updateRouteMetadata(current); closeMenu(); return;
   }
   disposePage(); assetModal.close({ restoreFocus: false }); renderPage(current); app.dataset.route = currentUrl();
-  updateRouteMetadata(current); closeMenu(); if (scroll) window.scrollTo(0, 0);
+  updateRouteMetadata(current); closeMenu(); enhanceRollingControls(app); if (scroll) { scrollToTop(); requestAnimationFrame(scrollToTop); }
 }
 
 assetModal.setRouteHandlers({
@@ -116,7 +122,8 @@ assetModal.setRouteHandlers({
 function navigate(url, { replace = false } = {}) {
   const target = new URL(url, location.origin);
   if (target.origin !== location.origin) { location.assign(target.href); return; }
-  history[replace ? 'replaceState' : 'pushState']({}, '', `${target.pathname}${target.search}`); route();
+  if (!replace) history.replaceState({ ...history.state, scrollY: window.scrollY }, '');
+  history[replace ? 'replaceState' : 'pushState']({ scrollY: replace ? history.state?.scrollY || 0 : 0 }, '', `${target.pathname}${target.search}`); route();
 }
 
 document.addEventListener('click', event => {
@@ -124,6 +131,7 @@ document.addEventListener('click', event => {
   if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
   const target = new URL(link.href, location.href);
   if (target.origin !== location.origin || target.pathname.startsWith('/api/')) return;
+  if (target.pathname === location.pathname && target.search === location.search && target.hash) return;
   event.preventDefault(); navigate(target.href);
 });
 
@@ -136,12 +144,14 @@ function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
     const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in' : 'Sign in unavailable';
     const accessibleLabel = auth.state.configured && !auth.state.authenticated ? 'Sign in with Discord' : label;
-    button.replaceChildren();
+    button.classList.remove('has-roll-animation'); button.replaceChildren();
+    button.dataset.userIdentity = String(auth.state.authenticated);
     if (!auth.state.authenticated) { const icon = document.createElement('span'); icon.className = 'nav-control-icon discord-icon'; icon.setAttribute('aria-hidden', 'true'); button.append(icon); }
     const text = document.createElement('span'); text.textContent = label; button.append(text);
     button.setAttribute('aria-label', accessibleLabel); button.disabled = auth.state.loading;
     button.onclick = () => authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
   });
+  enhanceRollingControls(document);
 }
 auth.addEventListener('change', () => { renderAuthControls(); assetModal.syncAuthState(); }); renderAuthControls(); auth.load();
 
@@ -153,7 +163,10 @@ document.addEventListener('keydown', event => {
     if (event.key === 'ArrowRight') assetModal.step(1);
   }
 });
-window.addEventListener('popstate', () => route({ scroll: false }));
+window.addEventListener('popstate', event => {
+  route({ scroll: false });
+  requestAnimationFrame(() => scrollToPosition(event.state?.scrollY || 0));
+});
 
 const migrated = legacyHashPath(location.hash);
 if (migrated) history.replaceState({}, '', migrated);

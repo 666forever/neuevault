@@ -130,6 +130,18 @@ Navigation uses `--type-nav-*`, `--nav-gap`, semantic link colors, and a visible
 
 Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-frame-*`, `--hero-content-max`, `--tracking-hero-title`, and the hero content-gap tokens. Keep unique crop and overlay adjustments local rather than expanding this set mechanically.
 
+### Rolling control labels
+
+`.has-roll-animation` is the shared hover/focus treatment for primary navigation, Sign in, Collections, the hero CTA, and equivalent text actions such as load-more and modal action buttons. `.roll-text` clips two identical visual layers: the readable first layer moves upward and the duplicate `aria-hidden` layer enters from below. Paired masked icons use `.roll-icon` and move downward over the same 300ms duration and `cubic-bezier(.76,0,.24,1)` easing.
+
+Pointer entry waits 70ms to avoid fly-over activation; pointer exit and keyboard focus have no delay. Active navigation color and underline remain on the link itself. Touch and reduced-motion environments show only the normal layer, so a first tap always activates the control. Never apply the primitive to headings, copy, labels, category titles, metadata, form fields, identity text, disabled controls, or icon-only controls.
+
+### Smooth scrolling
+
+The public application owns one Lenis instance in `src/scroll/lenis.js`, initialized once from `app.js` with `autoRaf`, anchors, and navigation inertia stopping enabled. Reduced-motion visitors and initialization failures retain native scrolling. Normal route navigation uses an immediate Lenis-aware top reset; each History API entry records its native scroll position so Back/Forward and asset-modal history restore the underlying page position explicitly.
+
+Dialog scroll locking pauses Lenis through the shared modal lifecycle. `.modal-info` and the authentication card use `data-lenis-prevent`, keeping nested panel scrolling native while the background remains locked. Do not initialize Lenis in the Content Tool or create route-specific instances or animation-frame loops.
+
 ## Responsive and reduced motion
 
 The desktop navigation collapses below 1200px. Shared card radius changes below 700px, the gallery becomes two columns, modal layout stacks, and controls remain reachable. New work must be checked at 320, 375, 768, 1024, 1199, 1200, 1439, 1440, and 1920px.

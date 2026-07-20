@@ -6,6 +6,8 @@ Neuevault is a Vite application using native JavaScript modules. Pages never imp
 
 Public UI styling follows the token hierarchy and component rules in [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md). New interface work must reuse an existing token and primitive before introducing a new value.
 
+Public smooth scrolling is centralized in `src/scroll/lenis.js` and initialized once from `app.js`; the Content Tool does not load it. Normal route navigation keeps the existing immediate top-reset policy, while Back/Forward and modal URL changes preserve the underlying scroll position. The shared dialog lifecycle pauses and resumes Lenis, and scrollable modal panels carry `data-lenis-prevent` so their native scrolling remains independent of the locked page.
+
 The archive has three ownership layers:
 
 ```text

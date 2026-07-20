@@ -57,7 +57,7 @@ test('signed-out copy stays compact while the Discord OAuth action remains expli
   await page.goto('/');
   if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible');
-  await expect(signIn).toHaveText('Sign in');
+  await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Sign in');
   await expect(signIn).toHaveAttribute('aria-label', 'Sign in with Discord');
   await signIn.click();
   const oauthRequest = page.waitForRequest(request => new URL(request.url()).pathname === '/api/auth/discord');
@@ -103,6 +103,59 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
   }
 });
 
+test('rolling controls preserve geometry, accessible names, and opposite icon motion', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.goto('/');
+  const nav = page.locator('.main-nav > a').first(); const signIn = page.locator('.sign-in'); const collections = page.locator('.nav-actions .collections-button'); const hero = page.locator('.hero-cta');
+  for (const control of [nav, signIn, collections, hero]) {
+    await expect(control).toHaveClass(/has-roll-animation/);
+    await expect(control.locator('.roll-text-layer')).toHaveCount(2);
+    await expect(control.locator('.roll-text-layer').last()).toHaveAttribute('aria-hidden', 'true');
+  }
+  await expect(page.getByRole('button', { name: 'Sign in with Discord', exact: true })).toHaveCount(1);
+  await expect(nav.locator('.roll-icon-layer')).toHaveCount(0);
+  await expect(signIn.locator('.roll-icon-layer')).toHaveCount(2);
+  const before = await collections.boundingBox();
+  await collections.hover();
+  await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0.07s');
+  await page.waitForTimeout(380);
+  const motion = await collections.evaluate(element => ({ text: getComputedStyle(element.querySelector('.roll-text-layer')).transform, icon: getComputedStyle(element.querySelector('.roll-icon-layer')).transform }));
+  expect(motion.text).not.toBe('none'); expect(motion.icon).not.toBe('none');
+  const after = await collections.boundingBox(); expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
+  await page.locator('.hero').hover();
+  await expect(collections.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
+  await nav.focus(); await expect(nav.locator('.roll-text-layer').first()).toHaveCSS('transition-delay', '0s');
+});
+
+test('rolling controls and Lenis remain enhancement-only for touch and reduced motion', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/');
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  const hero = page.locator('.hero-cta');
+  await expect(hero.locator('.roll-text-layer').last()).toHaveCSS('visibility', 'hidden');
+  if (testInfo.project.name === 'mobile') {
+    await hero.tap(); await expect(page).toHaveURL(/\/recent$/);
+  }
+});
+
+test('Lenis pauses for dialogs while modal panels retain native scrolling', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop'); await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(200);
+  const originalScroll = await page.evaluate(() => scrollY); expect(originalScroll).toBeGreaterThan(0);
+  await page.locator('.main-nav a[href="/about"]').evaluate(element => element.click()); await expect(page).toHaveURL(/\/about$/); await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.goBack(); await expect(page).toHaveURL(/\/$/); await page.waitForTimeout(300); expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+  await page.locator('.asset-card').first().click();
+  const modalScroll = await page.evaluate(() => scrollY);
+  await expect(page.locator('body')).toHaveClass(/modal-open/);
+  await expect(page.locator('html')).toHaveClass(/lenis-stopped/);
+  await expect(page.locator('.modal-info')).toHaveAttribute('data-lenis-prevent', '');
+  await page.locator('.modal-close').click();
+  await expect(page.locator('body')).not.toHaveClass(/modal-open/);
+  await expect(page.locator('html')).not.toHaveClass(/lenis-stopped/);
+  expect(await page.evaluate(() => scrollY)).toBe(modalScroll);
+});
+
 test('modal keyboard steps and restores the opening card focus', async ({ page }) => {
   await page.goto('/'); const first = page.locator('.asset-card').first(); await first.focus(); await first.click();
   await expect(page).toHaveURL(/\/asset\/nv-\d+\//);
@@ -143,7 +196,7 @@ test('authenticated session is reflected and logout is CSRF-protected', async ({
   if ((page.viewportSize()?.width || 1000) < 700) await page.locator('.menu-toggle').click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible'); await expect(signIn).toHaveText('Vault Member');
   await signIn.click(); await expect(page.locator('#auth-title')).toHaveText('Signed in');
-  await page.locator('.auth-logout').click(); await expect(signIn).toHaveText('Sign in');
+  await page.locator('.auth-logout').click(); await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Sign in');
 });
 
 test('a directly linked restricted panel refreshes after session discovery', async ({ page }) => {
@@ -152,7 +205,7 @@ test('a directly linked restricted panel refreshes after session discovery', asy
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ configured: true, authenticated: true, user: { id: 'discord-1', displayName: 'Vault Member', avatarUrl: null }, csrfToken: 'csrf-test' }) });
   });
   await page.goto('/asset/nv-166/restricted-test');
-  await expect(page.locator('.download-action')).toHaveText('↓ Download restricted original');
+  await expect(page.locator('.download-action .roll-text-layer').first()).toHaveText('↓ Download restricted original');
 });
 
 test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
