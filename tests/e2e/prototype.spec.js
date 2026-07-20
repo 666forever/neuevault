@@ -16,17 +16,25 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(logo).toBeVisible();
   await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
   await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '/collections');
-  await expect(page.getByRole('link', { name: 'Browse', exact: true })).toHaveAttribute('href', '/recent');
+  const eyebrow = page.locator('.hero-eyebrow');
+  await expect(eyebrow).toHaveText('Meet pfseeker 2.0');
+  await expect(eyebrow).toHaveCSS('font-family', /Archivo/);
+  expect(await eyebrow.evaluate(element => ({ tag: element.tagName, tabindex: element.getAttribute('tabindex') }))).toEqual({ tag: 'P', tabindex: null });
+  await expect(page.locator('.hero h1')).toHaveText('Discover the Best Banners on the internet. Literally.');
+  await expect(page.locator('.hero h1')).toHaveCSS('font-family', /Arimo/);
+  await expect(page.getByRole('link', { name: 'Get Full Access', exact: true })).toHaveAttribute('href', '/recent');
   const description = page.locator('.hero-description');
-  expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Neuevault® is a growing collection built from user selections. Discover & Save alt and niche styles, No fillers.');
-  if (test.info().project.name === 'desktop') expect(await description.innerText()).toBe('Neuevault® is a growing collection built from user selections.\nDiscover & Save alt and niche styles,\nNo fillers.');
+  expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Stop digging through endless pages of repeats, trend-chasing, or whatever everyone else is already using. Browse alt, emo, dark, soft, strange, cute, messy, and the spaces where they cross. Let different aesthetics coexist. Identity forms in the borderland.');
+  await expect(description).toHaveCSS('font-family', /Arimo/);
   const video = page.locator('.hero-video');
   await expect(video).toHaveCount(1);
   expect(await video.evaluate(element => ({ autoplay: element.autoplay, muted: element.muted, loop: element.loop, playsInline: element.playsInline, preload: element.preload }))).toEqual({ autoplay: true, muted: true, loop: true, playsInline: true, preload: 'metadata' });
   await expect(video).toHaveAttribute('src', /furina-hero-1080p\.mp4$/);
   const grain = page.locator('.hero-grain');
   await expect(grain).toHaveCSS('pointer-events', 'none');
-  await expect(grain).toHaveCSS('background-image', /hero-grain-1000px\.png/);
+  await expect(grain).toHaveCSS('background-image', /hero_grain\.png/);
+  await expect(grain).toHaveCSS('background-repeat', 'no-repeat');
+  await expect(page.locator('.hero-gradient')).toHaveCSS('background-image', /linear-gradient/);
   await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
   await page.goto('/recent');
   await expect(page.locator('.hero-video')).toHaveCount(0);
@@ -75,8 +83,9 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     await expect(page.locator('.brand-wordmark')).toBeVisible();
     await expect(page.locator('.hero h1')).toBeVisible();
     if (width >= 1200) {
-      await expect(page.locator('.hero h1')).toHaveCSS('max-width', '560px');
-      expect(Math.round((await page.locator('.hero h1').boundingBox()).height)).toBe(96);
+      await expect(page.locator('.hero h1')).toHaveCSS('max-width', '658px');
+      await expect(page.locator('.hero-cta')).toHaveCSS('width', '164px');
+      await expect(page.locator('.hero-cta')).toHaveCSS('height', '47px');
     }
     const heroBox = await page.locator('.hero').boundingBox();
     const titleBox = await page.locator('.hero h1').boundingBox();

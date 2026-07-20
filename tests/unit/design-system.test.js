@@ -16,6 +16,8 @@ describe('public design system', () => {
       '--container-page', '--page-gutter', '--section-space', '--brand-gap', '--nav-actions-gap', '--hero-content-max',
       '--tracking-hero-title', '--hero-title-copy-gap', '--type-auth-title-mobile-size', '--z-header', '--z-hero-content',
       '--z-modal', '--z-auth-dialog', '--z-toast',
+      '--font-hero-eyebrow', '--hero-frame-max', '--hero-frame-ratio', '--hero-frame-max-height', '--hero-eyebrow-height',
+      '--hero-eyebrow-title-gap', '--hero-copy-cta-gap', '--hero-cta-width', '--hero-cta-height', '--hero-cta-radius',
       '--font-category', '--category-grid-max', '--category-grid-gap', '--category-card-ratio', '--category-card-radius',
       '--category-copy-max', '--category-copy-min-height', '--category-count-size', '--category-title-size',
       '--category-copy-line', '--category-copy-weight', '--category-image-rest-opacity', '--category-image-active-opacity',
@@ -70,5 +72,15 @@ describe('public design system', () => {
     expect(css).toMatch(/\.category-copy-inner\s*\{[\s\S]*?filter:\s*var\(--category-copy-shadow\)/);
     expect(css).toMatch(/@media \(hover: none\)[\s\S]*?category-card:not\(\.cover-playing\)/);
     expect(css).not.toMatch(/\.category-copy(?:-inner)?\s*\{[^}]*\b(?:left|top):/);
+  });
+
+  it('defines the revised responsive hero without the obsolete vignette or tiled grain', () => {
+    expect(css).toContain('font-family: "Archivo"');
+    expect(css).toContain('font-stretch: 62% 125%');
+    expect(css).toMatch(/\.hero\s*\{[\s\S]*?aspect-ratio:\s*var\(--hero-frame-ratio\)[\s\S]*?max-height:\s*var\(--hero-frame-max-height\)[\s\S]*?background:\s*var\(--bg-surface\)/);
+    expect(css).toContain('linear-gradient(180deg, rgba(255, 255, 255, 0) -35.43%, rgba(0, 0, 0, 0.33) 36.66%)');
+    expect(css).not.toContain('radial-gradient(177.97% 93.94%');
+    expect(css).toContain('url("/assets/textures/hero_grain.png") center / 100% 100% no-repeat');
+    expect(css).not.toContain('url("/assets/textures/hero-grain-1000px.png")');
   });
 });

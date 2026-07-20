@@ -10,7 +10,8 @@ const permanentAssets = [
   'public/assets/icons/bolt.svg',
   'public/assets/video/furina-hero-1080p.mp4',
   'public/assets/video/furina-hero-1440p.mp4',
-  'public/assets/textures/hero-grain-1000px.png',
+  'public/assets/textures/hero_grain.png',
+  'public/fonts/Archivo-VariableFont_wdth,wght.woff2',
   'public/fonts/tbj-neuetra-vf.woff2',
   'public/assets/brand/favicon.ico',
   'public/assets/brand/favicon-16x16.png',
@@ -30,6 +31,8 @@ describe('homepage presentation assets', () => {
     expect(sources.join('\n')).not.toContain('temp/');
     expect(sources.join('\n')).toContain('/fonts/tbj-neuetra-vf.woff2');
     expect(sources.join('\n')).toContain('/assets/brand/logo28x28.svg');
+    expect(sources.join('\n')).toContain('/assets/textures/hero_grain.png');
+    expect(sources.join('\n')).not.toContain('/assets/textures/hero-grain-1000px.png');
   });
 
   it('uses clean navigation, real shared branding, favicons, and requested UI values', async () => {

@@ -30,6 +30,8 @@ Media darkness, hero gradients, cover grayscale, and readability overlays remain
 
 - UI: `--font-ui` (`Inter`)
 - Brand: `--font-brand` (`TBJ Neuetra`)
+- Category and hero copy: `--font-category` (local Arimo variable font, 400–700)
+- Hero eyebrow: `--font-hero-eyebrow` (local Archivo variable font, 100–900 with 62–125% width)
 - Scale: `--text-xs` through `--text-hero`
 - Weights: regular, medium, semibold, bold, and heavy
 - Semantic roles: body, nav, button, caption, card title, modal/auth title, and hero title/copy
@@ -89,7 +91,7 @@ Media overlays use the low `--z-content-overlay` and `--z-control-overlay` roles
 <button class="button button-light">Sign in</button>
 <a class="button button-accent">Collections</a>
 <button class="button button-dark">Secondary action</button>
-<a class="button hero-cta">Browse</a>
+<a class="button hero-cta">Get Full Access</a>
 ```
 
 Use a modifier or semantic parent rule for a genuine variant. Do not recreate the button foundation on a feature class.
@@ -106,6 +108,14 @@ Homepage category cards use a dedicated responsive contract derived from the Fig
 
 On hover-capable devices, category media rests at zero opacity and reveals at full opacity on hover or keyboard focus, with original color and only an 8% readability veil. Non-hover devices keep the static preview visible so the cards do not depend on pointer hover. Public animated covers still load only during hover/focus, unload afterward, and stay static for reduced motion or restricted media. Figma absolute coordinates describe the reference frame only and must never be copied into responsive production components.
 
+### Homepage hero
+
+The homepage hero uses a responsive `1890 / 887` frame capped at 1890px wide and 887px high, with the existing 560px minimum height on non-mobile layouts and the established 540px mobile height. Its content flows naturally inside a centered 658px column; Figma's fixed internal coordinates are reference measurements, not production positioning.
+
+The visual stack is content, the single non-repeating `1890 × 887` authored grain, the Figma linear gradient, video, and the `--bg-surface` fallback. Grain uses `/assets/textures/hero_grain.png` at `100% 100%` and full authored opacity. The gradient is the sole hero shade layer; do not restore the previous radial vignette.
+
+The eyebrow uses Archivo at 12px/500 inside a 28px-high non-interactive pill. The title, description, and CTA use Arimo. Desktop title typography is 46/48px at weight 700; description typography is 13/14px at weight 500. The CTA remains a shared `.button` variant with a 164×47px contract and preserves its `/recent` destination.
+
 ### Badges and pills
 
 `.badge`, `.format-badge`, `.lock`, `.tag`, `.filter`, `.user-menu`, and `.sign-out` use the shared pill radius and compact type roles. Preserve format/lock placement and access meaning.
@@ -118,7 +128,7 @@ The asset and authentication overlays use separate layer tokens and layouts. Ass
 
 Navigation uses `--type-nav-*`, `--nav-gap`, semantic link colors, and a visible underline plus color for the active route. The intermediate desktop gap uses `--nav-gap-compact`; mobile menu spacing remains inside the shared breakpoint.
 
-Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-content-max`, `--tracking-hero-title`, and `--hero-title-copy-gap`. Keep unique crop, overlay, and optical adjustments local rather than expanding this set mechanically.
+Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-frame-*`, `--hero-content-max`, `--tracking-hero-title`, and the hero content-gap tokens. Keep unique crop and overlay adjustments local rather than expanding this set mechanically.
 
 ## Responsive and reduced motion
 
