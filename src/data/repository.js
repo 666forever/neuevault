@@ -1,11 +1,13 @@
 import generatedAssets from '../generated/assets.json';
 import generatedCollections from '../generated/collections.json';
 import generatedCategories from '../generated/categories.json';
-import { validateGeneratedData } from './schema.js';
 import { StaticAssetRepository } from './AssetRepository.js';
 import { animatedCoverUrl } from './mediaUrls.js';
 
-const generated = validateGeneratedData({ assets: generatedAssets, collections: generatedCollections, categories: generatedCategories });
+const generated = { assets: generatedAssets, collections: generatedCollections, categories: generatedCategories };
+if (import.meta.env.DEV) {
+  import('./schema.js').then(({ validateGeneratedData }) => validateGeneratedData(generated));
+}
 const formatBytes = bytes => bytes < 1_000_000 ? `${Math.max(1, Math.round(bytes / 1000))} KB` : `${(bytes / 1_000_000).toFixed(1)} MB`;
 
 const assets = generated.assets.map(asset => ({

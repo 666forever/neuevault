@@ -2,13 +2,12 @@ import { repository } from './src/data/repository.js';
 import { disposeAssetGrids } from './src/components/AssetGrid.js';
 import { createPages } from './src/pages/pages.js';
 import { activeNavigation, assetRoute, legacyHashPath, parseRoute } from './src/routing/routes.js';
-import { AssetModal } from './src/overlays/AssetModal.js';
-import { AuthDialog } from './src/overlays/AuthDialog.js';
 import { trapDialogKey } from './src/overlays/dialog.js';
 import { disposeAnimatedCovers } from './src/components/cards.js';
 import { AuthClient } from './src/auth/AuthClient.js';
 import { enhanceRollingControls } from './src/components/rollingControls.js';
 import { initSmoothScroll, scrollToPosition, scrollToTop } from './src/scroll/lenis.js';
+import { loadLazyModule } from './src/utils/lazy.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
@@ -27,10 +26,35 @@ const showToast = message => {
 };
 
 const auth = new AuthClient();
-const assetModal = new AssetModal(modalElement, repository, showToast, auth);
-const authDialog = new AuthDialog(authElement, assetModal, auth, showToast);
-assetModal.setAuthDialog(authDialog);
+let assetModal = null;
+let authDialog = null;
+let overlayPromise = null;
 let pageCleanup = null;
+let routeSequence = 0;
+
+function loadOverlays() {
+  if (!overlayPromise) {
+    overlayPromise = loadLazyModule(() => Promise.all([
+      import('./src/overlays/AssetModal.js'),
+      import('./src/overlays/AuthDialog.js'),
+    ])).then(([{ AssetModal }, { AuthDialog }]) => {
+      assetModal = new AssetModal(modalElement, repository, showToast, auth);
+      authDialog = new AuthDialog(authElement, assetModal, auth, showToast);
+      assetModal.setAuthDialog(authDialog);
+      assetModal.setRouteHandlers({
+        close: () => history.state?.assetModal ? history.back() : navigate(cleanBackground(history.state?.backgroundUrl) || '/recent', { replace: true }),
+        step: asset => { history.replaceState({ ...history.state, assetModal: true }, '', assetRoute(asset)); updateRouteMetadata(parseRoute(location), parseRoute(history.state?.backgroundUrl || defaultAssetContext(asset)), asset); },
+      });
+      return { assetModal, authDialog };
+    }).catch(error => {
+      overlayPromise = null;
+      showToast('This feature could not be loaded. Please try again.');
+      console.error('Feature chunk failed to load.', error);
+      throw error;
+    });
+  }
+  return overlayPromise;
+}
 
 function closeMenu() {
   mainNav.classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Open navigation menu');
@@ -57,23 +81,38 @@ function disposePage() {
   pageCleanup?.(); pageCleanup = null; disposeAssetGrids(app); disposeAnimatedCovers(app);
 }
 
-const pages = createPages(repository, app, (items, index, trigger) => {
+function renderRouteLoadError() {
+  app.innerHTML = '<div class="page"><div class="empty-state"><h1>This page could not be loaded.</h1><p>Check your connection and try again.</p><button class="button button-dark" type="button" data-route-retry>Retry</button></div></div>';
+  app.querySelector('[data-route-retry]').onclick = () => route({ scroll: false });
+  enhanceRollingControls(app);
+}
+
+function showRouteLoading(route) {
+  if (!['search', 'type'].includes(route.name)) return;
+  app.setAttribute('aria-busy', 'true');
+  app.innerHTML = '<div class="page"><div class="route-loading" role="status" aria-live="polite">Loading archive tools…</div></div>';
+}
+
+const pages = createPages(repository, app, async (items, index, trigger) => {
   const asset = items[index]; if (!asset) return;
   const backgroundUrl = currentUrl();
+  const sequence = routeSequence;
+  const overlays = await loadOverlays().catch(() => null); if (!overlays) return;
+  if (sequence !== routeSequence || currentUrl() !== backgroundUrl) return;
   const scrollY = window.scrollY;
   history.replaceState({ ...history.state, scrollY }, '');
   history.pushState({ assetModal: true, backgroundUrl, scrollY }, '', assetRoute(asset));
-  assetModal.open(items, index, trigger); updateRouteMetadata(parseRoute(location));
+  overlays.assetModal.open(items, index, trigger); updateRouteMetadata(parseRoute(location));
 });
 
-function renderPage(route) {
+async function renderPage(route, sequence = routeSequence) {
   if (route.name === 'home') pageCleanup = pages.home();
   else if (route.name === 'collections') pages.collectionsPage();
   else if (route.name === 'collection') pages.collectionPage(route.params.slug);
   else if (route.name === 'category') pages.categoryPage(route.params.slug);
   else if (route.name === 'recent') pages.recentPage();
-  else if (route.name === 'type') pageCleanup = pages.typePage(route.params.type);
-  else if (route.name === 'search') pageCleanup = pages.searchPage(route.query);
+  else if (route.name === 'type') pageCleanup = await pages.typePage(route.params.type, () => sequence === routeSequence);
+  else if (route.name === 'search') pageCleanup = await pages.searchPage(route.query, () => sequence === routeSequence);
   else if (route.name === 'about') pages.aboutPage();
   else pages.notFound();
 }
@@ -90,34 +129,38 @@ function updateRouteMetadata(route, backgroundRoute = null, asset = null) {
   if (canonical) canonical.href = `https://www.pfseeker.com${location.pathname}`;
 }
 
-function route({ scroll = true } = {}) {
+async function route({ scroll = true } = {}) {
+  const sequence = ++routeSequence;
   const current = parseRoute(location);
-  authDialog.close();
+  authDialog?.close();
   if (current.name === 'asset') {
     const asset = repository.getAsset(current.params.id);
-    if (!asset) { disposePage(); assetModal.close({ restoreFocus: false }); pages.notFound(); updateRouteMetadata(current); return; }
+    if (!asset) { disposePage(); assetModal?.close({ restoreFocus: false }); pages.notFound(); updateRouteMetadata(current); return; }
     const canonicalAssetPath = assetRoute(asset);
     if (location.pathname !== canonicalAssetPath) history.replaceState(history.state, '', canonicalAssetPath);
     const backgroundUrl = cleanBackground(history.state?.backgroundUrl) || defaultAssetContext(asset);
     const backgroundRoute = parseRoute(backgroundUrl);
     if (app.dataset.route !== backgroundUrl) {
-      disposePage(); renderPage(backgroundRoute); app.dataset.route = backgroundUrl;
+      disposePage(); showRouteLoading(backgroundRoute);
+      try { await renderPage(backgroundRoute, sequence); } catch (error) { if (sequence === routeSequence) renderRouteLoadError(); console.error('Route chunk failed to load.', error); return; }
+      finally { app.removeAttribute('aria-busy'); }
+      if (sequence !== routeSequence) return; app.dataset.route = backgroundUrl;
     }
     const items = itemsForContext(backgroundUrl); const index = items.findIndex(item => item.id === asset.id);
-    assetModal.open(index >= 0 ? items : allAssets, index >= 0 ? index : allAssets.findIndex(item => item.id === asset.id), null);
+    const overlays = await loadOverlays().catch(() => null); if (!overlays) return;
+    if (sequence !== routeSequence || parseRoute(location).name !== 'asset') return;
+    overlays.assetModal.open(index >= 0 ? items : allAssets, index >= 0 ? index : allAssets.findIndex(item => item.id === asset.id), null);
     updateRouteMetadata(current, backgroundRoute, asset); closeMenu(); return;
   }
   if (app.dataset.route === currentUrl() && !modalElement.hidden) {
-    assetModal.close(); updateRouteMetadata(current); closeMenu(); return;
+    assetModal?.close(); updateRouteMetadata(current); closeMenu(); return;
   }
-  disposePage(); assetModal.close({ restoreFocus: false }); renderPage(current); app.dataset.route = currentUrl();
+  disposePage(); assetModal?.close({ restoreFocus: false }); showRouteLoading(current);
+  try { await renderPage(current, sequence); } catch (error) { if (sequence === routeSequence) renderRouteLoadError(); console.error('Route chunk failed to load.', error); return; }
+  finally { app.removeAttribute('aria-busy'); }
+  if (sequence !== routeSequence) return; app.dataset.route = currentUrl();
   updateRouteMetadata(current); closeMenu(); enhanceRollingControls(app); if (scroll) { scrollToTop(); requestAnimationFrame(scrollToTop); }
 }
-
-assetModal.setRouteHandlers({
-  close: () => history.state?.assetModal ? history.back() : navigate(cleanBackground(history.state?.backgroundUrl) || '/recent', { replace: true }),
-  step: asset => { history.replaceState({ ...history.state, assetModal: true }, '', assetRoute(asset)); updateRouteMetadata(parseRoute(location), parseRoute(history.state?.backgroundUrl || defaultAssetContext(asset)), asset); },
-});
 
 function navigate(url, { replace = false } = {}) {
   const target = new URL(url, location.origin);
@@ -149,18 +192,23 @@ function renderAuthControls() {
     if (!auth.state.authenticated) { const icon = document.createElement('span'); icon.className = 'nav-control-icon discord-icon'; icon.setAttribute('aria-hidden', 'true'); button.append(icon); }
     const text = document.createElement('span'); text.textContent = label; button.append(text);
     button.setAttribute('aria-label', accessibleLabel); button.disabled = auth.state.loading;
-    button.onclick = () => authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
+    button.onclick = async () => {
+      button.disabled = true;
+      const overlays = await loadOverlays().catch(() => null);
+      button.disabled = auth.state.loading;
+      overlays?.authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
+    };
   });
   enhanceRollingControls(document);
 }
-auth.addEventListener('change', () => { renderAuthControls(); assetModal.syncAuthState(); }); renderAuthControls(); auth.load();
+auth.addEventListener('change', () => { renderAuthControls(); assetModal?.syncAuthState(); }); renderAuthControls(); auth.load();
 
 document.addEventListener('keydown', event => {
-  if (!authElement.hidden) { trapDialogKey(event, authElement, () => authDialog.close()); return; }
+  if (!authElement.hidden) { trapDialogKey(event, authElement, () => authDialog?.close()); return; }
   if (!modalElement.hidden) {
-    if (trapDialogKey(event, modalElement, () => assetModal.requestClose())) return;
-    if (event.key === 'ArrowLeft') assetModal.step(-1);
-    if (event.key === 'ArrowRight') assetModal.step(1);
+    if (trapDialogKey(event, modalElement, () => assetModal?.requestClose())) return;
+    if (event.key === 'ArrowLeft') assetModal?.step(-1);
+    if (event.key === 'ArrowRight') assetModal?.step(1);
   }
 });
 window.addEventListener('popstate', event => {

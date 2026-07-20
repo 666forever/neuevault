@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.bundle-analysis/
 test-results/
 playwright-report/
 .vite-browser.*.log

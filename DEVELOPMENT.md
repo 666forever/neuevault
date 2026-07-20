@@ -8,6 +8,8 @@ Public UI styling follows the token hierarchy and component rules in [DESIGN_SYS
 
 Public smooth scrolling is centralized in `src/scroll/lenis.js` and initialized once from `app.js`; the Content Tool does not load it. Normal route navigation keeps the existing immediate top-reset policy, while Back/Forward and modal URL changes preserve the underlying scroll position. The shared dialog lifecycle pauses and resumes Lenis, and scrollable modal panels carry `data-lenis-prevent` so their native scrolling remains independent of the locked page.
 
+Production keeps the homepage shell, repository, shared cards/grid, router, authentication session client, and Lenis in the entry module. Search/type rendering and the asset/authentication overlays are dynamic feature boundaries. Navigation uses a monotonic route sequence so a slower lazy import cannot overwrite a newer route. A failed hashed chunk triggers at most one same-URL reload through `src/utils/lazy.js`; a second failure renders a retryable in-page error instead of leaving a blank route. Search/type routes show a restrained `aria-live` loading state while their first chunk resolves. No route chunk is speculatively prefetched: uncommon code loads only after explicit navigation or interaction, avoiding competition with the hero and archive media.
+
 The archive has three ownership layers:
 
 ```text
@@ -131,6 +133,10 @@ Collection and category card copy is composed at render time as `count + authore
 - `npm test` — run unit tests
 - `npm run test:e2e` — run desktop and mobile Playwright tests
 - `npm run build` — create the production bundle
+- `ANALYZE=true npm run build` — generate an ignored `.bundle-analysis/stats.json` Rollup composition report with raw, gzip, and Brotli module sizes (PowerShell: `$env:ANALYZE='true'; npm run build`)
+- `npm run audit:bundle` — check the built entry, total gzip, and largest lazy chunk against the documented performance budget
+
+The bundle audit requires a current `dist`, so run `npm run build` first. Inspect emitted files under `dist/assets` and use the ignored visualizer report to find actual contributors before adding a split. Current budgets live in `scripts/audit-bundle.mjs` and include tolerance above the measured architecture; update them only after an intentional, measured architecture change. Do not raise Vite’s chunk warning limit to hide avoidable growth, and do not create tiny arbitrary chunks merely to satisfy the budget.
 
 Common failures name the affected file or record: unsupported extension, missing source, orphan source, duplicate ID/slug/path, unknown collection, or missing collection/category cover.
 

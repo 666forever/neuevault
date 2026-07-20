@@ -1,9 +1,10 @@
 import { renderAssetGrid, disposeAssetGrids, mountAssetGrids } from '../components/AssetGrid.js';
 import { bindAnimatedCovers, categoryCard, collectionCard } from '../components/cards.js';
 import { bindImageErrors } from '../components/images.js';
-import { debounce, escapeHtml, safeUrl } from '../utils/escape.js';
-import { filterAssets, sortAssets } from '../utils/filter.js';
+import { escapeHtml, safeUrl } from '../utils/escape.js';
+import { sortAssets } from '../utils/filter.js';
 import { countDescription } from '../utils/content.js';
+import { loadLazyModule } from '../utils/lazy.js';
 
 export function mountHeroVideo(root) {
   const video = root.querySelector('.hero-video');
@@ -71,23 +72,13 @@ export function createPages(repository, app, openAsset) {
   function recentPage() {
     app.innerHTML = `<div class="page"><div class="page-title"><p class="eyebrow">Fresh from the vault</p><h1>Recently Added</h1><p>New icons, banners, animations, and wallpapers—ordered by upload date.</p></div>${renderAssetGrid(sortAssets(assets))}</div>`; mount();
   }
-  function searchPage(params) {
-    const initialQuery = params.get('q') || ''; const initialType = params.get('type') || 'All'; const tag = params.get('tag') || ''; const category = params.get('category') || '';
-    app.innerHTML = `<div class="page"><div class="page-title"><p class="eyebrow">Find an image</p><h1>Search the vault</h1><p>Search titles, tags, categories, and collections.</p></div><section class="search-panel"><div class="search-row"><input class="search-input" id="search-input" type="search" value="${escapeHtml(initialQuery)}" placeholder="Try “gothic”, “banner”, or “night”…" aria-label="Search assets"><select class="select" id="access-filter" aria-label="Filter by access"><option value="all">All access</option><option value="public">Public</option><option value="restricted">Restricted originals</option></select></div><div class="filter-list" aria-label="Asset type filters">${['All', 'Icons', 'Banners', 'Animated', 'Wallpapers', 'Portrait', 'Landscape'].map(filter => `<button class="filter ${filter === initialType ? 'active' : ''}" data-filter="${filter}" type="button">${filter}</button>`).join('')}</div></section><div class="section-head"><div><h2 id="results-title">${tag ? `Tag: ${escapeHtml(tag)}` : category ? `Category: ${escapeHtml(category)}` : 'All assets'}</h2><p id="results-count"></p></div></div><div id="search-results"></div></div>`;
-    let current = initialType; const results = app.querySelector('#search-results');
-    const render = () => {
-      disposeAssetGrids(results);
-      const list = filterAssets(assets, { query: app.querySelector('#search-input').value, type: current, access: app.querySelector('#access-filter').value, tag, category });
-      results.innerHTML = renderAssetGrid(list); app.querySelector('#results-count').textContent = `${list.length} preview result${list.length === 1 ? '' : 's'}`; mountAssetGrids(results, openAsset);
-    };
-    const debouncedRender = debounce(render, 180);
-    app.querySelector('#search-input').addEventListener('input', debouncedRender);
-    app.querySelector('#access-filter').addEventListener('change', render);
-    app.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => { app.querySelector('.filter.active')?.classList.remove('active'); button.classList.add('active'); current = button.dataset.filter; render(); }));
-    render(); return () => debouncedRender.cancel();
+  async function searchPage(params, isCurrent = () => true) {
+    const { renderSearchPage } = await loadLazyModule(() => import('./searchPage.js'));
+    if (!isCurrent()) return null;
+    return renderSearchPage({ app, assets, openAsset, params });
   }
   function aboutPage() { app.innerHTML = '<div class="page about-wrap"><div><p class="eyebrow">About the archive</p><h1>Saved with intent.</h1></div><div class="about-copy"><p>Neuevault is an independently curated visual archive for images worth returning to.</p><p>Public originals need no account. Assets explicitly marked as restricted require Discord authentication and a server-side access decision.</p><p>No feed-chasing. No filler. Just a growing, human-made library.</p></div></div>'; }
-  function typePage(type) { return searchPage(new URLSearchParams({ type })); }
+  function typePage(type, isCurrent) { return searchPage(new URLSearchParams({ type }), isCurrent); }
   function notFound() { app.innerHTML = '<div class="page"><div class="page-title"><p class="eyebrow">404</p><h1>Nothing here.</h1><p>This corner of the vault is empty. <a class="text-link" href="/">Return home</a></p></div></div>'; }
   return { home, collectionsPage, collectionPage, categoryPage, recentPage, typePage, searchPage, aboutPage, notFound, mount };
 }

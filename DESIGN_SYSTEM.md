@@ -150,6 +150,10 @@ The public application owns one Lenis instance in `src/scroll/lenis.js`, initial
 
 Dialog scroll locking pauses Lenis through the shared modal lifecycle. `.modal-info` and the authentication card use `data-lenis-prevent`, keeping nested panel scrolling native while the background remains locked. Do not initialize Lenis in the Content Tool or create route-specific instances or animation-frame loops.
 
+### Lazy route states
+
+The global header and footer remain mounted while a first-use search/type chunk loads. The route region uses the existing page spacing, a fixed minimum block to prevent layout collapse, muted body typography, `aria-busy`, and an `aria-live` status. Chunk failures receive the standard empty-state surface and a normal dark retry button. Loading must remain restrained and must never replace navigation, introduce decorative animation, or expose stale content from an earlier route.
+
 ## Responsive and reduced motion
 
 The desktop navigation collapses below 1200px. Shared card radius changes below 700px, the gallery becomes two columns, modal layout stacks, and controls remain reachable. New work must be checked at 320, 375, 768, 1024, 1199, 1200, 1439, 1440, and 1920px.
