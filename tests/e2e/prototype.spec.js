@@ -51,6 +51,34 @@ test('large displays select only the 1440p hero source', async ({ page }, testIn
   expect(requests.some(url => url.endsWith('furina-hero-1080p.mp4'))).toBe(false);
 });
 
+test('hero uses approved desktop line groups and natural mobile wrapping', async ({ page }, testInfo) => {
+  await page.goto('/');
+  const titleLines = page.locator('.hero h1 > span');
+  const descriptionLines = page.locator('.hero-description > span');
+  await expect(titleLines).toHaveCount(2);
+  await expect(descriptionLines).toHaveCount(3);
+  await expect(titleLines).toHaveText(['Discover the Best', 'Banners on the internet. Literally.']);
+  await expect(descriptionLines).toHaveText([
+    'Stop digging through endless pages of repeats, trend-chasing, or whatever everyone else is already using.',
+    'Browse alt, emo, dark, soft, strange, cute, messy, and the spaces where they cross.',
+    'Let different aesthetics coexist. Identity forms in the borderland.',
+  ]);
+  if (testInfo.project.name === 'desktop') {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const titleBoxes = await titleLines.evaluateAll(elements => elements.map(element => ({ top: element.getBoundingClientRect().top, height: element.getBoundingClientRect().height, display: getComputedStyle(element).display })));
+    const descriptionBoxes = await descriptionLines.evaluateAll(elements => elements.map(element => ({ top: element.getBoundingClientRect().top, height: element.getBoundingClientRect().height, display: getComputedStyle(element).display })));
+    expect(titleBoxes.map(box => box.display)).toEqual(['block', 'block']);
+    expect(descriptionBoxes.map(box => box.display)).toEqual(['block', 'block', 'block']);
+    expect(titleBoxes[1].top).toBeGreaterThan(titleBoxes[0].top);
+    expect(descriptionBoxes[1].top).toBeGreaterThan(descriptionBoxes[0].top);
+    expect(descriptionBoxes[2].top).toBeGreaterThan(descriptionBoxes[1].top);
+  } else {
+    await expect(titleLines.first()).toHaveCSS('display', 'inline');
+    await expect(descriptionLines.first()).toHaveCSS('display', 'inline');
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
 test('signed-out copy stays compact while the Discord OAuth action remains explicit', async ({ page }, testInfo) => {
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.route('**/api/auth/discord**', route => route.fulfill({ status: 204 }));

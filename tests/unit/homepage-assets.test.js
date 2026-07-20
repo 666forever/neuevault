@@ -43,4 +43,14 @@ describe('homepage presentation assets', () => {
     const manifest = JSON.parse(await readFile(path.join(root, 'public/assets/brand/site.webmanifest'), 'utf8'));
     expect(manifest.icons.every(icon => icon.src.startsWith('/assets/brand/'))).toBe(true);
   });
+
+  it('defines deliberate desktop hero lines with a natural mobile fallback', async () => {
+    const pages = await readFile(path.join(root, 'src/pages/pages.js'), 'utf8');
+    const css = await readFile(path.join(root, 'styles.css'), 'utf8');
+    expect(pages).toContain('<h1><span>Discover the Best</span> <span>Banners on the internet. Literally.</span></h1>');
+    expect(pages).toContain('<span>Stop digging through endless pages of repeats, trend-chasing, or whatever everyone else is already using.</span> <span>Browse alt, emo, dark, soft, strange, cute, messy, and the spaces where they cross.</span> <span>Let different aesthetics coexist. Identity forms in the borderland.</span>');
+    expect(css).toMatch(/\.hero h1 span,[\s\S]*?\.hero-description span\s*\{\s*display:\s*block/);
+    expect(css).toMatch(/@media \(max-width: 700px\)[\s\S]*?\.hero h1 span,[\s\S]*?\.hero-description span\s*\{\s*display:\s*inline/);
+    expect(css).not.toMatch(/\.hero h1\s*\{[^}]*text-wrap:\s*balance/);
+  });
 });
