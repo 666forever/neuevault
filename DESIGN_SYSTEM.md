@@ -68,7 +68,7 @@ Icon roles are small, medium, large, extra-large, circular control, and brand ar
 
 ## Motion, shadows, and layers
 
-Interactions use `--duration-fast`, `--duration-normal`, `--duration-media`, `--duration-cover`, and `--ease-standard`. Buttons share the hover-lift token. Image scaling, static/animated crossfades, the grid spinner, and toast motion retain their established behavior.
+Interactions use `--duration-fast`, `--duration-normal`, `--duration-media`, `--duration-cover`, and `--ease-standard`. Button shells remain stationary while approved internal text/icon layers may animate. Image scaling, static/animated crossfades, the grid spinner, and toast motion retain their established behavior.
 
 Hero title and description shadows use named tokens. Do not introduce new elevation or glow without an approved visual need.
 
@@ -126,7 +126,7 @@ The asset and authentication overlays use separate layer tokens and layouts. Ass
 
 ### Navigation
 
-Navigation uses `--type-nav-*`, `--nav-gap`, semantic link colors, and a visible underline plus color for the active route. The intermediate desktop gap uses `--nav-gap-compact`; mobile menu spacing remains inside the shared breakpoint.
+Navigation uses `--type-nav-*`, `--nav-gap`, and semantic link colors. The active route uses a quiet persistent pill, brighter text, and `aria-current`; it does not use an underline or acid color. The intermediate desktop gap uses `--nav-gap-compact`; mobile menu spacing remains inside the shared breakpoint.
 
 Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-frame-*`, `--hero-content-max`, `--tracking-hero-title`, and the hero content-gap tokens. Keep unique crop and overlay adjustments local rather than expanding this set mechanically.
 

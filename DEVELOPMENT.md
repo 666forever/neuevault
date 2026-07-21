@@ -10,6 +10,10 @@ Public smooth scrolling is centralized in `src/scroll/lenis.js` and initialized 
 
 Production keeps the homepage shell, repository, shared cards/grid, router, authentication session client, and Lenis in the entry module. Search/type rendering and the asset/authentication overlays are dynamic feature boundaries. Navigation uses a monotonic route sequence so a slower lazy import cannot overwrite a newer route. A failed hashed chunk triggers at most one same-URL reload through `src/utils/lazy.js`; a second failure renders a retryable in-page error instead of leaving a blank route. Search/type routes show a restrained `aria-live` loading state while their first chunk resolves. No route chunk is speculatively prefetched: uncommon code loads only after explicit navigation or interaction, avoiding competition with the hero and archive media.
 
+The production build enables Vite's manifest and then runs `scripts/generate-cache-headers.mjs`. That script preserves the authored `public/_headers` rules and appends exact entries only for manifest-declared JavaScript and CSS filenames carrying Vite's eight-character content hash. These files receive `Cache-Control: public, max-age=31536000, immutable`. HTML remains revalidating so new deployments propagate promptly; versionless fonts, brand assets, icons, textures, video, previews, and originals retain the Pages default policy. Pages Functions do not receive static `_headers` rules, and `/api/*` continues to send `no-store` from the authored/server policy.
+
+Run `npm run audit:cache-headers` after `npm run build`. It structurally checks every emitted JS/CSS file, rejects stale or duplicate entries, and rejects immutable rules for HTML, APIs, fonts, media, and versionless public asset folders. Inspect production with response headers rather than assuming local Vite behavior: entry, lazy, and CSS responses should show the one-year immutable policy, while HTML should show `max-age=0, must-revalidate`. Old HTML can continue requesting its old content-addressed chunks; the existing one-reload stale-chunk recovery remains the fallback for an unavailable deployment asset. To change this policy later, change the manifest classification and audit together—never broaden it to `/assets/*` unless every matched file is content-addressed.
+
 The archive has three ownership layers:
 
 ```text
@@ -135,6 +139,7 @@ Collection and category card copy is composed at render time as `count + authore
 - `npm run build` — create the production bundle
 - `ANALYZE=true npm run build` — generate an ignored `.bundle-analysis/stats.json` Rollup composition report with raw, gzip, and Brotli module sizes (PowerShell: `$env:ANALYZE='true'; npm run build`)
 - `npm run audit:bundle` — check the built entry, total gzip, and largest lazy chunk against the documented performance budget
+- `npm run audit:cache-headers` — verify exact immutable rules for the current hashed Vite JavaScript and CSS outputs
 
 The bundle audit requires a current `dist`, so run `npm run build` first. Inspect emitted files under `dist/assets` and use the ignored visualizer report to find actual contributors before adding a split. Current budgets live in `scripts/audit-bundle.mjs` and include tolerance above the measured architecture; update them only after an intentional, measured architecture change. Do not raise Vite’s chunk warning limit to hide avoidable growth, and do not create tiny arbitrary chunks merely to satisfy the budget.
 
