@@ -7,10 +7,24 @@ based-on:
   - ../project/DESIGN_SYSTEM.md
   - ../audits/neuevault/NEUEVAULT_UI_INVENTORY.md
   - ../audits/references/grainient/GRAINIENT_REFERENCE.md
-last-reviewed: 2026-07-23
+last-reviewed: 2026-07-24
 ---
 
 # Neuevault Design System Specification
+
+## Review decisions incorporated
+
+This revision records the user's resolved design direction:
+
+- SF Pro Rounded is approved for every future public UI and display role except the Neuevault wordmark.
+- TBJ Neuetra remains approved for the Neuevault wordmark only.
+- Arimo, Archivo, and Inter are removed from future public UI roles; Arimo and Archivo may remain only as temporary migration compatibility faces.
+- The complete 400 Regular, 500 Medium, 600 Semibold, and 700 Bold SF Pro Rounded set is retained.
+- Font metadata, parsing, loading, fallback, and layout checks are implementation validation—not approval gates for font use.
+- Grainient is the selected blueprint for foundational UX patterns deliberately adopted by the user, with Neuevault-specific accessibility, security, responsive, brand, route, and product adaptations.
+- The category count/title stack uses a real 10px layout gap.
+- The category reveal changes from the current compatibility behavior to opacity 0/scale 1.4 at rest and opacity 1/scale 1 on hover or focus.
+- Keyboard, touch, reduced-motion, static/animated crossfade, cleanup, and restricted-content safeguards remain required adaptations.
 
 ## 1. Status, authority, and scope
 
@@ -22,10 +36,10 @@ This document defines a proposed future-state UI system for Neuevault. Its statu
 2. Approved specifications govern approved future behavior.
 3. Current project documentation explains architecture and operational constraints.
 4. Neuevault audits provide implementation evidence.
-5. External audits provide optional comparison evidence.
+5. External audits provide measured reference evidence. Grainient governs the selected foundational UX patterns explicitly adopted in this specification.
 6. Archived and historical task material has no current product authority.
 
-When those sources disagree, implementation work must record and resolve the discrepancy rather than silently choosing one. Grainient is never authority for Neuevault identity, accessibility, security, content, routes, or architecture.
+When those sources disagree, implementation work must record and resolve the discrepancy rather than silently choosing one. Grainient is the chosen blueprint for selected foundational UX behavior; it does not govern Neuevault identity, content, routes, security, product-specific components, or accessibility adaptations.
 
 ### Terminology
 
@@ -63,7 +77,7 @@ It does not authorize production changes, font activation, icon replacement, com
 | `DEVELOPMENT.md` | project documentation | architecture, route/lazy/auth/media constraints | current implementation, not full future UI |
 | `DESIGN_SYSTEM.md` | project documentation | current tokens and component contracts | documents deployed system, not an approved migration |
 | `NEUEVAULT_UI_INVENTORY.md` | Neuevault audit | measured routes, states, fonts, geometry, breakpoints, defects | observation date and sampled private states |
-| `GRAINIENT_REFERENCE.md` | external audit | measured comparison for rhythm, surfaces, category behavior | no assets/fonts/code; cannot override Neuevault |
+| `GRAINIENT_REFERENCE.md` | external audit and selected blueprint | measured foundation for explicitly adopted typography hierarchy, rhythm, surfaces, and category behavior | no assets/fonts/code; Neuevault-specific product, accessibility, responsive, and security requirements still govern |
 | This task | phase instructions | required decisions, structure, and quality gate | historical after this draft is produced |
 
 Important evidence:
@@ -76,6 +90,17 @@ Important evidence:
 - Current rolling labels preserve singular accessible names and stable entry/exit states.
 - `nv-166` is restricted; its public manifest has `src:null`, and server-only delivery is non-negotiable.
 
+### Selected Grainient blueprint decisions
+
+| Foundational pattern | Decision | Neuevault adaptation |
+|---|---|---|
+| SF Pro Rounded role hierarchy | **Approved** | Local Neuevault files; TBJ Neuetra remains wordmark-only |
+| Category count/title gap | **Approved** at 10px | Independent type line heights and responsive calibration |
+| Category reveal geometry | **Approved** at opacity 0/scale 1.4 → opacity 1/scale 1 | Focus parity, visible touch/reduced state, wrapper-based static/animated crossfade, restricted safety, cleanup |
+| Dark surfaces and restrained pill hierarchy | **Approved with adaptation** | Uses Neuevault semantic palette and existing product roles |
+| Duplicate rolling-label accessibility | **Rejected** | Neuevault retains singular accessible names |
+| Hover-only or hidden reduced-motion content | **Rejected** | Essential content remains visible and operable |
+
 ## 3. Design principles
 
 1. **Dark editorial, not generic dashboard.** Black and near-black surfaces frame imagery; controls remain compact and quiet.
@@ -86,7 +111,7 @@ Important evidence:
 6. **Input parity.** Pointer, keyboard, touch, and reduced-motion users receive equivalent content and operability.
 7. **Systems before local tuning.** Existing primitives/tokens are used before adding a value. Unique editorial media composition may remain an explicit exception.
 8. **Real-content responsiveness.** Breakpoints and intrinsic wrapping serve actual labels, cards, media, and routes, including 320px.
-9. **Neuevault identity first.** External patterns may inform geometry or hierarchy but never displace Neuevault branding, copy, architecture, or accessibility.
+9. **Blueprint fidelity with Neuevault boundaries.** Selected Grainient foundation patterns are adapted faithfully; current implementation differences are migration facts, not automatic preservation reasons. Neuevault branding, copy, routes, security, accessibility, and product-specific behavior remain its own.
 10. **Performance-aware media.** Static previews are the baseline; high-cost media loads only when justified and is cleaned up.
 11. **Secure restricted content.** UI never implies that client state grants access and never exposes a restricted original URL or identifier.
 12. **Incremental migration.** Compatibility aliases and route-by-route verification are preferred over a visual rewrite.
@@ -95,9 +120,9 @@ Important evidence:
 
 ### Font policy
 
-**Approved with adaptation — SF Pro Rounded becomes the default UI and display family after approval, licensing confirmation, metadata validation, and visual-regression calibration.**
+**Approved — SF Pro Rounded is the unified future public UI and display family.** The only exception is the Neuevault wordmark, which retains TBJ Neuetra.
 
-The repository's local static WOFF2 set—not Grainient files—will be the only candidate source. The initial approved production subset is:
+The repository's local static WOFF2 set—not Grainient files—is the production source. The approved production weight set is:
 
 | CSS weight | Proposed local file | Approved roles |
 |---:|---|---|
@@ -106,9 +131,9 @@ The repository's local static WOFF2 set—not Grainient files—will be the only
 | 600 | `SF-Pro-Rounded-Semibold.woff2` | buttons, headings, card titles |
 | 700 | `SF-Pro-Rounded-Bold.woff2` | hero/major emphasis only |
 
-**Deferred:** exact font metadata, internal family/subfamily names, licensing status, and parser behavior must be validated before any activation. Black, Heavy, Light, Thin, and Ultralight are excluded from the initial public subset unless a later approved role demonstrates need.
+Exact font metadata, internal family/subfamily names, filename-to-weight mapping, and parser behavior require ordinary implementation validation. Those checks establish correct integration; they do not reopen the decision to use SF Pro Rounded. Black, Heavy, Light, Thin, and Ultralight are excluded from the public UI set unless a later approved specification adds a genuine role. The required 400/500/600/700 set must not be reduced.
 
-Required declaration policy after approval:
+Required declaration policy during implementation:
 
 - family name: `"SF Pro Rounded"` consistently;
 - normal style only unless an approved italic role and valid local file exist;
@@ -123,13 +148,13 @@ Required declaration policy after approval:
 | Family | Decision | Future role | Rationale and migration notes |
 |---|---|---|---|
 | TBJ Neuetra | **Approved** | Neuevault wordmark only | Unique brand identity; retain current local variable face and 400 weight role |
-| SF Pro Rounded | **Approved with adaptation** | default UI/display family | Explicit product direction; requires local-file validation before activation |
-| Arimo | **Rejected as a long-term public role**, compatibility only | none after typography migration | Category/hero specialization conflicts with a coherent default family; preserve until each role is calibrated |
-| Archivo | **Rejected as a long-term public role**, compatibility only | none after typography migration | Eyebrow role can be expressed by SF Pro Rounded Medium; retain until hero regression passes |
-| Inter | **Rejected as the declared default** | none | It is not locally registered and resolves inconsistently across platforms |
+| SF Pro Rounded | **Approved** | every public UI/display role | Required product direction; file and browser checks are implementation quality validation |
+| Arimo | **Removed from the future system**, compatibility only | none | May remain temporarily only while hero/category consumers migrate |
+| Archivo | **Removed from the future system**, compatibility only | none | May remain temporarily only while the hero eyebrow migrates |
+| Inter | **Removed from the future system** | none | It is not locally registered and resolves inconsistently across platforms |
 | System UI | **Approved** | fallback only | Provides resilient rendering if local fonts fail |
 
-Removing Arimo/Archivo is not authorized by this draft. It is a future migration outcome gated by comparison of hero line spans, category labels, control widths, and browser rendering.
+The final system contains no Arimo, Archivo, or Inter public UI role. Their actual production removal belongs to the separately authorized typography migration phase and occurs only after each migrated role passes hero line-span, category-label, control-width, fallback, and cross-browser checks.
 
 ### Typography roles
 
@@ -144,13 +169,13 @@ Values below are future targets. “Preserve then calibrate” means the current
 | Caption | SF Pro Rounded | 11px | 400 | 15px | .02em | stable | Nonessential annotations |
 | Navigation | SF Pro Rounded | 14px | 500 | 20px within 40px viewport | -.05px | preserve metrics; test width at 1200/1440 | Rolling layer contract applies |
 | Button | SF Pro Rounded | 14px | 600 | 18px | -.08px | large CTA may use 15px | Singular accessible label |
-| Hero eyebrow | SF Pro Rounded | 12px | 500 | 16px | 0 | stable in 28px pill | Replaces Archivo after validation |
+| Hero eyebrow | SF Pro Rounded | 12px | 500 | 16px | 0 | stable in 28px pill | Archivo is compatibility-only until migrated |
 | Hero title | SF Pro Rounded | 46px | 700 | 48px | -2px initial target | current mobile clamps retained initially | Explicit two-line spans must remain |
 | Hero description | SF Pro Rounded | 13px | 500 | 14px desktop | -.4px initial target | looser mobile line height | Exact three semantic line groups on fitting widths |
 | Route H1 | SF Pro Rounded | 36px | 600 | 40px | -.03em | reduce to 28/32 on narrow screens | Validate long route names |
 | Section H2 | SF Pro Rounded | 28px | 600 | 32px | -.02em | 24/28 mobile | Editorial hierarchy |
 | Card title | SF Pro Rounded | 16px | 600 | 20px | -.01em | natural wrap | Collection and asset roles may differ by token |
-| Category count | SF Pro Rounded | 12px | 400 | 16px | -.01em | 11/15 narrow mobile | Recalibrate from Arimo 621 |
+| Category count | SF Pro Rounded | 12px | 400 | 16px | -.01em | 11/15 narrow mobile | Independent line height; 10px stack gap |
 | Category title | SF Pro Rounded | 24px | 500 | 29px | -.04em initial target | 16–20px mobile bands | Test every real label before approval |
 | Modal title | SF Pro Rounded | 24px | 600 | 28px | -.02em | 22/26 mobile | Asset/auth headings |
 | Badge | SF Pro Rounded | 10px | 600 | 12px | .04em | stable | Uppercase only where authored |
@@ -295,7 +320,8 @@ Rules:
 | Normal | 250ms | standard | controls/overlays | opacity, transform where approved | immediate |
 | Slow | 500ms | standard | deliberate composition | opacity/transform | immediate/static |
 | Media fade | 400ms | standard | static/animated image layer | opacity | show static |
-| Media transform | up to 600ms | standard | card image reveal | transform ≤1.03 | no transform |
+| Collection/asset media transform | up to 600ms | standard | collection/asset hover or viewport state | transform ≤1.03 | no transform |
+| Category reveal | proposed 600ms transform / 400ms opacity; **requires visual calibration** | proposed standard media easing; **requires visual calibration** | category pointer hover or keyboard focus | shared media-wrapper opacity 0→1 and scale 1.4→1 | media visible at opacity 1/scale 1 with no transition |
 | Overlay | 250ms | standard | modal/dialog | opacity and small panel transform | immediate |
 | Rolling label | 300ms | `cubic-bezier(.76,0,.24,1)` | pointer/focus | transform only | primary layer only |
 | Nav pill | 150ms | rolling easing | pointer/focus/active | opacity only | immediate |
@@ -303,7 +329,9 @@ Rules:
 
 **Approved:** rolling travel remains 40px; text enters from above, paired icons from below; entry may settle by 1.5px and rebound .5px; final transforms are exact zero/offscreen states. Exit uses stable transitions without replaying overshoot or showing a blank frame.
 
-**Approved:** ordinary button shells remain stationary. Collection cards may retain the intentional 4px lift; media scale is capped at 1.03. Category uses 1.025, not Grainient's 1.4 reveal.
+**Approved:** ordinary button shells remain stationary. Collection cards may retain the intentional 4px lift; the 1.03 media cap applies only to CollectionCard and AssetCard.
+
+**Approved category geometry:** the shared category media wrapper rests at opacity 0/scale 1.4 and resolves to opacity 1/scale 1 on pointer hover or keyboard focus. Static and animated layers crossfade inside that wrapper so neither layer independently breaks the transform geometry. Touch and reduced-motion states render the wrapper at opacity 1/scale 1. Exact duration/easing remain implementation-calibration questions; the reveal geometry is not open for reconsideration.
 
 Essential content is present without animation. Focus receives hover-equivalent visibility. Touch has a stable first-tap state. Reduced motion exposes static content and disables Lenis/rolling/media movement. `will-change` is scoped to active/hover-capable animation layers and must not be global or permanent. Every observer, listener, timeout, and media source is cleaned up on exit/route disposal.
 
@@ -536,21 +564,21 @@ Family-specific responsibilities:
 | Radius | 20px at all current ranges |
 | Surface/border | `#121212`, 1px subtle border |
 | Copy | centered flex/grid; max 225px; no absolute Figma coordinates |
-| Count/title gap | 2px content gap within centered block; type line boxes govern visual rhythm |
+| Count/title gap | 10px real flex/grid gap between independent count and title line boxes |
 | Typography | future SF Pro Rounded roles from section 4 |
-| Desktop rest | static media opacity 0; copy fully visible |
-| Hover/focus | media opacity 1, original color, scale 1.025; light readability scrim only |
-| Touch | static media visible without preliminary tap |
-| Reduced motion | static media visible; no scale/fade/animated playback |
-| Animated cover | static first; public animation loads on hover/focus and unloads after exit/offscreen |
+| Desktop rest | shared media wrapper opacity 0 and scale 1.4; copy fully visible |
+| Hover/focus | shared media wrapper opacity 1 and scale 1; original color; light readability scrim only |
+| Touch | shared media wrapper visible at opacity 1/scale 1 without preliminary tap |
+| Reduced motion | shared media wrapper visible at opacity 1/scale 1; no transition or animated playback |
+| Animated cover | static first; static/animated layers crossfade inside the shared transforming wrapper; public animation loads on hover/focus and unloads after exit/offscreen |
 | Restricted | public static preview only |
 | Cleanup | all listeners, observers, timers, animated source removed on disposal |
 | Focus | explicit ring plus same media reveal as hover |
 | Empty count | real count 0 is rendered; route provides user-facing empty state |
 
-**Approved:** retain Neuevault's restrained `scale(1.025)` behavior. Grainient's `scale(1.4)→1` is rejected because it is more aggressive, lacks observed focus parity, and produces an inferior reduced-motion state.
+**Approved:** adopt the Grainient blueprint's scale 1.4→1 and opacity 0→1 reveal geometry. Neuevault improves the blueprint with keyboard focus parity, visible touch/reduced-motion states, wrapper-based static/animated crossfade, restricted-media safety, and complete lifecycle cleanup. These adaptations correct accessibility and product constraints without weakening the selected visual behavior.
 
-**Approved with adaptation:** future SF Pro category metrics are recalibrated against the current 12/29 count and 24/29 title composition. The card geometry, label wrapping, and centered block remain stable.
+**Approved with adaptation:** future SF Pro category metrics are recalibrated against the current composition. Count and title keep independent line-height roles with a real 10px gap. The card geometry, label wrapping, and centered block remain stable.
 
 The fact that current category records match zero assets is a data/editorial issue. UI migration may not hide, synthesize, or alter counts, filters, or memberships.
 
@@ -688,7 +716,7 @@ Non-negotiable requirements:
 
 ## 25. Performance-aware UI contract
 
-- Limit active public font faces to demonstrated roles; initial SF Pro subset is four static weights plus TBJ, with legacy Arimo/Archivo removed only after migration.
+- Limit active public font faces to demonstrated roles; the required SF Pro Rounded set is 400/500/600/700 plus TBJ for the wordmark, with legacy Arimo/Archivo present only during migration.
 - Icons are local and individually importable; no runtime icon CDN or large universal sprite.
 - Images use intrinsic dimensions, responsive sources, lazy loading, and static previews.
 - Animated media loads only for visible/interactive public states and unloads after exit/route disposal.
@@ -868,11 +896,11 @@ The interfaces are framework-neutral. “Inputs” describe responsibilities, no
 | Allowed variants | static, animated, empty-count |
 | Required inputs | stable category id/slug, title, count, preview |
 | Optional inputs | public playback URL, description |
-| States | rest, hover/focus, touch, reduced, error |
+| States | desktop rest opacity 0/scale 1.4; hover/focus opacity 1/scale 1; touch/reduced visible at opacity 1/scale 1; error |
 | Accessibility | link; title/name singular; focus reveal |
 | Responsive rules | 2/4 grid contract, responsive type |
 | Migration source | homepage category cards |
-| Prohibited uses | invented count, absolute Figma coordinates, hidden touch media |
+| Prohibited uses | invented count, absolute Figma coordinates, hidden touch/reduced media, transforming static/animated layers inconsistently |
 
 ### CollectionCard
 
@@ -996,13 +1024,13 @@ Undocumented one-off branches, ordinary negative-margin alignment, transform lay
 |---:|---|---|---|---|---|---|
 | 1 | Documentation freeze/baselines | draft approved | docs/evidence only | freeze routes/states/screens | all fixture routes/viewports | rollback docs; complete on approved baselines |
 | 2 | Token aliases | phase 1 | `styles.css`, token tests/docs | add aliases before consumer changes | computed-style parity | remove aliases to rollback; no visual delta |
-| 3 | Typography/font migration | license/metadata/browser validation | public fonts/CSS/tests as separately authorized | activate subset, role-by-role; retain legacy fallback | line wraps, widths, parser/network, all routes | one-role rollback; complete after Arimo/Archivo removal decision |
+| 3 | Typography/font migration | file metadata/parser/browser baseline | public fonts/CSS/tests as separately authorized | activate required 400/500/600/700 SF Pro set role-by-role; retain Arimo/Archivo only as temporary compatibility; remove Inter role | line wraps, widths, fallback, parser/network, all routes | one-role rollback; complete when TBJ is wordmark-only and every other UI role resolves to SF Pro Rounded |
 | 4 | Icon registry/SVG replacement | approved artwork | `src/icons`, assets, component markup/tests | registry plus compatibility symbols until each control passes | names, geometry, currentColor, touch | per-icon rollback |
 | 5 | Button/IconButton/RollingLabel | tokens/icons | CSS/helpers/markup/tests | migrate family by family | dimensions, entry/exit, AX names, reduced/touch | modifier compatibility; all mapped controls pass |
 | 6 | Navigation/mobile remediation | phase 5 | header/app/nav tests | shared data model; preserve DOM modes; add Escape/focus return | route active, auth, widths, keyboard | old renderer boundary; all nav fixtures pass |
 | 7 | Field/Badge/Pill/state primitives | tokens/type | search/pages/styles/tests | structural helpers without URL change yet | forms, labels, loading/empty | per-family rollback |
 | 8 | CardShell/MediaFrame | phases 2–5 | card/image/playback utilities/tests | thin shell/lifecycle adapter | media errors, animation cleanup, restricted safety | keep old family renderers until parity |
-| 9 | Category grid/cards | phase 8/type approved | category markup/styles/tests | preserve geometry/data; replace internals only | all labels/viewports/input modes | category-only rollback |
+| 9 | Category grid/cards | phase 8/type approved | category markup/styles/tests | target shared-wrapper opacity 0/scale 1.4→opacity 1/scale 1 and 10px copy gap; current 1.025 behavior remains rollback compatibility only | all labels/viewports; rest, hover, focus, touch, reduced; static/animated crossfade; restricted safety/cleanup | category-only rollback to current compatibility behavior |
 | 10 | Collection/Asset cards | phase 8 | cards/grid/styles/tests | separate family migration | animation, grid, modal trigger, order | family-level rollback |
 | 11 | Modal/download/auth controls | icons/buttons/modal shell | overlays/styles/tests/functions only if separately authorized | share mechanics only; preserve security/history | focus, Back/Forward, auth, public/restricted downloads | feature flag/old shell; security gate |
 | 12 | Route-by-route migration | primitives stable | page renderers/styles/tests | one canonical route family at a time | direct/deep/history/title/scroll | route-level rollback |
@@ -1023,7 +1051,7 @@ Required widths: 320, 375, 520, 700, 701, 768, 1024, 1199, 1200, 1439, 1440, 160
 |---|---|
 | Homepage | initial hero poster/video-safe frame, category/collection/recent sections |
 | Navigation | rest, active each route family, hover/focus, collapsed/open mobile |
-| Category cards | all four real titles, rest/hover/focus/touch/reduced, animated/static |
+| Category cards | all four real titles; 10px count/title gap; rest 0/1.4, hover/focus 1/1, touch/reduced visible 1/1; animated/static shared-wrapper crossfade and cleanup |
 | Collection cards | standard/featured/animated, error |
 | Asset grid | JPEG/PNG/GIF/restricted, loading/error/load-more |
 | Search | initial/results/no-results/filter selected |
@@ -1050,12 +1078,9 @@ Controls:
 
 | Decision | Status/reason | Evidence needed | Blocking phase | Owner/next action |
 |---|---|---|---|---|
-| SF Pro Rounded licensing/file metadata | Deferred; local existence is not authorization/validity | license record, `name`/OS2 tables, WOFF2 parser checks | 3 | product owner + implementation audit |
-| Exact SF Pro subset | Approved initial 400/500/600/700, validation required | request/usage and visual comparison | 3 | design/engineering |
-| Arimo removal | Approved direction, validation required | hero/category fixtures after SF activation | 3/9 | design review |
-| Archivo removal | Approved direction, validation required | eyebrow comparison and metrics | 3 | design review |
-| Inter removal | Approved | confirm no intentional installed-font dependency | 3 | engineering |
-| Category reveal timing/scale | Approved 1.025/current timing | interaction fixtures | 9 | design QA |
+| Exact SF Pro Rounded file metadata mapping | Implementation calibration; use is approved | internal family/subfamily names, `name`/OS2 tables, WOFF2 parser checks, filename-to-weight confirmation | 3 | engineering font audit |
+| Cross-browser SF Pro typography calibration | Exact line wrapping/metrics require browser evidence | hero spans, category labels, nav/button widths, fallback snapshots in Chromium/Firefox | 3/9 | design + engineering |
+| Category reveal duration/easing | Geometry is resolved at opacity 0/scale 1.4→opacity 1/scale 1; only timing is open | frame-by-frame comparison at pointer/focus entry/exit | 9 | design QA |
 | Category breakpoint | Approved 1200 | no new evidence needed; revisit only by proposal | 9 | product/design |
 | CSS-column masonry | Deferred | reading-order usability and alternative layout performance | 10/15 | accessibility + engineering |
 | Search URL synchronization | Approved future contract, implementation deferred | query/history UX tests | after 7 or route phase | product/engineering |
@@ -1071,12 +1096,12 @@ Controls:
 This draft may be marked `approved` only when reviewers confirm:
 
 - [ ] Authority/status and current-versus-future distinction are understood.
-- [ ] SF Pro Rounded licensing, source files, metadata, and proposed 400/500/600/700 subset are approved.
-- [ ] TBJ wordmark retention and Arimo/Archivo/Inter retirement direction are approved.
+- [ ] SF Pro Rounded metadata, parsing, filename-to-weight mapping, and browser loading checks are sufficient to implement the approved 400/500/600/700 set.
+- [ ] TBJ wordmark-only retention and removal of Arimo/Archivo/Inter from final public UI roles are represented consistently.
 - [ ] Typography metrics and required calibration gates are accepted.
 - [ ] Semantic color roles and deferred status colors are accepted.
 - [ ] Role-based gutters and 700/1200/1440 breakpoint policy are accepted.
-- [ ] Category 2/4-column geometry and restrained 1.025 reveal are approved.
+- [ ] Category 2/4-column geometry, 10px copy gap, and opacity 0/scale 1.4→opacity 1/scale 1 reveal are represented consistently.
 - [ ] Icon registry approach and Unicode replacement inventory are approved.
 - [ ] Button, IconButton, RollingLabel, navigation, field, badge/pill, card/media, overlay, action, and state contracts are complete.
 - [ ] Mobile-menu Escape/focus return is a required remediation.
