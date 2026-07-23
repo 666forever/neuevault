@@ -1,6 +1,6 @@
 ---
 title: Neuevault Design System Specification
-status: draft
+status: approved
 authority: specification
 based-on:
   - ../project/DEVELOPMENT.md
@@ -8,6 +8,7 @@ based-on:
   - ../audits/neuevault/NEUEVAULT_UI_INVENTORY.md
   - ../audits/references/grainient/GRAINIENT_REFERENCE.md
 last-reviewed: 2026-07-24
+approved-on: 2026-07-24
 ---
 
 # Neuevault Design System Specification
@@ -26,9 +27,15 @@ This revision records the user's resolved design direction:
 - The category reveal changes from the current compatibility behavior to opacity 0/scale 1.4 at rest and opacity 1/scale 1 on hover or focus.
 - Keyboard, touch, reduced-motion, static/animated crossfade, cleanup, and restricted-content safeguards remain required adaptations.
 
+## Approval record
+
+This specification was reviewed in full against its approval checklist on 24 July 2026. The user-approved unified SF Pro Rounded typography direction and selected Grainient foundational UX alignment are incorporated consistently, while Neuevault-specific brand, content, routes, accessibility, responsive behavior, security, and product requirements remain protected.
+
+Approval authorizes scoped, phased implementation planning against this future-state contract. It does not authorize an unscoped all-at-once rewrite or any production change by itself. Every migration phase requires its own task, allowed-file scope, tests, visual/accessibility review, and explicit rollback boundary.
+
 ## 1. Status, authority, and scope
 
-This document defines a proposed future-state UI system for Neuevault. Its status is **draft**. It becomes implementation authority only after a reviewer changes the status to `approved`. Until then, current repository source and verified production behavior remain authoritative.
+This document defines Neuevault's approved future-state UI system. It is implementation-planning authority for separately authorized migration phases; current repository source and verified production behavior remain authoritative for the deployed interface until those phases are completed.
 
 ### Authority order
 
@@ -78,7 +85,7 @@ It does not authorize production changes, font activation, icon replacement, com
 | `DESIGN_SYSTEM.md` | project documentation | current tokens and component contracts | documents deployed system, not an approved migration |
 | `NEUEVAULT_UI_INVENTORY.md` | Neuevault audit | measured routes, states, fonts, geometry, breakpoints, defects | observation date and sampled private states |
 | `GRAINIENT_REFERENCE.md` | external audit and selected blueprint | measured foundation for explicitly adopted typography hierarchy, rhythm, surfaces, and category behavior | no assets/fonts/code; Neuevault-specific product, accessibility, responsive, and security requirements still govern |
-| This task | phase instructions | required decisions, structure, and quality gate | historical after this draft is produced |
+| This task | phase instructions | required decisions, structure, and quality gate | historical after this specification is approved |
 
 Important evidence:
 
@@ -486,7 +493,7 @@ Prohibited: headings, prose, metadata, category titles, identity/account names, 
 
 ### Required remediation
 
-**Approved and required in navigation migration:** Escape closes the mobile disclosure and returns focus to the toggle. Outside click and route change also close it; focus must not be trapped, and body scrolling must follow current panel behavior. This draft does not implement the fix.
+**Approved and required in navigation migration:** Escape closes the mobile disclosure and returns focus to the toggle. Outside click and route change also close it; focus must not be trapped, and body scrolling must follow current panel behavior. This specification does not implement the fix.
 
 ## 15. Fields
 
@@ -1022,7 +1029,7 @@ Undocumented one-off branches, ordinary negative-margin alignment, transform lay
 
 | # | Phase | Prerequisites | Allowed files/expected change | Strategy/compatibility | Regression/testing | Rollback/completion |
 |---:|---|---|---|---|---|---|
-| 1 | Documentation freeze/baselines | draft approved | docs/evidence only | freeze routes/states/screens | all fixture routes/viewports | rollback docs; complete on approved baselines |
+| 1 | Documentation freeze/baselines | specification approved | docs/evidence only | freeze routes/states/screens | all fixture routes/viewports | rollback docs; complete on approved baselines |
 | 2 | Token aliases | phase 1 | `styles.css`, token tests/docs | add aliases before consumer changes | computed-style parity | remove aliases to rollback; no visual delta |
 | 3 | Typography/font migration | file metadata/parser/browser baseline | public fonts/CSS/tests as separately authorized | activate required 400/500/600/700 SF Pro set role-by-role; retain Arimo/Archivo only as temporary compatibility; remove Inter role | line wraps, widths, fallback, parser/network, all routes | one-role rollback; complete when TBJ is wordmark-only and every other UI role resolves to SF Pro Rounded |
 | 4 | Icon registry/SVG replacement | approved artwork | `src/icons`, assets, component markup/tests | registry plus compatibility symbols until each control passes | names, geometry, currentColor, touch | per-icon rollback |
@@ -1081,7 +1088,6 @@ Controls:
 | Exact SF Pro Rounded file metadata mapping | Implementation calibration; use is approved | internal family/subfamily names, `name`/OS2 tables, WOFF2 parser checks, filename-to-weight confirmation | 3 | engineering font audit |
 | Cross-browser SF Pro typography calibration | Exact line wrapping/metrics require browser evidence | hero spans, category labels, nav/button widths, fallback snapshots in Chromium/Firefox | 3/9 | design + engineering |
 | Category reveal duration/easing | Geometry is resolved at opacity 0/scale 1.4→opacity 1/scale 1; only timing is open | frame-by-frame comparison at pointer/focus entry/exit | 9 | design QA |
-| Category breakpoint | Approved 1200 | no new evidence needed; revisit only by proposal | 9 | product/design |
 | CSS-column masonry | Deferred | reading-order usability and alternative layout performance | 10/15 | accessibility + engineering |
 | Search URL synchronization | Approved future contract, implementation deferred | query/history UX tests | after 7 or route phase | product/engineering |
 | Signed-in account-state audit | Deferred for privacy-safe fixture | approved test account/state capture | 6/11/13 | auth owner |
@@ -1093,25 +1099,25 @@ Controls:
 
 ## 31. Approval checklist
 
-This draft may be marked `approved` only when reviewers confirm:
+This specification is approved because reviewers confirmed:
 
-- [ ] Authority/status and current-versus-future distinction are understood.
-- [ ] SF Pro Rounded metadata, parsing, filename-to-weight mapping, and browser loading checks are sufficient to implement the approved 400/500/600/700 set.
-- [ ] TBJ wordmark-only retention and removal of Arimo/Archivo/Inter from final public UI roles are represented consistently.
-- [ ] Typography metrics and required calibration gates are accepted.
-- [ ] Semantic color roles and deferred status colors are accepted.
-- [ ] Role-based gutters and 700/1200/1440 breakpoint policy are accepted.
-- [ ] Category 2/4-column geometry, 10px copy gap, and opacity 0/scale 1.4→opacity 1/scale 1 reveal are represented consistently.
-- [ ] Icon registry approach and Unicode replacement inventory are approved.
-- [ ] Button, IconButton, RollingLabel, navigation, field, badge/pill, card/media, overlay, action, and state contracts are complete.
-- [ ] Mobile-menu Escape/focus return is a required remediation.
-- [ ] Modal history, Lenis, OAuth/session, and protected-download security remain non-negotiable.
-- [ ] Accessibility and performance-aware requirements are testable.
-- [ ] Primitive APIs are sufficiently framework-neutral.
-- [ ] Exceptions policy prevents undocumented drift without blocking editorial composition.
-- [ ] Sixteen migration phases and rollback boundaries are accepted.
-- [ ] Visual-regression routes, states, widths, font/media handling, and private-state rules are accepted.
-- [ ] Open decisions have owners and phase gates.
-- [ ] Large-catalog backend work remains separate.
+- [x] Authority/status and current-versus-future distinction are understood.
+- [x] SF Pro Rounded metadata, parsing, filename-to-weight mapping, and browser loading checks are sufficient to implement the approved 400/500/600/700 set.
+- [x] TBJ wordmark-only retention and removal of Arimo/Archivo/Inter from final public UI roles are represented consistently.
+- [x] Typography metrics and required calibration gates are accepted.
+- [x] Semantic color roles and deferred status colors are accepted.
+- [x] Role-based gutters and 700/1200/1440 breakpoint policy are accepted.
+- [x] Category 2/4-column geometry, 10px copy gap, and opacity 0/scale 1.4→opacity 1/scale 1 reveal are represented consistently.
+- [x] Icon registry approach and Unicode replacement inventory are approved.
+- [x] Button, IconButton, RollingLabel, navigation, field, badge/pill, card/media, overlay, action, and state contracts are complete.
+- [x] Mobile-menu Escape/focus return is a required remediation.
+- [x] Modal history, Lenis, OAuth/session, and protected-download security remain non-negotiable.
+- [x] Accessibility and performance-aware requirements are testable.
+- [x] Primitive APIs are sufficiently framework-neutral.
+- [x] Exceptions policy prevents undocumented drift without blocking editorial composition.
+- [x] Sixteen migration phases and rollback boundaries are accepted.
+- [x] Visual-regression routes, states, widths, font/media handling, and private-state rules are accepted.
+- [x] Open decisions have owners and phase gates.
+- [x] Large-catalog backend work remains separate.
 
 Approval of this document authorizes planning against these contracts, not an unreviewed all-at-once implementation. Each migration phase still requires scoped authorization, tests, and regression review.
