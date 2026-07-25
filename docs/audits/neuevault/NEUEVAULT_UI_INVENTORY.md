@@ -1,3 +1,10 @@
+---
+title: Neuevault UI Inventory
+status: completed
+authority: audit
+observed-date: 2026-07-23
+---
+
 # Neuevault UI inventory
 
 ## 1. Scope and methodology

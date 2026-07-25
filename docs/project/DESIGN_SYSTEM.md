@@ -1,3 +1,10 @@
+---
+title: Neuevault Design System
+status: active
+authority: project
+last-reviewed: 2026-07-23
+---
+
 # Neuevault design system
 
 Neuevault uses a restrained, editorial interface: near-black surfaces, quiet borders, compact typography, and acid green reserved for actions, focus, and route state. The deployed interface is the visual baseline. Tokens make that baseline repeatable; they are not permission to redesign it.

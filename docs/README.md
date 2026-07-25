@@ -45,16 +45,12 @@ current task.
 
 - [`audits/neuevault/NEUEVAULT_UI_INVENTORY.md`](audits/neuevault/NEUEVAULT_UI_INVENTORY.md)
   — read-only inventory of the current Neuevault interface and implementation.
-- [`audits/neuevault/NEUEVAULT_UI_INVENTORY_TASK.md`](audits/neuevault/NEUEVAULT_UI_INVENTORY_TASK.md)
-  — historical instructions used to produce the inventory.
 
 ## External references
 
 - [`audits/references/grainient/GRAINIENT_REFERENCE.md`](audits/references/grainient/GRAINIENT_REFERENCE.md)
   — measured Grainient UI/UX research. This is supporting reference material,
   not a Neuevault specification.
-- [`audits/references/grainient/GRAINIENT_AUDIT_TASK.md`](audits/references/grainient/GRAINIENT_AUDIT_TASK.md)
-  — historical instructions used to produce the Grainient audit.
 
 External references must never override Neuevault's product requirements,
 security boundaries, accessibility standards, or approved specifications.
