@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const root = path.resolve('.');
 const css = await readFile(path.join(root, 'styles.css'), 'utf8');
-const development = await readFile(path.join(root, 'DEVELOPMENT.md'), 'utf8');
+const development = await readFile(path.join(root, 'docs', 'project', 'DEVELOPMENT.md'), 'utf8');
 
 describe('public design system', () => {
   it('declares the required primitive, semantic, component, layout, motion, and layer tokens', () => {
