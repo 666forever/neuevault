@@ -369,15 +369,19 @@
   --category-copy-max: 225px;
   --category-copy-min-height: 113px;
   --category-copy-padding-block: 12px;
-  --category-copy-gap: 2px;
+  --category-copy-gap: 10px;
   --category-count-size: 12px;
   --category-title-size: 24px;
   --category-copy-line: 29px;
   --category-copy-tracking: -0.04em;
   --category-copy-color: var(--gray-100);
   --category-copy-shadow: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
-  --category-image-rest-opacity: 0;
-  --category-image-active-opacity: 1;
+  --category-media-rest-opacity: 0;
+  --category-media-rest-scale: 1.4;
+  --category-media-active-opacity: 1;
+  --category-media-active-scale: 1;
+  --category-layer-hidden-opacity: 0;
+  --category-layer-visible-opacity: 1;
   --category-image-overlay-active: rgba(0, 0, 0, 0.08);
   --category-title-size-mobile: clamp(16px, 5vw, 20px);
   --category-title-line-mobile: 1.15;
@@ -852,16 +856,28 @@ button {
   position: relative;
   background: var(--bg-surface);
 }
-.category-card img {
+.category-card .cover-media {
+  overflow: hidden;
+  opacity: var(--category-media-rest-opacity);
+  transform: scale(var(--category-media-rest-scale));
+  transform-origin: center;
+  transition:
+    transform var(--duration-cover) var(--ease-standard),
+    opacity var(--duration-fade) var(--ease-standard);
+}
+.category-card .cover-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: var(--category-image-rest-opacity);
+  transform: none;
   filter: none;
-  transition:
-    transform var(--duration-cover) var(--ease-standard),
-    opacity var(--duration-fade) var(--ease-standard),
-    filter var(--duration-fade) var(--ease-standard);
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+.category-card .cover-static {
+  opacity: var(--category-layer-visible-opacity);
+}
+.category-card .cover-animated {
+  opacity: var(--category-layer-hidden-opacity);
 }
 .category-card:after {
   content: "";
@@ -918,10 +934,9 @@ button {
   text-align: center;
   text-wrap: balance;
 }
-.category-card:is(:hover, :focus-visible, :focus-within) img {
-  transform: scale(1.025);
-  opacity: var(--category-image-active-opacity);
-  filter: none;
+.category-card:is(:hover, :focus-visible, :focus-within) .cover-media {
+  opacity: var(--category-media-active-opacity);
+  transform: scale(var(--category-media-active-scale));
 }
 .category-card:is(:hover, :focus-visible, :focus-within):after {
   background: var(--category-image-overlay-active);
@@ -990,8 +1005,9 @@ button {
 .cover-animated { opacity: 0; transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-cover) var(--ease-standard); }
 .cover-playing .cover-animated { opacity: 1; }
 .cover-playing .cover-static { opacity: 0; }
-.category-card.cover-playing .cover-animated { opacity: var(--category-image-active-opacity); }
-.category-card.cover-playing .cover-static { opacity: 0; }
+.category-card .cover-animated { transition: opacity var(--duration-fast) var(--ease-standard); }
+.category-card.cover-playing .cover-animated { opacity: var(--category-layer-visible-opacity); }
+.category-card.cover-playing .cover-static { opacity: var(--category-layer-hidden-opacity); }
 .collection-card:hover img {
   transform: scale(1.03);
 }
@@ -1614,8 +1630,10 @@ footer {
   .main-nav a:hover:not(.active)::before { opacity: 0; transition: none; }
   .main-nav a.active::before,
   .main-nav a:focus-visible::before { opacity: 1; }
-  .category-card:not(.cover-playing) img.cover-static {
-    opacity: var(--category-image-active-opacity);
+  .category-card .cover-media {
+    opacity: var(--category-media-active-opacity);
+    transform: scale(var(--category-media-active-scale));
+    transition: none;
   }
   .category-card:after {
     background: var(--category-image-overlay-active);
@@ -1634,6 +1652,10 @@ footer {
   .has-roll-animation .roll-icon-layer:last-child { visibility: hidden; transform: none !important; animation: none !important; }
   .has-roll-animation .roll-layer-content { animation: none !important; transform: none !important; }
   .main-nav a::before { transition: none !important; }
+  .category-card .cover-media {
+    opacity: var(--category-media-active-opacity);
+    transform: scale(var(--category-media-active-scale));
+  }
 }
 
 /* 19. Keyframes */

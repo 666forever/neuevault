@@ -21,7 +21,8 @@ describe('public design system', () => {
       '--font-category', '--category-grid-max', '--category-grid-gap', '--category-card-ratio', '--category-card-radius',
       '--category-copy-max', '--category-copy-min-height', '--category-count-size', '--category-title-size',
       '--category-copy-line', '--type-category-count-weight', '--type-category-title-weight',
-      '--category-image-rest-opacity', '--category-image-active-opacity',
+      '--category-media-rest-opacity', '--category-media-rest-scale',
+      '--category-media-active-opacity', '--category-media-active-scale',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 
@@ -68,8 +69,11 @@ describe('public design system', () => {
   it('defines the responsive category-card contract without Figma positioning', () => {
     expect(css).toMatch(/\.category-grid\s*\{[\s\S]*?width:\s*min\(100%, var\(--category-grid-max\)\)[\s\S]*?gap:\s*var\(--category-grid-gap\)/);
     expect(css).toMatch(/\.category-card\s*\{[\s\S]*?aspect-ratio:\s*var\(--category-card-ratio\)[\s\S]*?border-radius:\s*var\(--category-card-radius\)/);
-    expect(css).toMatch(/\.category-copy-inner\s*\{[\s\S]*?filter:\s*var\(--category-copy-shadow\)/);
-    expect(css).toMatch(/@media \(hover: none\)[\s\S]*?category-card:not\(\.cover-playing\)/);
+    expect(css).toMatch(/--category-copy-gap:\s*10px/);
+    expect(css).toMatch(/\.category-copy-inner\s*\{[\s\S]*?gap:\s*var\(--category-copy-gap\)[\s\S]*?filter:\s*var\(--category-copy-shadow\)/);
+    expect(css).toMatch(/\.category-card \.cover-media\s*\{[\s\S]*?opacity:\s*var\(--category-media-rest-opacity\)[\s\S]*?transform:\s*scale\(var\(--category-media-rest-scale\)\)/);
+    expect(css).toMatch(/\.category-card:is\(:hover, :focus-visible, :focus-within\) \.cover-media\s*\{[\s\S]*?opacity:\s*var\(--category-media-active-opacity\)[\s\S]*?transform:\s*scale\(var\(--category-media-active-scale\)\)/);
+    expect(css).toMatch(/@media \(hover: none\)[\s\S]*?\.category-card \.cover-media\s*\{[\s\S]*?opacity:\s*var\(--category-media-active-opacity\)[\s\S]*?transform:\s*scale\(var\(--category-media-active-scale\)\)/);
     expect(css).not.toMatch(/\.category-copy(?:-inner)?\s*\{[^}]*\b(?:left|top):/);
   });
 

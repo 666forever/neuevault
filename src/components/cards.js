@@ -21,9 +21,11 @@ export function categoryCard(category) {
 export function bindAnimatedCovers(scope = document) {
   disposeAnimatedCovers(scope);
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hoverCapable = matchMedia('(hover: hover)').matches;
   const cleanups = []; const observer = !reducedMotion && 'IntersectionObserver' in window ? new IntersectionObserver(entries => entries.forEach(entry => { if (!entry.isIntersecting) entry.target.__stopAnimatedCover?.(); })) : null;
   scope.querySelectorAll('[data-animated-src]').forEach(animated => {
-    const card = animated.closest('.collection-card, .category-card'); if (!card || reducedMotion) return;
+    const card = animated.closest('.collection-card, .category-card');
+    if (!card || reducedMotion || (card.matches('.category-card') && !hoverCapable)) return;
     let removeTimer; let active = false;
     const visible = () => { const rect = card.getBoundingClientRect(); return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth; };
     const start = () => { if (!visible() || document.hidden) return; active = true; clearTimeout(removeTimer); if (!animated.src) animated.src = animated.dataset.animatedSrc; const show = () => { if (active && card.isConnected) card.classList.add('cover-playing'); }; if (animated.complete && animated.naturalWidth) show(); else animated.onload = show; };
