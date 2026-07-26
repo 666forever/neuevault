@@ -45,6 +45,53 @@ test('registry icons preserve control names, state, and geometry', async ({ page
   await expect(page.locator('.download-action .roll-icon svg.icon')).toHaveCount(2);
 });
 
+test('hero bolt uses normalized artwork bounds without changing CTA geometry', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  for (const width of [320, 375, 700, 1200, 1440, 1920]) {
+    await page.setViewportSize({ width, height: width < 700 ? 820 : 900 });
+    await page.goto('/');
+    const measurement = await page.locator('.hero-cta').evaluate(element => {
+      const svg = element.querySelector('.roll-icon-layer:first-child svg');
+      const path = svg.querySelector('path');
+      const cta = element.getBoundingClientRect();
+      const icon = svg.getBoundingClientRect();
+      const artwork = path.getBoundingClientRect();
+      const pathBounds = path.getBBox();
+      const viewBox = svg.viewBox.baseVal;
+      return {
+        cta: { width: cta.width, height: cta.height },
+        icon: { width: icon.width, height: icon.height },
+        artwork: {
+          width: artwork.width,
+          height: artwork.height,
+          centerX: artwork.left + artwork.width / 2 - (icon.left + icon.width / 2),
+          centerY: artwork.top + artwork.height / 2 - (icon.top + icon.height / 2),
+          clipped:
+            artwork.left < icon.left - 0.05 ||
+            artwork.top < icon.top - 0.05 ||
+            artwork.right > icon.right + 0.05 ||
+            artwork.bottom > icon.bottom + 0.05,
+        },
+        viewBox: [viewBox.x, viewBox.y, viewBox.width, viewBox.height],
+        occupancy: {
+          width: pathBounds.width / viewBox.width,
+          height: pathBounds.height / viewBox.height,
+        },
+      };
+    });
+    expect(measurement.cta).toEqual({ width: 164, height: 47 });
+    expect(measurement.icon).toEqual({ width: 13, height: 16 });
+    expect(measurement.viewBox).toEqual([3, 1, 18, 22]);
+    expect(measurement.occupancy.width).toBeGreaterThan(0.88);
+    expect(measurement.occupancy.height).toBeGreaterThan(0.9);
+    expect(measurement.artwork.width).toBeGreaterThan(11.4);
+    expect(measurement.artwork.height).toBeGreaterThan(14.3);
+    expect(Math.abs(measurement.artwork.centerX)).toBeLessThan(0.05);
+    expect(Math.abs(measurement.artwork.centerY)).toBeLessThan(0.05);
+    expect(measurement.artwork.clipped).toBe(false);
+  }
+});
+
 test('homepage navbar assets and hero media preserve routes and exact copy', async ({ page }) => {
   await page.goto('/');
   const logo = page.locator('.site-header .brand-logo');

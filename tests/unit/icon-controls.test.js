@@ -17,10 +17,12 @@ describe('shared icon and control primitives', () => {
     ]));
     expect(iconSizes).toEqual({ compact: 12, standard: 16, medium: 20, large: 24 });
     for (const icon of Object.values(iconRegistry)) {
-      expect(icon.viewBox).toMatch(/^0 0 \d+ \d+$/);
+      expect(icon.viewBox).toMatch(/^-?\d+(?:\.\d+)? -?\d+(?:\.\d+)? \d+(?:\.\d+)? \d+(?:\.\d+)?$/);
       expect(icon.body).toContain('currentColor');
       expect(icon.body).not.toMatch(/<script|https?:|data:image|<image/i);
     }
+    expect(iconRegistry.bolt.viewBox).toBe('3 1 18 22');
+    expect(iconRegistry.bookmark.viewBox).toBe('0 0 24 24');
   });
 
   it('renders decorative SVG once without an accessible duplicate', () => {
