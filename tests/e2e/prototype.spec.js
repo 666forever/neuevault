@@ -519,6 +519,113 @@ test('collection cards compose count and description without legacy count copy',
   await expect(page.getByText('in full archive')).toHaveCount(0);
 });
 
+test('collection cards preserve editorial geometry across pointer, focus, and exit', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/collections');
+  const card = page.locator('a[href="/collections/white-minimal-banners"]');
+  const frame = card.locator('.collection-media-frame');
+  const staticCover = card.locator('.cover-static');
+  const animated = card.locator('.cover-animated');
+  const matrixValue = (value, index) => Number.parseFloat(value.match(/^matrix\(([^)]+)\)$/)?.[1].split(',')[index] || (index === 0 ? 1 : 0));
+  const state = () => card.evaluate(element => {
+    const shell = getComputedStyle(element);
+    const cover = element.querySelector('.collection-cover');
+    const media = element.querySelector('.collection-media-frame');
+    const staticLayer = element.querySelector('.cover-static');
+    const animatedLayer = element.querySelector('.cover-animated');
+    return {
+      shellTransform: shell.transform,
+      mediaTransform: getComputedStyle(media).transform,
+      shellRadius: shell.borderRadius,
+      mediaRadius: getComputedStyle(cover).borderRadius,
+      border: shell.borderColor,
+      staticOpacity: getComputedStyle(staticLayer).opacity,
+      animatedOpacity: animatedLayer ? getComputedStyle(animatedLayer).opacity : null,
+      outline: shell.outlineStyle,
+    };
+  });
+
+  await expect(card).toHaveAccessibleName('White Banners Collection 11 Bright and minimal banners');
+  await expect(staticCover).toBeVisible();
+  expect(await state()).toMatchObject({ shellTransform: 'none', mediaTransform: 'matrix(1, 0, 0, 1, 0, 0)', shellRadius: '16px', mediaRadius: '13px', staticOpacity: '1', animatedOpacity: '0' });
+
+  await card.hover();
+  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/);
+  await expect(card).toHaveClass(/cover-playing/);
+  await page.waitForTimeout(650);
+  const hovered = await state();
+  expect(matrixValue(hovered.shellTransform, 5)).toBeGreaterThanOrEqual(-4);
+  expect(matrixValue(hovered.mediaTransform, 0)).toBeLessThanOrEqual(1.03);
+  expect(hovered).toMatchObject({ staticOpacity: '0', animatedOpacity: '1' });
+
+  await page.locator('.page-title').hover();
+  await expect(card).not.toHaveClass(/cover-playing/);
+  const exit = await state();
+  expect(exit.staticOpacity).toBe('1');
+  await page.waitForTimeout(250);
+  await expect(animated).not.toHaveAttribute('src');
+  await expect(frame).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+  await expect(card).toHaveCSS('transform', 'none');
+
+  await card.focus();
+  await expect(card).toBeFocused();
+  await expect(card).toHaveCSS('outline-style', 'solid');
+  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/);
+  await page.waitForTimeout(650);
+  expect(matrixValue((await state()).mediaTransform, 0)).toBeLessThanOrEqual(1.03);
+  await page.keyboard.press('Tab');
+  await page.waitForTimeout(250);
+  await expect(animated).not.toHaveAttribute('src');
+});
+
+test('collection cards stay static for touch and reduced motion', async ({ page }, testInfo) => {
+  if (testInfo.project.name === 'mobile') {
+    await page.goto('/collections');
+    const card = page.locator('a[href="/collections/white-minimal-banners"]');
+    const initialUrl = page.url();
+    await expect(card.locator('.cover-static')).toBeVisible();
+    await card.tap();
+    await expect(page).toHaveURL(/\/collections\/white-minimal-banners$/);
+    expect(page.url()).not.toBe(initialUrl);
+    return;
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/collections');
+  const card = page.locator('a[href="/collections/white-minimal-banners"]');
+  const animated = card.locator('.cover-animated');
+  await card.hover();
+  await expect(card).toHaveCSS('transform', 'none');
+  await expect(card.locator('.collection-media-frame')).toHaveCSS('transform', 'none');
+  await expect(animated).not.toHaveAttribute('src');
+  await expect(card.locator('.cover-static')).toBeVisible();
+});
+
+test('collection preview failures retain media geometry without blanking healthy static covers', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/collections');
+  const staticCard = page.locator('a[href="/collections/noface-icons"]');
+  const before = await staticCard.locator('.collection-cover').boundingBox();
+  await staticCard.locator('.cover-static').evaluate(image => {
+    image.src = '/missing-collection-preview.jpg';
+  });
+  await expect(staticCard.locator('.collection-cover')).toHaveClass(/image-error/);
+  expect(await staticCard.locator('.collection-cover').evaluate(element => getComputedStyle(element, '::after').content)).toContain('Preview unavailable');
+  const after = await staticCard.locator('.collection-cover').boundingBox();
+  expect(Math.round(after.width)).toBe(Math.round(before.width));
+  expect(Math.round(after.height)).toBe(Math.round(before.height));
+
+  const animatedCard = page.locator('a[href="/collections/white-minimal-banners"]');
+  const animated = animatedCard.locator('.cover-animated');
+  await animated.evaluate(image => {
+    image.dataset.animatedSrc = '/missing-collection-animation.gif';
+  });
+  await animatedCard.hover();
+  await expect(animatedCard).not.toHaveClass(/cover-playing/);
+  await expect(animatedCard.locator('.cover-static')).toBeVisible();
+  await expect(animatedCard.locator('.collection-cover')).not.toHaveClass(/image-error/);
+});
+
 test('public animated cover loads only during hover or focus and returns static', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
