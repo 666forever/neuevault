@@ -22,14 +22,17 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '/collections');
   const eyebrow = page.locator('.hero-eyebrow');
   await expect(eyebrow).toHaveText('Meet pfseeker 2.0');
-  await expect(eyebrow).toHaveCSS('font-family', /Archivo/);
+  await expect(eyebrow).toHaveCSS('font-family', /SF Pro Rounded/);
+  await expect(eyebrow).toHaveCSS('font-weight', '500');
   expect(await eyebrow.evaluate(element => ({ tag: element.tagName, tabindex: element.getAttribute('tabindex') }))).toEqual({ tag: 'P', tabindex: null });
   await expect(page.locator('.hero h1')).toHaveText('Discover the Best Banners on the internet. Literally.');
-  await expect(page.locator('.hero h1')).toHaveCSS('font-family', /Arimo/);
+  await expect(page.locator('.hero h1')).toHaveCSS('font-family', /SF Pro Rounded/);
+  await expect(page.locator('.hero h1')).toHaveCSS('font-weight', '600');
   await expect(page.getByRole('link', { name: 'Get Full Access', exact: true })).toHaveAttribute('href', '/recent');
   const description = page.locator('.hero-description');
   expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Stop digging through endless pages of repeats, trend-chasing, or whatever everyone else is already using. Browse alt, emo, dark, soft, strange, cute, messy, and the spaces where they cross. Let different aesthetics coexist. Identity forms in the borderland.');
-  await expect(description).toHaveCSS('font-family', /Arimo/);
+  await expect(description).toHaveCSS('font-family', /SF Pro Rounded/);
+  await expect(description).toHaveCSS('font-weight', '500');
   const video = page.locator('.hero-video');
   await expect(video).toHaveCount(1);
   expect(await video.evaluate(element => ({ autoplay: element.autoplay, muted: element.muted, loop: element.loop, playsInline: element.playsInline, preload: element.preload }))).toEqual({ autoplay: true, muted: true, loop: true, playsInline: true, preload: 'metadata' });
@@ -44,18 +47,19 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(page.locator('.hero-video')).toHaveCount(0);
 });
 
-test('tracked variable fonts load without italic fallbacks', async ({ page }) => {
+test('approved local fonts load without italic or legacy fallbacks', async ({ page }) => {
   const fontResponses = [];
   page.on('response', response => { if (response.url().includes('/fonts/')) fontResponses.push({ url: response.url(), status: response.status(), type: response.headers()['content-type'] || '' }); });
   await page.goto('/'); await page.evaluate(() => document.fonts.ready);
-  for (const file of ['Archivo-VariableFont_wdth,wght.woff2', 'Arimo-VariableFont_wght.woff2', 'tbj-neuetra-vf.woff2']) {
+  for (const file of ['SF-Pro-Rounded-Regular.woff2', 'SF-Pro-Rounded-Medium.woff2', 'SF-Pro-Rounded-Semibold.woff2', 'tbj-neuetra-vf.woff2']) {
     const response = fontResponses.find(item => item.url.endsWith(file));
     expect(response).toBeTruthy(); expect(response.status).toBe(200); expect(response.type).toContain('font/woff2');
   }
   expect(fontResponses.some(item => item.url.includes('Italic-VariableFont'))).toBe(false);
+  expect(fontResponses.some(item => /Arimo|Archivo|Inter/.test(item.url))).toBe(false);
   expect(await page.locator('.brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('TBJ Neuetra');
-  expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Arimo');
-  expect(await page.locator('.hero-eyebrow').evaluate(element => getComputedStyle(element).fontFamily)).toContain('Archivo');
+  expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro Rounded');
+  expect(await page.locator('.hero-eyebrow').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro Rounded');
 });
 
 test('large displays select only the 1440p hero source', async ({ page }, testInfo) => {
@@ -447,9 +451,9 @@ test('category cards honor the Figma geometry and remain usable on touch', async
   if (testInfo.project.name === 'desktop') {
     const geometry = await grid.evaluate(element => { const card = element.querySelector('.category-card'); const gridStyle = getComputedStyle(element); const cardStyle = getComputedStyle(card); const rect = card.getBoundingClientRect(); return { gridWidth: element.getBoundingClientRect().width, columns: gridStyle.gridTemplateColumns.split(' ').length, gap: gridStyle.gap, cardWidth: rect.width, cardHeight: rect.height, radius: cardStyle.borderRadius }; });
     expect(geometry).toEqual({ gridWidth: 1888, columns: 4, gap: '16px', cardWidth: 460, cardHeight: 478, radius: '20px' });
-    await expect(title).toHaveCSS('font-family', /Arimo/); await expect(title).toHaveCSS('font-size', '24px'); await expect(title).toHaveCSS('line-height', '29px');
-    await expect(count).toHaveCSS('font-family', /Arimo/); await expect(count).toHaveCSS('font-size', '12px'); await expect(count).toHaveCSS('line-height', '29px');
-    expect(await page.evaluate(() => document.fonts.check('621 24px Arimo'))).toBe(true);
+    await expect(title).toHaveCSS('font-family', /SF Pro Rounded/); await expect(title).toHaveCSS('font-weight', '500'); await expect(title).toHaveCSS('font-size', '24px'); await expect(title).toHaveCSS('line-height', '29px');
+    await expect(count).toHaveCSS('font-family', /SF Pro Rounded/); await expect(count).toHaveCSS('font-weight', '400'); await expect(count).toHaveCSS('font-size', '12px'); await expect(count).toHaveCSS('line-height', '29px');
+    expect(await page.evaluate(() => document.fonts.check('500 24px "SF Pro Rounded"'))).toBe(true);
   } else {
     await expect(card.locator('.cover-static')).toHaveCSS('opacity', '1');
     expect(await title.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.parentElement.clientHeight)).toBe(true);

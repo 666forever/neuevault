@@ -11,7 +11,9 @@ const permanentAssets = [
   'public/assets/video/furina-hero-1080p.mp4',
   'public/assets/video/furina-hero-1440p.mp4',
   'public/assets/textures/hero_grain.png',
-  'public/fonts/Archivo-VariableFont_wdth,wght.woff2',
+  'public/fonts/SF-Pro-Rounded-Regular.woff2',
+  'public/fonts/SF-Pro-Rounded-Medium.woff2',
+  'public/fonts/SF-Pro-Rounded-Semibold.woff2',
   'public/fonts/tbj-neuetra-vf.woff2',
   'public/assets/brand/favicon.ico',
   'public/assets/brand/favicon-16x16.png',
@@ -54,11 +56,14 @@ describe('homepage presentation assets', () => {
     expect(css).not.toMatch(/\.hero h1\s*\{[^}]*text-wrap:\s*balance/);
   });
 
-  it('uses accurate local variable-font faces without italic production references', async () => {
+  it('uses the approved local SF Pro Rounded faces without italic production references', async () => {
     const css = await readFile(path.join(root, 'styles.css'), 'utf8');
-    expect(css).toMatch(/Archivo-VariableFont_wdth,wght\.woff2[\s\S]*?font-weight:\s*100 900[\s\S]*?font-stretch:\s*62% 125%/);
-    expect(css).toMatch(/Arimo-VariableFont_wght\.woff2[\s\S]*?font-weight:\s*400 700/);
+    expect(css).toMatch(/SF-Pro-Rounded-Regular\.woff2[\s\S]*?font-weight:\s*400/);
+    expect(css).toMatch(/SF-Pro-Rounded-Medium\.woff2[\s\S]*?font-weight:\s*500/);
+    expect(css).toMatch(/SF-Pro-Rounded-Semibold\.woff2[\s\S]*?font-weight:\s*600/);
     expect(css).toMatch(/tbj-neuetra-vf\.woff2[\s\S]*?font-weight:\s*100 900/);
+    expect(css).not.toMatch(/Arimo|Archivo|Inter/);
+    expect(css).not.toMatch(/font-weight:\s*(?:700|800|900)\b/);
     expect(css).not.toContain('Italic-VariableFont');
     expect(css).toContain('font-synthesis: none');
     expect(css).toContain('text-rendering: optimizeLegibility');

@@ -20,7 +20,8 @@ describe('public design system', () => {
       '--hero-eyebrow-title-gap', '--hero-copy-cta-gap', '--hero-cta-width', '--hero-cta-height', '--hero-cta-radius',
       '--font-category', '--category-grid-max', '--category-grid-gap', '--category-card-ratio', '--category-card-radius',
       '--category-copy-max', '--category-copy-min-height', '--category-count-size', '--category-title-size',
-      '--category-copy-line', '--category-copy-weight', '--category-image-rest-opacity', '--category-image-active-opacity',
+      '--category-copy-line', '--type-category-count-weight', '--type-category-title-weight',
+      '--category-image-rest-opacity', '--category-image-active-opacity',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 
@@ -65,8 +66,6 @@ describe('public design system', () => {
   });
 
   it('defines the responsive category-card contract without Figma positioning', () => {
-    expect(css).toContain('font-family: "Arimo"');
-    expect(css).toContain('font-weight: 400 700');
     expect(css).toMatch(/\.category-grid\s*\{[\s\S]*?width:\s*min\(100%, var\(--category-grid-max\)\)[\s\S]*?gap:\s*var\(--category-grid-gap\)/);
     expect(css).toMatch(/\.category-card\s*\{[\s\S]*?aspect-ratio:\s*var\(--category-card-ratio\)[\s\S]*?border-radius:\s*var\(--category-card-radius\)/);
     expect(css).toMatch(/\.category-copy-inner\s*\{[\s\S]*?filter:\s*var\(--category-copy-shadow\)/);
@@ -74,9 +73,31 @@ describe('public design system', () => {
     expect(css).not.toMatch(/\.category-copy(?:-inner)?\s*\{[^}]*\b(?:left|top):/);
   });
 
+  it('publishes only the approved SF Pro Rounded UI faces and keeps TBJ for the wordmark', async () => {
+    const faces = [...css.matchAll(/@font-face\s*\{([\s\S]*?)\}/g)].map(match => match[1]);
+    const roundedFaces = faces.filter(face => face.includes('font-family: "SF Pro Rounded"'));
+    expect(roundedFaces).toHaveLength(3);
+    for (const [file, weight] of [
+      ['SF-Pro-Rounded-Regular.woff2', '400'],
+      ['SF-Pro-Rounded-Medium.woff2', '500'],
+      ['SF-Pro-Rounded-Semibold.woff2', '600'],
+    ]) {
+      const face = roundedFaces.find(candidate => candidate.includes(file));
+      expect(face).toBeTruthy();
+      expect(face).toContain(`font-weight: ${weight}`);
+      expect(face).toContain('font-style: normal');
+      expect(face).toContain('font-display: swap');
+      await expect(access(path.join(root, 'public', 'fonts', file))).resolves.toBeUndefined();
+    }
+    expect(css).toContain('--font-ui: "SF Pro Rounded"');
+    expect(css).not.toMatch(/Arimo|Archivo|Inter/);
+    expect(css).not.toMatch(/font-weight:\s*(?:700|800|900)\b/);
+    expect(css).not.toMatch(/--(?:font-weight|weight)-(?:bold|heavy)\s*:/);
+    expect(css).toMatch(/\.brand-wordmark\s*\{[\s\S]*?font-family:\s*var\(--font-brand\)/);
+  });
+
   it('defines the revised responsive hero without the obsolete vignette or tiled grain', () => {
-    expect(css).toContain('font-family: "Archivo"');
-    expect(css).toContain('font-stretch: 62% 125%');
+    expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-family:\s*var\(--font-category\)[\s\S]*?font-weight:\s*var\(--weight-semibold\)[\s\S]*?font-size:\s*var\(--type-hero-size\)[\s\S]*?line-height:\s*var\(--type-hero-line\)/);
     expect(css).toMatch(/\.hero\s*\{[\s\S]*?aspect-ratio:\s*var\(--hero-frame-ratio\)[\s\S]*?max-height:\s*var\(--hero-frame-max-height\)[\s\S]*?background:\s*var\(--bg-surface\)/);
     expect(css).toContain('linear-gradient(180deg, rgba(255, 255, 255, 0) -35.43%, rgba(0, 0, 0, 0.33) 36.66%)');
     expect(css).not.toContain('radial-gradient(177.97% 93.94%');

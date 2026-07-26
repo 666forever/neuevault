@@ -1,6 +1,6 @@
 ---
 title: Neuevault Typography Migration Report
-status: validation-blocked
+status: completed
 authority: migration-evidence-report
 based-on:
   - ../specifications/NEUEVAULT_DESIGN_SYSTEM_SPEC.md
@@ -13,183 +13,188 @@ report-date: 2026-07-26
 
 ## 1. Phase status
 
-The approved Phase 3 direction is now a deliberate hybrid SF system:
+Phase 3 is complete. The public typography system now uses:
 
-- SF Pro Rounded 400, 500, and 600 for public UI/display roles;
-- non-rounded SF Pro 700 for the hero title and explicitly approved 700
-  display roles;
+- SF Pro Rounded Regular 400 for regular UI roles;
+- SF Pro Rounded Medium 500 for medium UI roles;
+- SF Pro Rounded Semibold 600 for headings, buttons, and the hero;
 - TBJ Neuetra for the Neuevault wordmark only.
 
-The specification amendment is complete, but Phase 3 remains
-**validation-blocked** because no repository-local non-rounded SF Pro or
-SF Pro Display face satisfies every 700 requirement.
+The former Rounded/non-rounded 700 investigations are retained as superseded
+prerequisite history. The approved system no longer requires, searches for,
+publishes, synthesizes, or maps any public role to weight 700.
 
 ## 2. Files changed
 
-This documentation/prerequisite phase changes only:
+Production:
+
+- `styles.css`
+- `public/fonts/SF-Pro-Rounded-Regular.woff2`
+- `public/fonts/SF-Pro-Rounded-Medium.woff2`
+- `public/fonts/SF-Pro-Rounded-Semibold.woff2`
+- removed `public/fonts/Arimo-VariableFont_wght.woff2`
+- removed `public/fonts/Archivo-VariableFont_wdth,wght.woff2`
+
+Tests:
+
+- `tests/unit/design-system.test.js`
+- `tests/unit/homepage-assets.test.js`
+- `tests/e2e/prototype.spec.js`
+
+Documentation:
 
 - `docs/specifications/NEUEVAULT_DESIGN_SYSTEM_SPEC.md`
 - `docs/baselines/NEUEVAULT_TYPOGRAPHY_MIGRATION_REPORT.md`
 
 Ignored evidence:
 
-- `.reference-audit/neuevault/typography/sf-pro-700-audit.json`
+- `.reference-audit/neuevault/typography/`
 
-No production CSS, test, component, public font, source font, dependency,
-route, data, authentication, download, category, or deployment file changed.
+No route, component structure, icon, Unicode symbol, data, authentication,
+download, Cloudinary, category interaction, category gap, mobile-menu, masonry,
+modal-history, dependency, or deployment configuration changed.
 
-## 3. Font-file audit
+## 3. Final font metadata
 
-The complete repository and untracked worktree were searched for local
-SF Pro, SF Pro Display, SF Pro Text, Bold, and 700 candidates. The strongest
-non-rounded candidates are:
+Two independent checks were used: direct WOFF2/OpenType table inspection and
+isolated browser loading in Chromium and Firefox.
 
-| Candidate | Git state | Bytes | SHA-256 | Internal names | Weight | Width | Style | Chromium | Firefox | Result |
-|---|---|---:|---|---|---:|---:|---|---|---|---|
-| `content/fonts/SF Pro/SF-Pro.woff2` | untracked | 2,483,044 | `375827d39a59f31305420b5e90f1f26d5ace26d1dfad78cfb211ee8ceb9eebb8` | SF Pro / Regular / SF Pro / SFPro-Regular | 400 | 5 | normal | loads | loads | reject: not static 700 |
-| `content/fonts/SF Pro Display/SF-Pro-Display-Bold.woff2` | untracked | 1,200,668 | `3cdd77b120a1838f18cbc407a77157d43a58f37b6ab8425e7feac30085b71a30` | SF Pro Display / Bold / SF Pro Display Bold / SFProDisplay-Bold | **600** | 5 | normal | loads | loads | reject: OS/2 is 600 |
-| `content/fonts/SF Pro Text/SF-Pro-Text-Bold.woff2` | untracked | 1,193,836 | `30dfe1e791a7993bc32960a58c35d23b3bc2053ef8f8fa483e94dcaa985f2747` | SF Pro Text / Bold / SF Pro Text Bold / SFProText-Bold | **600** | 5 | normal | loads | loads | reject: OS/2 is 600 |
+| Published file | Bytes | SHA-256 | Internal naming | OS/2 weight | Width | Style | Chromium | Firefox |
+|---|---:|---|---|---:|---:|---|---|---|
+| `public/fonts/SF-Pro-Rounded-Regular.woff2` | 1,177,080 | `b9104321cb8ec842076bf38dd0e1042a01d33b38038e644d3b37b9871fbdb2be` | SF Pro Rounded / Regular / SFProRounded-Regular | 400 | 5 | normal | pass | pass |
+| `public/fonts/SF-Pro-Rounded-Medium.woff2` | 1,248,924 | `e3661c592d20c9f9c50dcf670fe6ce0c4305370c3676ff8c3f3f05d442a929b8` | SF Pro Rounded / Medium / SFProRounded-Medium | 500 | 5 | normal | pass | pass |
+| `public/fonts/SF-Pro-Rounded-Semibold.woff2` | 1,256,272 | `fe8cf20eb207b92ab35ee838a7a1ce286cf3214213e4b8eaee4c586138bc479b` | SF Pro Rounded / Semibold / SFProRounded-Semibold | 600 | 5 | normal | pass | pass |
 
-For comparison, the malformed rounded candidate remains ineligible:
+All three files are static, normal-style WOFF2 faces. Each production request
+returned HTTP 200 with a WOFF2 content type in both browsers. No parser,
+sanitizer, missing-face, italic, or synthetic-weight warning was observed.
 
-| Candidate | SHA-256 | Weight | Width | Style | Chromium | Firefox | Result |
-|---|---|---:|---:|---|---|---|---|
-| `content/fonts/SF Pro Rounded/SF-Pro-Rounded-Bold.woff2` | `6383cf565981e65fbbdf6b9a88a8aeb447bf3cd79c45fa72fe694bc44c13b6f3` | 700 | 5 | normal | rejected by OTS | rejected by sanitizer | wrong family for amended role and malformed `name` table |
+## 4. Font declarations
 
-All candidates were tested as local WOFF2 resources with explicit normal
-style and requested CSS weight 700. Browser loading does not override the
-internal OS/2 weight requirement.
+`styles.css` publishes exactly three SF Pro Rounded `@font-face` declarations
+at weights 400, 500, and 600 with `font-display: swap`. `font-synthesis: none`
+remains enforced. TBJ Neuetra remains separately declared for the wordmark.
+No variable range, italic face, Rounded Bold, Heavy, Black, non-rounded SF Pro,
+SF Pro Display, SF Pro Text, Arimo, or Archivo face is published.
 
-## 4. @font-face declarations
+## 5. Final family and weight mapping
 
-No `@font-face` declaration was added. Phase 3 must eventually publish:
-
-- SF Pro Rounded Regular 400;
-- SF Pro Rounded Medium 500;
-- SF Pro Rounded Semibold 600;
-- a browser-safe local non-rounded SF Pro Bold 700;
-- the existing TBJ Neuetra wordmark face.
-
-## 5. Typography token migration
-
-No token was changed. The future token model must distinguish the Rounded
-400/500/600 stack from the non-rounded 700 display family rather than relying
-on a system-installed family or a fallback accident.
-
-## 6. Consumer migration
-
-The approved future mapping is:
-
-| Family/weight | Roles |
-|---|---|
-| SF Pro Rounded 400 | body, compact body, metadata, captions, fields, category counts, regular footer |
-| SF Pro Rounded 500 | navigation, hero eyebrow/description, category titles, errors |
-| SF Pro Rounded 600 | standard buttons, route/section/card/modal/empty headings, badges, emphasized footer |
-| SF Pro 700 | hero title and only other explicitly approved 700 display roles, including an explicitly 700 hero CTA |
+| Weight | Public roles |
+|---:|---|
+| 400 | body, compact body, metadata, captions, fields, category counts, regular footer copy |
+| 500 | navigation, hero eyebrow, hero description, category titles, errors, medium labels |
+| 600 | buttons, hero title and CTA, route/section/card/modal headings, badges, empty-state headings, emphasized footer copy |
 | TBJ Neuetra 400 | Neuevault wordmark only |
 
-No consumer was migrated in this documentation phase.
+CSS and computed-style audits found no public role at weight 700, 800, or 900.
 
-## 7. Arimo/Archivo/Inter removal
+## 6. Hero result
 
-Arimo, Archivo, and Inter remain removed from the approved future system but
-remain current production compatibility families until Phase 3 implementation
-passes. No production family was removed in this task.
+The hero title resolves to SF Pro Rounded Semibold 600 at the approved initial
+desktop 46px size and 48px line height. Authored title spans and description
+line groups remain intact. No transform was introduced to compensate for font
+metrics. The CTA remains weight 600 and its geometry and action are unchanged.
 
-## 8. Role-by-role metrics
+## 7. Category result
 
-The approved metrics remain unchanged. The hero title row now explicitly reads
-SF Pro, 46px, 700, 48px. Every 400/500/600 row remains SF Pro Rounded. Any
-explicitly approved 700 control/display role uses the same validated
-non-rounded family.
+Category titles resolve to SF Pro Rounded Medium 500 and counts to Regular 400.
+The existing category geometry, 16px compatibility gap, image reveal,
+animated-cover lifecycle, focus/touch behavior, and reduced-motion behavior
+are unchanged. The future 1.4-to-1 reveal and 10px gap were not implemented.
 
-## 9. Responsive validation
+## 8. Arimo, Archivo, and Inter removal
 
-Not run because no font was activated. Phase 3 still requires Chromium and
-Firefox coverage at 320, 375, 520, 700, 701, 768, 1024, 1199, 1200, 1439,
-1440, 1600, and 1920 pixels after a valid four-face set exists.
+Arimo and Archivo declarations and public font files were removed after all
+consumers migrated. Inter no longer appears in public stylesheet roles.
+Computed evidence contains no Arimo, Archivo, or Inter fallback result. TBJ
+Neuetra appears only on the wordmark.
 
-## 10. Hero validation
+## 9. Responsive and browser evidence
 
-The future hero title uses non-rounded SF Pro 700 while preserving its exact
-semantic line spans and 46/48 metrics. The current hero remains unchanged.
+Evidence covers Chromium and Firefox at 320, 375, 520, 700, 701, 768, 1024,
+1199, 1200, 1439, 1440, 1600, and 1920 pixels across the homepage, navigation,
+category, collection and asset cards, Search, About, Collections, public and
+restricted modals, signed-out auth dialog, empty category, 404, and footer.
 
-## 11. Category validation
+The capture contains 143 fixtures per browser (286 total). Every audited role
+resolved to the SF Pro Rounded stack at 400/500/600 or the TBJ wordmark face.
+There were zero missing-face results, zero font warnings, zero clipped labels,
+and zero horizontal-overflow results.
 
-Category count/title roles remain SF Pro Rounded 400/500. Category geometry,
-the current 16px compatibility gap, reveal behavior, animated-cover lifecycle,
-touch handling, and reduced motion were not changed. The future category gap
-and reveal remain separate phases.
+One metric-compatible correction was required at the 320px Firefox breakpoint:
+mobile search controls now use `width: 100%` and `min-width: 0` so the new font
+metrics cannot force horizontal overflow. This is a containment correction,
+not an intentional visual redesign.
 
-## 12. Accessibility and behavior
+## 10. Accessibility and behavior
 
-No accessible name, role, focus order, route, modal, authentication, download,
-mobile-menu, category, or media behavior changed.
+Accessible names, landmarks, roles, focus behavior, keyboard navigation,
+responsive navigation, History API routing, modal Back/Forward behavior,
+Lenis behavior, authentication, public downloads, and restricted `nv-166`
+delivery remain unchanged. Playwright regression coverage passed.
 
-## 13. Console and network
+## 11. Console and network
 
-The isolated audit loaded the general SF Pro, SF Pro Display Bold, and SF Pro
-Text Bold candidates in both Chromium and Firefox without parser messages.
-They remain invalid because their OS/2 weights are 400, 600, and 600.
+Both browser font audits completed without parser or font-loading warnings.
+All three SF Pro Rounded faces and TBJ Neuetra loaded successfully. Local
+Cloudflare Pages runtime checks returned HTTP 200 for the homepage, a clean
+deep route, and the signed-out session endpoint; restricted `nv-166` returned
+HTTP 401 with `Cache-Control: no-store`.
 
-The rounded 700 candidate reproduced its known `name`-table sanitizer failure
-in both browsers. No production request or browser bundle changed.
+The ignored Vite-preview evidence may contain expected `/api` failures because
+Vite preview does not execute Pages Functions; Pages runtime and automated
+function tests provide the authoritative function verification.
 
-## 14. Build and test results
+## 12. Release gate
 
 | Check | Result |
 |---|---|
-| specification consistency | pass |
-| obsolete Rounded 700 requirement removed | pass |
-| Rounded roles constrained to 400/500/600 | pass |
-| non-rounded SF Pro owns approved 700 roles | pass |
-| TBJ wordmark-only | pass |
-| no Arimo/Archivo/Inter future role | pass |
-| no synthetic/fallback 700 allowed | pass |
-| repository/worktree candidate search | pass |
-| valid local non-rounded 700 found | **no** |
-| production build/tests | not required; no production file changed |
+| `npm test` | pass — 74/74 |
+| `npm run build` | pass |
+| `npm run validate:assets` | pass — 234 assets, 4 collections, 4 categories |
+| `npm run test:e2e` | pass — 47 passed, 17 expected skips |
+| `npm run audit:bundle` | pass — entry 476,361 bytes / 47,378 gzip |
+| `npm run audit:cache-headers` | pass — 5 hashed outputs covered |
+| `npm run audit:cloudinary-secrets` | pass |
+| `npm run cloudinary:verify` | pass — 234 manifest assets / 235 remote resources |
+| Chromium typography matrix | pass |
+| Firefox typography matrix | pass |
+| local Cloudflare Pages runtime | pass |
 
-## 15. Visual comparison classification
+## 13. Superseded 700 audit history
 
-No visual candidate exists. Classification: **approved design-direction
-amendment with unresolved local-font prerequisite**.
+Earlier audits correctly rejected mislabeled or malformed Rounded, SF Pro
+Display, and SF Pro Text “Bold” candidates. That evidence remains in the
+ignored audit directory as historical provenance. The final approved
+three-face system makes those candidates irrelevant to completion; none is
+published or referenced, and no further 700 search or approval is required.
 
-## 16. Deferred typography items
+## 14. Rollback boundary
 
-The user must supply a local static normal-width SF Pro or SF Pro Display Bold
-web font that:
+The atomic typography implementation commit is the rollback boundary. Reverting
+it restores the previous Arimo/Archivo declarations and files, prior typography
+token mappings and role metrics, and removes the three published SF Pro Rounded
+faces. No data or application-behavior rollback is required.
 
-- reports OS/2 `usWeightClass: 700`;
-- reports width class 5 and normal style;
-- has coherent SF Pro Bold naming;
-- loads without sanitizer/parser warnings in Chromium and Firefox;
-- is suitable for committed local web delivery.
+## 15. Publication record
 
-System-installed SF Pro, synthetic 700, Rounded Semibold 600, Rounded Heavy
-800, Rounded Black 900, and the malformed Rounded Bold file are prohibited.
+This report is committed with the typography implementation, so its own commit
+hash cannot be embedded without creating a second commit. The exact
+implementation commit, push result, Cloudflare deployment, and three-host
+verification are recorded in the Phase 3 completion handoff.
 
-## 17. Rollback boundary
+## 16. Completion checklist
 
-This amendment is documentation-only. Reverting its single documentation
-commit restores the previous all-rounded specification and report. It does
-not affect production or require a deployment rollback.
-
-## 18. Completion checklist
-
-- [x] hybrid SF direction approved
-- [x] Rounded 400/500/600 roles documented
-- [x] non-rounded SF Pro 700 role documented
-- [x] hero title row amended
-- [x] TBJ remains wordmark-only
-- [x] Arimo, Archivo, and Inter have no future role
-- [x] synthetic, fallback, relabeled, 600-as-700, and 800-as-700 paths prohibited
-- [x] repository and untracked worktree searched
-- [x] candidates parsed and browser-tested
-- [ ] valid local non-rounded SF Pro 700 found
-- [x] production CSS untouched
-- [x] no font activated, copied, modified, or committed
-- [ ] Phase 3 ready to resume
-
-The hybrid design direction is approved, but Phase 3 still requires a valid
-local non-rounded SF Pro 700 web font.
+- [x] specification amended to the unified 400/500/600 direction
+- [x] prior 700 requirements and searches superseded
+- [x] exactly three static SF Pro Rounded faces published
+- [x] all three faces pass metadata and Chromium/Firefox loading
+- [x] all public UI/display roles migrated
+- [x] hero title resolves to SF Pro Rounded 600 at 46/48 desktop
+- [x] TBJ Neuetra remains wordmark-only
+- [x] no public role uses 700, Heavy, or Black
+- [x] Arimo, Archivo, and Inter removed from public roles
+- [x] responsive and computed-style matrix passes
+- [x] accessibility and behavior remain unchanged
+- [x] complete release gate passes
+- [x] Phase 3 completed

@@ -17,11 +17,11 @@ approved-on: 2026-07-24
 
 This revision records the user's resolved design direction:
 
-- SF Pro Rounded is approved for future public UI and display roles at weights 400, 500, and 600.
-- Non-rounded SF Pro is approved at weight 700 for the hero title and other explicitly listed 700 display roles.
+- SF Pro Rounded is approved for every future public UI and display role at weights 400, 500, and 600.
+- The hero title and all other emphasized display roles use SF Pro Rounded Semibold 600; no public role uses weight 700.
 - TBJ Neuetra remains approved for the Neuevault wordmark only.
-- Arimo, Archivo, and Inter are removed from future public UI roles; Arimo and Archivo may remain only as temporary migration compatibility faces.
-- The required production set is SF Pro Rounded Regular 400, Medium 500, and Semibold 600 plus non-rounded SF Pro Bold 700.
+- Arimo, Archivo, and Inter are removed from public UI roles; the completed typography migration no longer publishes or references them.
+- The required production set is exactly SF Pro Rounded Regular 400, Medium 500, and Semibold 600 plus the existing TBJ Neuetra wordmark face.
 - Font metadata, parsing, loading, fallback, and layout checks are implementation validation—not approval gates for font use.
 - Grainient is the selected blueprint for foundational UX patterns deliberately adopted by the user, with Neuevault-specific accessibility, security, responsive, brand, route, and product adaptations.
 - The category count/title stack uses a real 10px layout gap.
@@ -30,7 +30,7 @@ This revision records the user's resolved design direction:
 
 ## Approval record
 
-This specification was reviewed in full against its approval checklist on 24 July 2026 and amended on 26 July 2026. The user-approved hybrid SF typography direction and selected Grainient foundational UX alignment are incorporated consistently, while Neuevault-specific brand, content, routes, accessibility, responsive behavior, security, and product requirements remain protected.
+This specification was reviewed in full against its approval checklist on 24 July 2026 and amended on 26 July 2026. The final user-approved unified SF Pro Rounded 400/500/600 direction supersedes earlier typography proposals. Selected Grainient foundational UX alignment remains incorporated consistently, while Neuevault-specific brand, content, routes, accessibility, responsive behavior, security, and product requirements remain protected.
 
 Approval authorizes scoped, phased implementation planning against this future-state contract. It does not authorize an unscoped all-at-once rewrite or any production change by itself. Every migration phase requires its own task, allowed-file scope, tests, visual/accessibility review, and explicit rollback boundary.
 
@@ -92,8 +92,7 @@ Important evidence:
 
 - Current public UI is a native-module Vite application with History API routing, lazy Search/overlay features, 234 client-side asset records, and secure Pages Functions.
 - Actual responsive boundaries are 700/701, 1199/1200, and 1439/1440px.
-- Current production loads TBJ Neuetra, Arimo, and Archivo; `Inter` is named but not locally registered.
-- Local SF Pro Rounded static WOFF2 files exist but are not active or public.
+- Current production loads SF Pro Rounded Regular 400, Medium 500, and Semibold 600 for public UI/display roles, with TBJ Neuetra retained for the wordmark only.
 - Current category cards use a 460/478 ratio, 20px radius, two columns below 1200, four from 1200, and accessible hover/focus/touch/reduced-motion states.
 - Current rolling labels preserve singular accessible names and stable entry/exit states.
 - `nv-166` is restricted; its public manifest has `src:null`, and server-only delivery is non-negotiable.
@@ -102,7 +101,7 @@ Important evidence:
 
 | Foundational pattern | Decision | Neuevault adaptation |
 |---|---|---|
-| Hybrid SF role hierarchy | **Approved** | SF Pro Rounded 400/500/600, non-rounded SF Pro 700 for explicitly listed display roles, and TBJ Neuetra wordmark-only |
+| Unified SF Pro Rounded role hierarchy | **Approved** | SF Pro Rounded 400/500/600 for every public UI/display role and TBJ Neuetra wordmark-only |
 | Category count/title gap | **Approved** at 10px | Independent type line heights and responsive calibration |
 | Category reveal geometry | **Approved** at opacity 0/scale 1.4 → opacity 1/scale 1 | Focus parity, visible touch/reduced state, wrapper-based static/animated crossfade, restricted safety, cleanup |
 | Dark surfaces and restrained pill hierarchy | **Approved with adaptation** | Uses Neuevault semantic palette and existing product roles |
@@ -128,7 +127,7 @@ Important evidence:
 
 ### Font policy
 
-**Approved — Neuevault uses a deliberate hybrid SF family system.** SF Pro Rounded owns all future public UI and display roles at weights 400, 500, and 600. Non-rounded SF Pro owns weight 700 only for the hero title and other explicitly listed 700 display roles. The Neuevault wordmark retains TBJ Neuetra.
+**Approved — Neuevault uses a unified SF Pro Rounded family system.** SF Pro Rounded owns all future public UI and display roles at weights 400, 500, and 600. Headings, buttons, and the hero use Semibold 600. No public role uses CSS weight 700. The Neuevault wordmark retains TBJ Neuetra.
 
 The repository's local static WOFF2 set—not Grainient files—is the production source. The approved production weight set is:
 
@@ -136,20 +135,19 @@ The repository's local static WOFF2 set—not Grainient files—is the productio
 |---:|---|---|
 | 400 | `SF-Pro-Rounded-Regular.woff2` | body, captions, metadata, fields |
 | 500 | `SF-Pro-Rounded-Medium.woff2` | navigation, labels, category titles, hero eyebrow |
-| 600 | `SF-Pro-Rounded-Semibold.woff2` | buttons, headings, card titles |
-| 700 | a validated local `SF-Pro-Bold.woff2` or `SF-Pro-Display-Bold.woff2` | hero title and explicitly approved 700 display roles only |
+| 600 | `SF-Pro-Rounded-Semibold.woff2` | buttons, headings, card titles, hero title and CTA |
 
-Exact font metadata, internal family/subfamily names, filename-to-weight mapping, and parser behavior require ordinary implementation validation. Those checks establish correct integration; they do not reopen the approved hybrid direction. Rounded Black, Heavy, Light, Thin, and Ultralight are excluded from the public UI set unless a later approved specification adds a genuine role. SF Pro Rounded Semibold 600 must not be mapped to CSS 700, and Rounded Heavy 800 or Black 900 must not substitute for 700. The required 400/500/600 Rounded plus non-rounded 700 set must not be reduced.
+Exact font metadata, internal family/subfamily names, filename-to-weight mapping, and parser behavior require ordinary implementation validation. Those checks establish correct integration; they do not reopen the approved unified direction. Rounded Bold, Black, Heavy, Light, Thin, and Ultralight are excluded from the public UI set. Semibold remains CSS weight 600; it must not be relabelled or synthesized as 700. The required 400/500/600 set must not be expanded with a separate display family.
 
 Required declaration policy during implementation:
 
-- family name: `"SF Pro Rounded"` for 400/500/600 roles and a distinct local `"SF Pro"` or `"SF Pro Display"` family for approved 700 roles;
+- family name: `"SF Pro Rounded"` for every public UI/display role;
 - normal style only unless an approved italic role and valid local file exist;
 - static `@font-face` per real weight; do not claim a variable range;
 - `font-display: swap`;
 - fallback: `ui-rounded, "Arial Rounded MT Bold", system-ui, -apple-system, "Segoe UI", sans-serif`;
 - `font-synthesis: none`; unsupported weights/styles are prohibited;
-- no system-installed-only SF Pro source and no fallback-rendered or synthetic 700 may satisfy completion;
+- no system-installed-only SF source and no fallback-rendered or synthetic weight may satisfy completion;
 - preload only faces demonstrated to be critical by measurement.
 
 ### Existing font decisions
@@ -157,14 +155,13 @@ Required declaration policy during implementation:
 | Family | Decision | Future role | Rationale and migration notes |
 |---|---|---|---|
 | TBJ Neuetra | **Approved** | Neuevault wordmark only | Unique brand identity; retain current local variable face and 400 weight role |
-| SF Pro Rounded | **Approved** | every public UI/display role at 400, 500, or 600 | Required rounded UI direction; file and browser checks are implementation quality validation |
-| SF Pro / SF Pro Display | **Approved** | weight 700 for the hero title and explicitly listed 700 display roles only | Required non-rounded bold role; a browser-safe local web font is mandatory |
-| Arimo | **Removed from the future system**, compatibility only | none | May remain temporarily only while hero/category consumers migrate |
-| Archivo | **Removed from the future system**, compatibility only | none | May remain temporarily only while the hero eyebrow migrates |
+| SF Pro Rounded | **Approved** | every public UI/display role at 400, 500, or 600 | Required unified UI/display direction; file and browser checks are implementation quality validation |
+| Arimo | **Removed** | none | No longer declared, published, or used by a public role |
+| Archivo | **Removed** | none | No longer declared, published, or used by a public role |
 | Inter | **Removed from the future system** | none | It is not locally registered and resolves inconsistently across platforms |
 | System UI | **Approved** | fallback only | Provides resilient rendering if local fonts fail |
 
-The final system contains no Arimo, Archivo, or Inter public UI role. Their actual production removal belongs to the separately authorized typography migration phase and occurs only after each migrated role passes hero line-span, category-label, control-width, fallback, and cross-browser checks.
+The completed production migration contains no Arimo, Archivo, or Inter public UI role. Hero line-span, category-label, control-width, fallback, and cross-browser checks passed before their removal.
 
 ### Typography roles
 
@@ -179,8 +176,8 @@ Values below are future targets. “Preserve then calibrate” means the current
 | Caption | SF Pro Rounded | 11px | 400 | 15px | .02em | stable | Nonessential annotations |
 | Navigation | SF Pro Rounded | 14px | 500 | 20px within 40px viewport | -.05px | preserve metrics; test width at 1200/1440 | Rolling layer contract applies |
 | Button | SF Pro Rounded | 14px | 600 | 18px | -.08px | large CTA may use 15px | Singular accessible label |
-| Hero eyebrow | SF Pro Rounded | 12px | 500 | 16px | 0 | stable in 28px pill | Archivo is compatibility-only until migrated |
-| Hero title | SF Pro | 46px | 700 | 48px | -2px initial target | current mobile clamps retained initially | Explicit two-line spans must remain; local browser-safe non-rounded face required |
+| Hero eyebrow | SF Pro Rounded | 12px | 500 | 16px | 0 | stable in 28px pill | Unified production role |
+| Hero title | SF Pro Rounded | 46px | 600 | 48px | -2px initial target | current mobile clamps retained initially | Explicit two-line spans must remain |
 | Hero description | SF Pro Rounded | 13px | 500 | 14px desktop | -.4px initial target | looser mobile line height | Exact three semantic line groups on fitting widths |
 | Route H1 | SF Pro Rounded | 36px | 600 | 40px | -.03em | reduce to 28/32 on narrow screens | Validate long route names |
 | Section H2 | SF Pro Rounded | 28px | 600 | 32px | -.02em | 24/28 mobile | Editorial hierarchy |
@@ -198,7 +195,7 @@ Values below are future targets. “Preserve then calibrate” means the current
 
 - No page-specific font family overrides without an approved exception.
 - No synthetic weight/style and no declared range unsupported by a file.
-- Every 700 role uses the validated local non-rounded SF Pro face; no page may improvise another family or map Rounded 600/800/900 to 700.
+- No public typography role uses CSS weight 700. Semibold remains 600; Heavy 800 and Black 900 are excluded.
 - Font tokens describe semantic roles, not “looks bold” or “small gray”.
 - Font load failure must expose the documented system fallback without clipped controls.
 - Hero semantic line spans remain stable; do not substitute browser balancing.
@@ -410,7 +407,7 @@ These are future roles only; no replacement occurs in this phase.
 |---|---|---:|---|---:|---|---|---|
 | Accent | compact | 34px | 12px | pill | button 14/600 | 16px | compact primary |
 | Accent | standard | 40px | 16px | pill | button 14/600 | 16–20px | Collections/primary |
-| Accent | large | 46–47px | 16–20px | pill/22px approved CTA | SF Pro 15/700 where explicitly approved for the hero; otherwise Rounded 600 | 16–20px | hero/download |
+| Accent | large | 46–47px | 16–20px | pill/22px approved CTA | SF Pro Rounded 15/600 | 16–20px | hero/download |
 | Light | compact/standard | 34/40px | 14–16px | pill | 14/600 | 20px | Sign in |
 | Dark | standard/large | 40/46px | 16–20px | pill | 14/600 | 16–20px | secondary modal/load more |
 | Neutral | standard | 40px | 16px | pill or standard control | 14/600 | optional | low-emphasis action |
@@ -576,7 +573,7 @@ Family-specific responsibilities:
 | Surface/border | `#121212`, 1px subtle border |
 | Copy | centered flex/grid; max 225px; no absolute Figma coordinates |
 | Count/title gap | 10px real flex/grid gap between independent count and title line boxes |
-| Typography | future hybrid SF roles from section 4 |
+| Typography | unified SF Pro Rounded roles from section 4 |
 | Desktop rest | shared media wrapper opacity 0 and scale 1.4; copy fully visible |
 | Hover/focus | shared media wrapper opacity 1 and scale 1; original color; light readability scrim only |
 | Touch | shared media wrapper visible at opacity 1/scale 1 without preliminary tap |
@@ -727,7 +724,7 @@ Non-negotiable requirements:
 
 ## 25. Performance-aware UI contract
 
-- Limit active public font faces to demonstrated roles; the required set is SF Pro Rounded 400/500/600, non-rounded SF Pro 700 for explicitly approved display roles, and TBJ for the wordmark, with legacy Arimo/Archivo present only during migration.
+- Limit active public font faces to demonstrated roles; the production set is SF Pro Rounded 400/500/600 and TBJ for the wordmark.
 - Icons are local and individually importable; no runtime icon CDN or large universal sprite.
 - Images use intrinsic dimensions, responsive sources, lazy loading, and static previews.
 - Animated media loads only for visible/interactive public states and unloads after exit/route disposal.
@@ -1035,7 +1032,7 @@ Undocumented one-off branches, ordinary negative-margin alignment, transform lay
 |---:|---|---|---|---|---|---|
 | 1 | Documentation freeze/baselines | specification approved | docs/evidence only | freeze routes/states/screens | all fixture routes/viewports | rollback docs; complete on approved baselines |
 | 2 | Token aliases | phase 1 | `styles.css`, token tests/docs | add aliases before consumer changes | computed-style parity | remove aliases to rollback; no visual delta |
-| 3 | Typography/font migration | file metadata/parser/browser baseline | public fonts/CSS/tests as separately authorized | activate SF Pro Rounded 400/500/600 and browser-safe local non-rounded SF Pro 700 role-by-role; retain Arimo/Archivo only as temporary compatibility; remove Inter role | line wraps, widths, fallback, parser/network, all routes; prove no synthetic/fallback 700 | one-role rollback; complete when TBJ is wordmark-only, 400/500/600 UI roles resolve to Rounded, and approved 700 roles resolve to non-rounded SF Pro |
+| 3 | Typography/font migration | **Completed 2026-07-26** | public fonts/CSS/tests | SF Pro Rounded 400/500/600 activated; Arimo/Archivo/Inter removed from public roles | line wraps, widths, fallback, parser/network, all routes; no synthetic weights or public CSS 700 | atomic typography commit is the rollback boundary; TBJ is wordmark-only and every UI/display role resolves to Rounded 400/500/600 |
 | 4 | Icon registry/SVG replacement | approved artwork | `src/icons`, assets, component markup/tests | registry plus compatibility symbols until each control passes | names, geometry, currentColor, touch | per-icon rollback |
 | 5 | Button/IconButton/RollingLabel | tokens/icons | CSS/helpers/markup/tests | migrate family by family | dimensions, entry/exit, AX names, reduced/touch | modifier compatibility; all mapped controls pass |
 | 6 | Navigation/mobile remediation | phase 5 | header/app/nav tests | shared data model; preserve DOM modes; add Escape/focus return | route active, auth, widths, keyboard | old renderer boundary; all nav fixtures pass |
@@ -1089,7 +1086,7 @@ Controls:
 
 | Decision | Status/reason | Evidence needed | Blocking phase | Owner/next action |
 |---|---|---|---|---|
-| Exact hybrid SF file metadata mapping | Implementation calibration; use is approved | Rounded 400/500/600 and non-rounded 700 internal family/subfamily names, `name`/OS2 tables, WOFF2 parser checks, filename-to-weight confirmation, Chromium and Firefox loading | 3 | engineering font audit |
+| Exact SF Pro Rounded file metadata mapping | Implementation calibration; use is approved | Rounded 400/500/600 internal family/subfamily names, `name`/OS2 tables, WOFF2 parser checks, filename-to-weight confirmation, Chromium and Firefox loading | 3 | engineering font audit |
 | Cross-browser SF Pro typography calibration | Exact line wrapping/metrics require browser evidence | hero spans, category labels, nav/button widths, fallback snapshots in Chromium/Firefox | 3/9 | design + engineering |
 | Category reveal duration/easing | Geometry is resolved at opacity 0/scale 1.4→opacity 1/scale 1; only timing is open | frame-by-frame comparison at pointer/focus entry/exit | 9 | design QA |
 | CSS-column masonry | Deferred | reading-order usability and alternative layout performance | 10/15 | accessibility + engineering |
@@ -1106,7 +1103,7 @@ Controls:
 This specification is approved because reviewers confirmed:
 
 - [x] Authority/status and current-versus-future distinction are understood.
-- [x] Hybrid SF metadata, parsing, filename-to-weight mapping, and browser loading checks are sufficient to validate Rounded 400/500/600 plus non-rounded SF Pro 700 before implementation.
+- [x] SF Pro Rounded metadata, parsing, filename-to-weight mapping, and browser loading checks are sufficient to validate the complete 400/500/600 set before implementation.
 - [x] TBJ wordmark-only retention and removal of Arimo/Archivo/Inter from final public UI roles are represented consistently.
 - [x] Typography metrics and required calibration gates are accepted.
 - [x] Semantic color roles and deferred status colors are accepted.
