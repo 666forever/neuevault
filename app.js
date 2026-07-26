@@ -8,16 +8,29 @@ import { AuthClient } from './src/auth/AuthClient.js';
 import { enhanceRollingControls } from './src/components/rollingControls.js';
 import { initSmoothScroll, scrollToPosition, scrollToTop } from './src/scroll/lenis.js';
 import { loadLazyModule } from './src/utils/lazy.js';
+import { Icon, hydrateIcons } from './src/ui/Icon.js';
+import { IconButton } from './src/ui/IconButton.js';
+import { Button } from './src/ui/Button.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
 const authElement = document.querySelector('#auth-dialog');
 const toastElement = document.querySelector('#toast');
+const initialMenuToggle = document.querySelector('.menu-toggle');
+initialMenuToggle.outerHTML = IconButton({
+  icon: 'menu',
+  label: 'Open navigation menu',
+  size: 'standard',
+  shape: 'rounded-square',
+  className: 'menu-toggle',
+  attributes: 'aria-expanded="false" aria-controls="main-nav"',
+});
 const menuToggle = document.querySelector('.menu-toggle');
 const mainNav = document.querySelector('.main-nav');
 const BASE_TITLE = 'Banners & Icons with intent';
 const allAssets = repository.getAssets();
 initSmoothScroll();
+hydrateIcons(document);
 enhanceRollingControls(document);
 
 const showToast = message => {
@@ -57,7 +70,7 @@ function loadOverlays() {
 }
 
 function closeMenu() {
-  mainNav.classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Open navigation menu');
+  mainNav.classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Open navigation menu'); menuToggle.innerHTML = Icon('menu', { size: 'medium' });
 }
 
 function currentUrl() { return `${location.pathname}${location.search}`; }
@@ -82,7 +95,7 @@ function disposePage() {
 }
 
 function renderRouteLoadError() {
-  app.innerHTML = '<div class="page"><div class="empty-state"><h1>This page could not be loaded.</h1><p>Check your connection and try again.</p><button class="button button-dark" type="button" data-route-retry>Retry</button></div></div>';
+  app.innerHTML = `<div class="page"><div class="empty-state"><h1>This page could not be loaded.</h1><p>Check your connection and try again.</p>${Button({ label: 'Retry', variant: 'dark', attributes: 'data-route-retry' })}</div></div>`;
   app.querySelector('[data-route-retry]').onclick = () => route({ scroll: false });
   enhanceRollingControls(app);
 }
@@ -179,7 +192,7 @@ document.addEventListener('click', event => {
 });
 
 menuToggle.onclick = () => {
-  const open = mainNav.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+  const open = mainNav.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu'); menuToggle.innerHTML = Icon(open ? 'close-menu' : 'menu', { size: 'medium' });
 };
 mainNav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 
@@ -189,7 +202,7 @@ function renderAuthControls() {
     const accessibleLabel = auth.state.configured && !auth.state.authenticated ? 'Sign in with Discord' : label;
     button.classList.remove('has-roll-animation'); button.replaceChildren();
     button.dataset.userIdentity = String(auth.state.authenticated);
-    if (!auth.state.authenticated) { const icon = document.createElement('span'); icon.className = 'nav-control-icon discord-icon'; icon.setAttribute('aria-hidden', 'true'); button.append(icon); }
+    if (!auth.state.authenticated) button.insertAdjacentHTML('beforeend', Icon('discord', { size: 'large', className: 'button-icon discord-icon' }));
     const text = document.createElement('span'); text.textContent = label; button.append(text);
     button.setAttribute('aria-label', accessibleLabel); button.disabled = auth.state.loading;
     button.onclick = async () => {

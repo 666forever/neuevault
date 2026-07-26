@@ -474,6 +474,41 @@ button {
 .button-light { background: var(--gray-100); color: #050505; }
 .button-accent { background: var(--color-acid); color: #071000; }
 .button-dark { background: var(--bg-control-hover); border: var(--border-default); }
+.button-neutral { background: var(--bg-control); border: var(--border-default); }
+.button-compact { min-height: var(--control-height-compact); }
+.button-standard { min-height: var(--control-height-standard); }
+.button-large { min-height: var(--control-height-large); }
+.button-text {
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.icon {
+  display: block;
+  flex: 0 0 auto;
+  color: inherit;
+}
+.icon-compact { width: var(--icon-size-compact); height: var(--icon-size-compact); }
+.icon-standard { width: var(--icon-size-standard); height: var(--icon-size-standard); }
+.icon-medium { width: var(--icon-size-medium); height: var(--icon-size-medium); }
+.icon-large { width: var(--icon-size-large); height: var(--icon-size-large); }
+.button-icon { flex: 0 0 auto; }
+.icon-button {
+  border: 1px solid var(--border-control-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+.icon-button:disabled { cursor: not-allowed; opacity: var(--control-disabled-opacity); }
+.icon-button-compact { min-width: var(--control-height-compact); min-height: var(--control-height-compact); }
+.icon-button-standard { min-width: var(--control-height-standard); min-height: var(--control-height-standard); }
+.icon-button-large { min-width: var(--control-height-large); min-height: var(--control-height-large); }
+.icon-button-circle { border-radius: var(--radius-circle); }
+.icon-button-rounded-square { border-radius: var(--radius-sm); }
 
 .roll-text,
 .roll-icon {
@@ -668,23 +703,13 @@ button {
   font-size: var(--type-button-size);
   letter-spacing: var(--tracking-button);
 }
-.nav-control-icon,
-.hero-cta-icon {
-  display: inline-block;
-  flex: 0 0 auto;
-  background: currentColor;
-}
 .discord-icon {
-  width: var(--icon-xl);
-  height: var(--icon-xl);
-  -webkit-mask: url("/assets/icons/signin-discord.svg") center / contain no-repeat;
-  mask: url("/assets/icons/signin-discord.svg") center / contain no-repeat;
+  width: var(--icon-size-medium);
+  height: var(--icon-size-medium);
 }
 .bookmark-icon {
-  width: var(--icon-md);
-  height: var(--icon-md);
-  -webkit-mask: url("/assets/icons/collections-bookmark.svg") center / contain no-repeat;
-  mask: url("/assets/icons/collections-bookmark.svg") center / contain no-repeat;
+  width: var(--icon-size-standard);
+  height: var(--icon-size-standard);
 }
 .menu-toggle {
   display: none;
@@ -693,12 +718,7 @@ button {
   width: var(--control-height-md);
   height: var(--control-height-md);
   padding: 10px;
-}
-.menu-toggle span {
-  display: block;
-  height: 1px;
-  background: var(--color-white);
-  margin: 6px 0;
+  color: var(--color-white);
 }
 /* 9. Hero */
 .hero {
@@ -814,8 +834,6 @@ button {
 .hero-cta-icon {
   width: var(--hero-cta-icon-width);
   height: var(--hero-cta-icon-height);
-  -webkit-mask: url("/assets/icons/bolt.svg") center / contain no-repeat;
-  mask: url("/assets/icons/bolt.svg") center / contain no-repeat;
 }
 /* 10. Category and collection cards */
 .category-grid {
@@ -1066,6 +1084,7 @@ button {
   padding: 7px;
   font-size: var(--text-xs);
 }
+.lock .icon { margin: auto; }
 /* Progressive grid states */
 .asset-grid-component { position: relative; }
 .asset-thumb { display: block; position: relative; width: 100%; background: var(--bg-media); overflow: hidden; }
@@ -1291,6 +1310,7 @@ button {
   width: var(--icon-control);
   height: var(--icon-control);
   cursor: pointer;
+  color: var(--gray-100);
 }
 .modal-close {
   top: 14px;
@@ -1435,7 +1455,7 @@ footer {
     display: none;
   }
   .menu-toggle {
-    display: block;
+    display: inline-flex;
     grid-column: 2;
     grid-row: 1;
   }

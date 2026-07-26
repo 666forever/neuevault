@@ -11,7 +11,7 @@ const rollingSelector = [
   '.auth-dialog-card > .button:not(.auth-close)',
 ].join(',');
 
-const iconSelector = '.nav-control-icon, .hero-cta-icon';
+const iconSelector = '.button-icon';
 
 function createTextRoll(label) {
   const viewport = document.createElement('span');

@@ -10,6 +10,41 @@ test('mobile navigation keeps Collections and sign-in unavailable reachable', as
   await expect(page.getByRole('button', { name: 'Sign in unavailable' }).last()).toBeVisible();
 });
 
+test('registry icons preserve control names, state, and geometry', async ({ page }, testInfo) => {
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.goto('/');
+  const menu = page.locator('.menu-toggle');
+  if (testInfo.project.name === 'mobile') {
+    await expect(menu.locator('svg.icon')).toHaveCount(1);
+    await expect(menu.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true');
+    const before = await menu.boundingBox();
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-label', 'Close navigation menu');
+    await expect(menu.locator('svg.icon')).toHaveCount(1);
+    const after = await menu.boundingBox();
+    expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
+  }
+
+  const collections = page.locator(testInfo.project.name === 'mobile' ? '.mobile-nav-actions .collections-button' : '.nav-actions .collections-button');
+  await expect(collections.locator('.roll-icon svg.icon')).toHaveCount(2);
+  await expect(collections).toHaveAccessibleName('Collections');
+  await page.locator('.asset-card').first().click();
+  for (const [name, selector] of [
+    ['Close viewer', '.modal-close'],
+    ['Previous asset', '.modal-nav.prev'],
+    ['Next asset', '.modal-nav.next'],
+  ]) {
+    const control = page.locator(selector);
+    await expect(control).toHaveAccessibleName(name);
+    await expect(control.locator('svg.icon')).toHaveCount(1);
+    await expect(control.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true');
+  }
+  await expect(page.getByRole('button', { name: 'Copy link', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Download original', exact: true })).toHaveCount(1);
+  await expect(page.locator('.share-action .roll-icon svg.icon')).toHaveCount(2);
+  await expect(page.locator('.download-action .roll-icon svg.icon')).toHaveCount(2);
+});
+
 test('homepage navbar assets and hero media preserve routes and exact copy', async ({ page }) => {
   await page.goto('/');
   const logo = page.locator('.site-header .brand-logo');
@@ -340,7 +375,7 @@ test('a directly linked restricted panel refreshes after session discovery', asy
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ configured: true, authenticated: true, user: { id: 'discord-1', displayName: 'Vault Member', avatarUrl: null }, csrfToken: 'csrf-test' }) });
   });
   await page.goto('/asset/nv-166/restricted-test');
-  await expect(page.locator('.download-action .roll-text-layer').first()).toHaveText('↓ Download restricted original');
+  await expect(page.locator('.download-action .roll-text-layer').first()).toHaveText('Download restricted original');
 });
 
 test('public JPEG, PNG, and animated GIF downloads succeed cross-origin', async ({ page }, testInfo) => {
