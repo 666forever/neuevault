@@ -11,6 +11,7 @@ import { loadLazyModule } from './src/utils/lazy.js';
 import { Icon, hydrateIcons } from './src/ui/Icon.js';
 import { IconButton } from './src/ui/IconButton.js';
 import { Button } from './src/ui/Button.js';
+import { createMobileNavigation } from './src/components/mobileNavigation.js';
 
 const app = document.querySelector('#app');
 const modalElement = document.querySelector('#asset-modal');
@@ -19,7 +20,7 @@ const toastElement = document.querySelector('#toast');
 const initialMenuToggle = document.querySelector('.menu-toggle');
 initialMenuToggle.outerHTML = IconButton({
   icon: 'menu',
-  label: 'Open navigation menu',
+  label: 'Open menu',
   size: 'standard',
   shape: 'rounded-square',
   className: 'menu-toggle',
@@ -27,6 +28,7 @@ initialMenuToggle.outerHTML = IconButton({
 });
 const menuToggle = document.querySelector('.menu-toggle');
 const mainNav = document.querySelector('.main-nav');
+const desktopNavigation = matchMedia('(min-width: 1200px)');
 const BASE_TITLE = 'Banners & Icons with intent';
 const allAssets = repository.getAssets();
 initSmoothScroll();
@@ -69,9 +71,27 @@ function loadOverlays() {
   return overlayPromise;
 }
 
-function closeMenu() {
-  mainNav.classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Open navigation menu'); menuToggle.innerHTML = Icon('menu', { size: 'medium' });
+function syncActiveNavigationAccessibility() {
+  document.querySelectorAll('.site-header [aria-current="page"]').forEach(element => element.removeAttribute('aria-current'));
+  const active = document.querySelector('[data-nav].active')?.dataset.nav;
+  if (!active) {
+    if (parseRoute(location).name === 'home') document.querySelector('.site-header .brand')?.setAttribute('aria-current', 'page');
+    return;
+  }
+  const selector = active === 'collections'
+    ? `${desktopNavigation.matches ? '.nav-actions' : '.mobile-nav-actions'} [data-nav="collections"]`
+    : `.main-nav > [data-nav="${active}"]`;
+  document.querySelector(selector)?.setAttribute('aria-current', 'page');
 }
+
+const mobileNavigation = createMobileNavigation({
+  toggle: menuToggle,
+  panel: mainNav,
+  desktopMedia: desktopNavigation,
+  renderIcon: icon => Icon(icon, { size: 'medium' }),
+  canHandleEscape: () => authElement.hidden && modalElement.hidden,
+  onModeChange: syncActiveNavigationAccessibility,
+});
 
 function currentUrl() { return `${location.pathname}${location.search}`; }
 function cleanBackground(value) {
@@ -134,8 +154,9 @@ function updateRouteMetadata(route, backgroundRoute = null, asset = null) {
   const active = activeNavigation(route, backgroundRoute);
   document.querySelectorAll('[data-nav]').forEach(link => {
     const selected = link.dataset.nav === active;
-    link.classList.toggle('active', selected); if (selected) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+    link.classList.toggle('active', selected);
   });
+  syncActiveNavigationAccessibility();
   const title = asset?.title || ({ recent: 'Recently Added', icons: 'Icons', banners: 'Banners', animated: 'Animated', wallpapers: 'Wallpapers', search: 'Search', about: 'About', collections: 'Collections' })[active];
   document.title = title ? `${title} — ${BASE_TITLE}` : BASE_TITLE;
   const canonical = document.querySelector('#canonical-url');
@@ -163,16 +184,16 @@ async function route({ scroll = true } = {}) {
     const overlays = await loadOverlays().catch(() => null); if (!overlays) return;
     if (sequence !== routeSequence || parseRoute(location).name !== 'asset') return;
     overlays.assetModal.open(index >= 0 ? items : allAssets, index >= 0 ? index : allAssets.findIndex(item => item.id === asset.id), null);
-    updateRouteMetadata(current, backgroundRoute, asset); closeMenu(); return;
+    updateRouteMetadata(current, backgroundRoute, asset); mobileNavigation.closeForNavigation(); return;
   }
   if (app.dataset.route === currentUrl() && !modalElement.hidden) {
-    assetModal?.close(); updateRouteMetadata(current); closeMenu(); return;
+    assetModal?.close(); updateRouteMetadata(current); mobileNavigation.closeForNavigation(); return;
   }
   disposePage(); assetModal?.close({ restoreFocus: false }); showRouteLoading(current);
   try { await renderPage(current, sequence); } catch (error) { if (sequence === routeSequence) renderRouteLoadError(); console.error('Route chunk failed to load.', error); return; }
   finally { app.removeAttribute('aria-busy'); }
   if (sequence !== routeSequence) return; app.dataset.route = currentUrl();
-  updateRouteMetadata(current); closeMenu(); enhanceRollingControls(app); if (scroll) { scrollToTop(); requestAnimationFrame(scrollToTop); }
+  updateRouteMetadata(current); mobileNavigation.closeForNavigation(); enhanceRollingControls(app); if (scroll) { scrollToTop(); requestAnimationFrame(scrollToTop); }
 }
 
 function navigate(url, { replace = false } = {}) {
@@ -191,11 +212,6 @@ document.addEventListener('click', event => {
   event.preventDefault(); navigate(target.href);
 });
 
-menuToggle.onclick = () => {
-  const open = mainNav.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu'); menuToggle.innerHTML = Icon(open ? 'close-menu' : 'menu', { size: 'medium' });
-};
-mainNav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
-
 function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
     const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in' : 'Sign in unavailable';
@@ -209,7 +225,10 @@ function renderAuthControls() {
       button.disabled = true;
       const overlays = await loadOverlays().catch(() => null);
       button.disabled = auth.state.loading;
-      overlays?.authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
+      if (overlays) {
+        mobileNavigation.closeForNavigation();
+        overlays.authDialog.open(allAssets.find(asset => asset.requiresDiscordAuth));
+      }
     };
   });
   enhanceRollingControls(document);

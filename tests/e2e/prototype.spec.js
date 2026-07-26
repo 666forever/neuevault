@@ -5,9 +5,46 @@ import sharp from 'sharp';
 
 test('mobile navigation keeps Collections and sign-in unavailable reachable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile');
-  await page.goto('/'); await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.goto('/'); await page.getByRole('button', { name: 'Open menu' }).click();
   await expect(page.getByRole('link', { name: /Collections/ }).last()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in unavailable' }).last()).toBeVisible();
+});
+
+test('collapsed navigation owns dismissal, focus, route, and breakpoint state', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile');
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.goto('/');
+  const toggle = page.locator('.menu-toggle'); const panel = page.locator('.main-nav');
+  await expect(toggle).toHaveAccessibleName('Open menu'); await expect(toggle).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).toHaveAttribute('aria-controls', 'main-nav');
+  await expect(panel).not.toBeVisible(); await expect(panel.locator('a').first()).not.toBeVisible();
+
+  await toggle.focus(); await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.querySelector('.main-nav').contains(document.activeElement))).toBe(false);
+  await toggle.click(); await expect(toggle).toHaveAccessibleName('Close menu'); await expect(toggle).toHaveAttribute('aria-expanded', 'true'); await expect(panel).toBeVisible();
+  await toggle.focus(); await page.keyboard.press('Tab'); await expect(panel.locator('a').first()).toBeFocused();
+  await page.keyboard.press('Shift+Tab'); await expect(toggle).toBeFocused();
+
+  await panel.dispatchEvent('pointerdown'); await expect(panel).toHaveClass(/open/);
+  const beforeEscape = page.url(); await page.keyboard.press('Escape');
+  await expect(panel).not.toHaveClass(/open/); await expect(toggle).toBeFocused(); expect(page.url()).toBe(beforeEscape);
+
+  await toggle.click(); await page.locator('.hero').click({ position: { x: 5, y: 5 } });
+  await expect(panel).not.toHaveClass(/open/); await expect(toggle).not.toBeFocused(); await expect(page).toHaveURL(beforeEscape);
+
+  await toggle.click();
+  await panel.locator('a[href="/about"]').evaluate(element => element.addEventListener('click', event => event.preventDefault(), { once: true }));
+  await panel.locator('a[href="/about"]').click(); await expect(panel).toHaveClass(/open/); await expect(page).toHaveURL(beforeEscape);
+  await panel.locator('a[href="/about"]').click(); await expect(page).toHaveURL(/\/about$/);
+  await expect(panel).not.toHaveClass(/open/); await expect(toggle).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).not.toBeFocused();
+  await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1); await expect(panel.locator('[data-nav="about"]')).toHaveAttribute('aria-current', 'page');
+  await page.goBack(); await expect(page).toHaveURL(/\/$/); await expect(panel).not.toHaveClass(/open/);
+
+  await page.setViewportSize({ width: 1199, height: 900 }); await toggle.click(); await expect(panel).toHaveClass(/open/);
+  await page.setViewportSize({ width: 1200, height: 900 }); await expect(panel).not.toHaveClass(/open/); await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await page.setViewportSize({ width: 1199, height: 900 }); await expect(panel).not.toHaveClass(/open/); await expect(toggle).toHaveAccessibleName('Open menu');
+
+  await toggle.click(); await panel.locator('.sign-in-mobile').click(); await expect(page.locator('#auth-dialog')).toBeVisible(); await expect(panel).not.toHaveClass(/open/);
+  await page.keyboard.press('Escape'); await expect(page.locator('#auth-dialog')).toBeHidden(); await expect(panel).not.toHaveClass(/open/);
 });
 
 test('registry icons preserve control names, state, and geometry', async ({ page }, testInfo) => {
@@ -19,7 +56,7 @@ test('registry icons preserve control names, state, and geometry', async ({ page
     await expect(menu.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true');
     const before = await menu.boundingBox();
     await menu.click();
-    await expect(menu).toHaveAttribute('aria-label', 'Close navigation menu');
+    await expect(menu).toHaveAttribute('aria-label', 'Close menu');
     await expect(menu.locator('svg.icon')).toHaveCount(1);
     const after = await menu.boundingBox();
     expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
@@ -187,7 +224,7 @@ test('signed-out copy stays compact while the Discord OAuth action remains expli
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.route('**/api/auth/discord**', route => route.fulfill({ status: 204 }));
   await page.goto('/');
-  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible');
   await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Sign in');
   await expect(signIn).toHaveAttribute('aria-label', 'Sign in with Discord');
@@ -224,7 +261,7 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     expect(titleBox.x).toBeGreaterThanOrEqual(heroBox.x);
     expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
     if (width < 1200) {
-      const toggle = page.getByRole('button', { name: 'Open navigation menu' });
+      const toggle = page.getByRole('button', { name: 'Open menu' });
       await expect(toggle).toBeVisible(); await toggle.click();
       await expect(page.locator('.main-nav')).toHaveClass(/open/);
       await expect(page.locator('.mobile-nav-actions .collections-button')).toBeVisible();
@@ -377,10 +414,13 @@ test('modal keyboard steps and restores the opening card focus', async ({ page }
 });
 
 test('clean routes, active navigation, deep links, and legacy migration work', async ({ page, request }) => {
+  await page.goto('/'); await expect(page.locator('.site-header .brand')).toHaveAttribute('aria-current', 'page'); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1);
   for (const [pathName, label] of [['/recent', 'Recently Added'], ['/icons', 'Icons'], ['/banners', 'Banners'], ['/animated', 'Animated'], ['/wallpapers', 'Wallpapers'], ['/search', 'Search'], ['/about', 'About']]) {
     const response = await request.get(pathName); expect(response.status()).toBe(200);
     await page.goto(pathName); await expect(page.locator(`.main-nav [data-nav="${pathName.slice(1)}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1);
   }
+  await page.goto('/collections'); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1); await expect(page.locator('.site-header [data-nav="collections"][aria-current="page"]')).toHaveCount(1);
   await page.goto('/recent');
   const activeNav = page.locator('.main-nav [data-nav="recent"]');
   await expect(activeNav).toHaveCSS('color', 'rgb(245, 245, 242)');
@@ -397,12 +437,12 @@ test('clean routes, active navigation, deep links, and legacy migration work', a
 
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/') && !request.url().endsWith('/api/auth/session')) protectedRequests.push(request.url()); });
-  await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
   await page.getByRole('button', { name: 'Sign in unavailable' }).last().click();
   await expect(page.locator('#auth-title')).toHaveText('Authentication unavailable'); expect(protectedRequests).toEqual([]);
 });
 
-test('authenticated session is reflected and logout is CSRF-protected', async ({ page }) => {
+test('authenticated session is reflected and logout is CSRF-protected', async ({ page }, testInfo) => {
   let authenticated = true;
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ configured: true, authenticated, user: authenticated ? { id: 'discord-1', displayName: 'Vault Member', avatarUrl: null } : null, csrfToken: authenticated ? 'csrf-test' : null }) }));
   await page.route('**/api/auth/logout*', async route => {
@@ -413,7 +453,9 @@ test('authenticated session is reflected and logout is CSRF-protected', async ({
   if ((page.viewportSize()?.width || 1000) < 700) await page.locator('.menu-toggle').click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible'); await expect(signIn).toHaveText('Vault Member');
   await signIn.click(); await expect(page.locator('#auth-title')).toHaveText('Signed in');
-  await page.locator('.auth-logout').click(); await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Sign in');
+  await page.locator('.auth-logout').click();
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
+  await expect(page.locator('.sign-in:visible, .sign-in-mobile:visible').locator('.roll-text-layer').first()).toHaveText('Sign in');
 });
 
 test('a directly linked restricted panel refreshes after session discovery', async ({ page }) => {
