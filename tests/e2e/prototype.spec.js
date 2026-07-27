@@ -519,6 +519,71 @@ test('collection cards compose count and description without legacy count copy',
   await expect(page.getByText('in full archive')).toHaveCount(0);
 });
 
+test('homepage collection section follows the reference geometry contract', async ({ page }, testInfo) => {
+  await page.goto('/');
+  const section = page.locator('.collection-section');
+  const grid = section.locator('.collection-grid');
+  const cards = grid.locator('.collection-card');
+  await expect(cards).toHaveCount(3);
+
+  const geometry = await section.evaluate(element => {
+    const grid = element.querySelector('.collection-grid');
+    const card = grid.querySelector('.collection-card');
+    const cover = card.querySelector('.collection-cover');
+    const meta = card.querySelector('.collection-meta');
+    const header = element.querySelector('.section-head');
+    const rect = target => target.getBoundingClientRect();
+    return {
+      section: rect(element),
+      grid: rect(grid),
+      card: rect(card),
+      cover: rect(cover),
+      meta: rect(meta),
+      gridGap: getComputedStyle(grid).gap,
+      columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+      cardRadius: getComputedStyle(card).borderRadius,
+      mediaRadius: getComputedStyle(cover).borderRadius,
+      metaPadding: getComputedStyle(meta).padding,
+      headerGap: rect(grid).top - rect(header).bottom,
+      clientWidth: document.documentElement.clientWidth,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+
+  expect(geometry.overflow).toBeLessThanOrEqual(0);
+  if (testInfo.project.name === 'mobile') {
+    expect(geometry.columns).toBe(1);
+    expect(geometry.cardRadius).toBe('14px');
+    expect(geometry.card.width).toBeGreaterThan(340);
+  } else {
+    expect(geometry.columns).toBe(3);
+    expect(geometry.gridGap).toBe('15px');
+    const expectedSectionWidth = Math.min(geometry.clientWidth - 20, 1440);
+    expect(geometry.section.width).toBeCloseTo(expectedSectionWidth, 0);
+    expect(geometry.card.width).toBeCloseTo((expectedSectionWidth - 30) / 3, 0);
+    expect(geometry.cover.width / geometry.cover.height).toBeCloseTo(41 / 44, 2);
+    expect(geometry.cardRadius).toBe('20px');
+    expect(geometry.mediaRadius).toBe('15px');
+    expect(geometry.metaPadding).toBe('24px');
+    expect(geometry.headerGap).toBeCloseTo(30, 0);
+  }
+});
+
+test('collection metadata remains natural-height for real copy', async ({ page }) => {
+  await page.goto('/collections');
+  const results = await page.locator('.collection-card').evaluateAll(cards => cards.map(card => {
+    const title = card.querySelector('h3');
+    const description = card.querySelector('.collection-meta p');
+    return {
+      titleContained: title.scrollHeight <= title.clientHeight,
+      descriptionContained: description.scrollHeight <= description.clientHeight,
+      cardContained: card.scrollHeight <= card.clientHeight,
+    };
+  }));
+  expect(results.length).toBeGreaterThan(1);
+  expect(results.every(result => Object.values(result).every(Boolean))).toBe(true);
+});
+
 test('collection cards preserve editorial geometry across pointer, focus, and exit', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/collections');
@@ -547,7 +612,7 @@ test('collection cards preserve editorial geometry across pointer, focus, and ex
 
   await expect(card).toHaveAccessibleName('White Banners Collection 11 Bright and minimal banners');
   await expect(staticCover).toBeVisible();
-  expect(await state()).toMatchObject({ shellTransform: 'none', mediaTransform: 'matrix(1, 0, 0, 1, 0, 0)', shellRadius: '16px', mediaRadius: '13px', staticOpacity: '1', animatedOpacity: '0' });
+  expect(await state()).toMatchObject({ shellTransform: 'none', mediaTransform: 'matrix(1, 0, 0, 1, 0, 0)', shellRadius: '20px', mediaRadius: '15px', staticOpacity: '1', animatedOpacity: '0' });
 
   await card.hover();
   await expect(animated).toHaveAttribute('src', /nv-054\.gif$/);

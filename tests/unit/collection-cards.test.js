@@ -42,12 +42,24 @@ describe('collection-card blueprint contract', () => {
   });
 
   it('keeps collection geometry distinct from category reveal behavior', () => {
+    expect(css).toMatch(/--collection-section-max:\s*1440px/);
+    expect(css).toMatch(/--collection-grid-gap:\s*15px/);
+    expect(css).toMatch(/--collection-card-padding:\s*5px/);
+    expect(css).toMatch(/--collection-card-radius:\s*20px/);
+    expect(css).toMatch(/--collection-media-radius:\s*15px/);
+    expect(css).toMatch(/--collection-media-ratio:\s*41\s*\/\s*44/);
+    expect(css).toMatch(/--collection-meta-padding-inline:\s*24px/);
+    expect(css).toMatch(/--collection-heading-grid-gap:\s*30px/);
     expect(css).toMatch(/--collection-card-lift:\s*-4px/);
     expect(css).toMatch(/--collection-media-scale-active:\s*1\.03/);
+    expect(css).toMatch(/\.section\.collection-section\s*\{[\s\S]*?--collection-section-gutter/);
+    expect(css).toMatch(/\.collection-grid\s*\{[\s\S]*?repeat\(3,\s*1fr\)/);
+    expect(css).toMatch(/@media \(max-width: 700px\)[\s\S]*?\.collection-grid\s*\{[\s\S]*?grid-template-columns:\s*1fr/);
     expect(css).toMatch(/\.collection-card:is\(:hover, :focus-visible, :focus-within\)\s*\{[\s\S]*?translateY\(var\(--collection-card-lift\)\)/);
     expect(css).toMatch(/\.collection-card:is\(:hover, :focus-visible, :focus-within\) \.collection-media-frame\s*\{[\s\S]*?scale\(var\(--collection-media-scale-active\)\)/);
     expect(css).not.toMatch(/\.collection-card[^}]*category-media/);
     expect(css).not.toMatch(/\.collection-media-frame[^}]*opacity:\s*0/);
+    expect(css).not.toMatch(/\.category-card[^}]*collection-/);
   });
 
   it('keeps touch and reduced-motion cards static and visible', () => {

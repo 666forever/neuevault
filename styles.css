@@ -388,13 +388,27 @@
   --category-count-size-mobile: 11px;
   --category-count-line-mobile: 1.4;
 
-  --collection-grid-gap: 14px;
-  --collection-card-padding: 4px;
+  --collection-section-max: 1440px;
+  --collection-section-gutter: 10px;
+  --collection-section-space-before: 200px;
+  --collection-section-space-after: 200px;
+  --collection-heading-grid-gap: 30px;
+  --collection-grid-gap: 15px;
+  --collection-card-padding: 5px;
+  --collection-card-radius: 20px;
   --collection-card-lift: -4px;
   --collection-media-scale-active: 1.03;
-  --collection-media-ratio: 0.96;
+  --collection-media-ratio: 41 / 44;
   --collection-media-ratio-mobile: 1.02;
-  --collection-media-radius: var(--radius-media);
+  --collection-media-radius: 15px;
+  --collection-meta-padding-inline: 24px;
+  --collection-meta-padding-top: 24px;
+  --collection-meta-padding-bottom: 24px;
+  --collection-title-gap: 10px;
+  --collection-title-size: 20px;
+  --collection-title-line: 24px;
+  --collection-description-size: 14px;
+  --collection-description-line: 19.6px;
 
   --z-header: 20;
   --z-content-overlay: 1;
@@ -460,6 +474,13 @@ button {
 .section.recent-section {
   width: min(calc(100% - (var(--section-gutter) * 2)), var(--container-page));
   margin-top: var(--section-space-wide);
+}
+.section.collection-section {
+  width: min(calc(100% - (var(--collection-section-gutter) * 2)), var(--collection-section-max));
+  margin-top: var(--collection-section-space-before);
+}
+.section.collection-section + .section.recent-section {
+  margin-top: var(--collection-section-space-after);
 }
 
 /* 7. Component primitives */
@@ -970,6 +991,20 @@ button {
   font-size: var(--text-sm);
   display: none;
 }
+.collection-section .section-head {
+  align-items: center;
+  margin-bottom: var(--collection-heading-grid-gap);
+}
+.collection-section .section-head h2,
+.collection-section .text-link {
+  font-size: var(--collection-title-size);
+  font-weight: var(--weight-medium);
+  line-height: var(--collection-title-line);
+}
+.collection-section .text-link {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
 .text-link {
   font-size: var(--text-sm);
   color: var(--gray-400);
@@ -984,7 +1019,7 @@ button {
 .collection-card {
   background: var(--bg-surface);
   border: var(--border-subtle);
-  border-radius: var(--radius-card);
+  border-radius: var(--collection-card-radius);
   padding: var(--collection-card-padding);
   overflow: hidden;
   transition:
@@ -1024,16 +1059,24 @@ button {
   transform: scale(var(--collection-media-scale-active));
 }
 .collection-meta {
-  padding: 16px 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--collection-title-gap);
+  padding:
+    var(--collection-meta-padding-top)
+    var(--collection-meta-padding-inline)
+    var(--collection-meta-padding-bottom);
 }
 .collection-meta h3 {
-  font-size: var(--type-card-title-size);
-  font-weight: var(--type-card-title-weight);
-  margin: 0 0 7px;
+  font-size: var(--collection-title-size);
+  font-weight: var(--weight-medium);
+  line-height: var(--collection-title-line);
+  margin: 0;
 }
 .collection-meta p {
   color: var(--text-muted);
-  font-size: var(--type-caption-size);
+  font-size: var(--collection-description-size);
+  line-height: var(--collection-description-line);
   margin: 0;
 }
 .badge {
@@ -1526,6 +1569,16 @@ footer {
   :root {
     --radius-card: 14px;
     --modal-actions-bottom: -1px;
+    --collection-card-radius: 14px;
+    --collection-media-radius: var(--radius-media);
+    --collection-meta-padding-inline: 13px;
+    --collection-meta-padding-top: 16px;
+    --collection-meta-padding-bottom: 15px;
+    --collection-title-gap: 7px;
+    --collection-title-size: 14px;
+    --collection-title-line: normal;
+    --collection-description-size: 10px;
+    --collection-description-line: normal;
   }
   .site-header {
     height: 60px;
@@ -1570,6 +1623,13 @@ footer {
   .section.recent-section {
     margin-top: var(--section-space-mobile);
     width: calc(100% - 24px);
+  }
+  .section.collection-section {
+    margin-top: var(--section-space-mobile);
+    width: calc(100% - 24px);
+  }
+  .section.collection-section + .section.recent-section {
+    margin-top: var(--section-space-mobile);
   }
   .collection-grid {
     grid-template-columns: 1fr;
