@@ -6,6 +6,11 @@ export function bindImageErrors(scope = document) {
         image.remove();
         return;
       }
+      if (image.classList.contains('asset-animated')) {
+        image.closest('.asset-card')?.classList.remove('asset-playing');
+        image.remove();
+        return;
+      }
       image.closest('.asset-thumb, .collection-cover, .modal-preview, .route-hero')?.classList.add('image-error');
       image.remove();
     }, { once: true });

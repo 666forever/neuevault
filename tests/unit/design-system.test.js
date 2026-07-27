@@ -23,6 +23,10 @@ describe('public design system', () => {
       '--category-copy-line', '--type-category-count-weight', '--type-category-title-weight',
       '--category-media-rest-opacity', '--category-media-rest-scale',
       '--category-media-active-opacity', '--category-media-active-scale',
+      '--asset-grid-max', '--asset-grid-gutter', '--asset-column-gap', '--asset-row-gap',
+      '--asset-card-radius', '--asset-card-border', '--asset-overlay-min-height',
+      '--asset-overlay-padding-inline', '--asset-title-size', '--asset-meta-size',
+      '--asset-badge-offset', '--asset-badge-size',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 

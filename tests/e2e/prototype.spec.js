@@ -729,6 +729,82 @@ test('reduced motion keeps visible gallery GIFs static', async ({ page }, testIn
   await expect(card.locator('.asset-animated')).not.toHaveAttribute('src'); await expect(card).not.toHaveClass(/asset-playing/);
 });
 
+test('asset masonry matches the measured desktop frame and preserves hover/focus/touch metadata', async ({ page }, testInfo) => {
+  if (testInfo.project.name === 'desktop') {
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto('/recent');
+    const grid = page.locator('.masonry');
+    const card = page.locator('.asset-card').first();
+    await expect.poll(() => page.locator('.asset-card').count()).toBeGreaterThan(8);
+    const geometry = await page.locator('.asset-grid-component').evaluate((component) => {
+      const cards = [...component.querySelectorAll('.asset-card')];
+      const first = cards[0].getBoundingClientRect();
+      const columns = [...new Set(cards.map(item => Math.round(item.getBoundingClientRect().x * 100) / 100))].sort((a, b) => a - b);
+      return {
+        component: component.getBoundingClientRect().toJSON(),
+        card: first.toJSON(),
+        columns,
+        gap: columns[1] - columns[0] - first.width,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(geometry.component.width).toBeCloseTo(1440, 1);
+    expect(geometry.component.x).toBeCloseTo(80, 1);
+    expect(geometry.card.width).toBeCloseTo(348.75, 1);
+    expect(geometry.columns).toHaveLength(4);
+    expect(geometry.gap).toBeCloseTo(15, 1);
+    expect(geometry.overflow).toBe(0);
+    await expect(card).toHaveCSS('border-radius', '15px');
+    await card.hover();
+    await expect(card.locator('.asset-overlay')).toHaveCSS('opacity', '1');
+    await expect.poll(() => card.locator('.asset-static').evaluate(image => new DOMMatrixReadOnly(getComputedStyle(image).transform).a)).toBeCloseTo(1.025, 3);
+    await page.locator('.page-title').hover();
+    await card.focus();
+    await expect(card.locator('.asset-overlay')).toHaveCSS('opacity', '1');
+    await expect.poll(() => card.locator('.asset-static').evaluate(image => new DOMMatrixReadOnly(getComputedStyle(image).transform).a)).toBeCloseTo(1.025, 3);
+    await expect(grid).toBeVisible();
+  } else {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.goto('/recent');
+    const cards = page.locator('.asset-card');
+    await expect.poll(() => cards.count()).toBeGreaterThan(8);
+    await expect(cards.first().locator('.asset-overlay')).toHaveCSS('opacity', '1');
+    const mobile = await page.locator('.asset-grid-component').evaluate((component) => {
+      const cards = [...component.querySelectorAll('.asset-card')];
+      return {
+        width: component.getBoundingClientRect().width,
+        columns: new Set(cards.map(card => Math.round(card.getBoundingClientRect().x))).size,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(mobile.columns).toBe(2);
+    expect(mobile.width).toBeCloseTo(306, 1);
+    expect(mobile.overflow).toBe(0);
+  }
+});
+
+test('asset preview failures preserve stable geometry and animated failure keeps the static preview', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.route(/nv-\d+\.gif(?:\?|$)/, route => {
+    const url = route.request().url();
+    return url.includes('/originals/') || (url.includes('/neuevault/public/animated/') && !url.includes('/pg_1,'))
+      ? route.abort()
+      : route.continue();
+  });
+  await page.goto('/recent');
+  const animatedCard = page.locator('.asset-card').filter({ has: page.locator('.format-badge') }).first();
+  await animatedCard.scrollIntoViewIfNeeded();
+  await expect(animatedCard.locator('.asset-animated')).toHaveCount(0);
+  await expect(animatedCard.locator('.asset-static')).toBeVisible();
+  await expect(animatedCard.locator('.asset-thumb')).not.toHaveClass(/image-error/);
+
+  const staticCard = page.locator('.asset-card').filter({ hasNot: page.locator('.format-badge') }).first();
+  await staticCard.locator('.asset-static').evaluate(image => image.dispatchEvent(new Event('error')));
+  await expect(staticCard.locator('.asset-static')).toHaveCount(0);
+  await expect(staticCard.locator('.asset-thumb')).toHaveClass(/image-error/);
+  expect((await staticCard.boundingBox()).height).toBeGreaterThanOrEqual(180);
+});
+
 test('category cards share base and hover visual treatment', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop'); await page.goto('/');
   const first = page.locator('a[href="/categories/ethereal"]'); const fourth = page.locator('a[href="/categories/matching"]');
