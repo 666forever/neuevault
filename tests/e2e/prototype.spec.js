@@ -413,6 +413,108 @@ test('modal keyboard steps and restores the opening card focus', async ({ page }
   await page.goForward(); await expect(page.locator('#asset-modal')).toBeVisible();
 });
 
+test('asset modal and auth surfaces preserve aligned geometry and accessible containment', async ({ page }, testInfo) => {
+  await page.route('**/api/auth/session*', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}',
+  }));
+  await page.goto('/asset/nv-147/5668aab8202896db0fc468ea0dc6b7a3');
+  const shell = page.locator('.modal-shell');
+  const preview = page.locator('.modal-preview');
+  const info = page.locator('.modal-info');
+  await expect(shell).toBeVisible();
+  await expect(info).toHaveAttribute('data-lenis-prevent', '');
+  await expect(page.getByRole('button', { name: 'Close viewer' })).toBeFocused();
+  await expect(page.locator('.modal-actions .button')).toHaveCount(2);
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('button', { name: 'Copy link' })).toBeFocused();
+  await page.getByRole('button', { name: 'Copy link' }).click();
+  await expect(page.locator('#toast')).not.toHaveText('');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Close viewer' })).toBeFocused();
+
+  const geometry = await page.evaluate(() => {
+    const box = selector => {
+      const rect = document.querySelector(selector).getBoundingClientRect();
+      return { width: rect.width, height: rect.height, x: rect.x, y: rect.y };
+    };
+    return {
+      viewport: { width: innerWidth, height: innerHeight },
+      shell: box('.modal-shell'),
+      preview: box('.modal-preview'),
+      info: box('.modal-info'),
+      close: box('.modal-close'),
+      prev: box('.modal-nav.prev'),
+      next: box('.modal-nav.next'),
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  expect(geometry.overflow).toBeLessThanOrEqual(0);
+  expect(geometry.close).toMatchObject({ width: 40, height: 40 });
+  expect(geometry.prev).toMatchObject({ width: 40, height: 40 });
+  expect(geometry.next).toMatchObject({ width: 40, height: 40 });
+
+  if (testInfo.project.name === 'desktop') {
+    expect(geometry.shell.width).toBeCloseTo(1180, 0);
+    expect(geometry.shell.height).toBeCloseTo(Math.min(820, geometry.viewport.height * 0.94), 0);
+    expect(geometry.info.width).toBeCloseTo(380, 0);
+    expect(geometry.preview.width).toBeCloseTo(798, 0);
+  } else {
+    expect(geometry.shell.width).toBeCloseTo(geometry.viewport.width, 0);
+    expect(geometry.shell.height).toBeCloseTo(geometry.viewport.height, 0);
+    expect(geometry.info.width).toBeCloseTo(geometry.viewport.width, 0);
+    expect(geometry.preview.height).toBeLessThanOrEqual(420);
+  }
+
+  await page.getByRole('button', { name: 'Close viewer' }).click();
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
+  await page.getByRole('button', { name: 'Sign in with Discord' }).last().click();
+  const authCard = page.locator('.auth-dialog-card');
+  await expect(authCard).toBeVisible();
+  await expect(authCard).toHaveAttribute('data-lenis-prevent', '');
+  await expect(page.getByRole('button', { name: 'Close sign-in dialog' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('button', { name: 'Continue with Discord' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Close sign-in dialog' })).toBeFocused();
+  const authGeometry = await authCard.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const close = element.querySelector('.auth-close').getBoundingClientRect();
+    return { width: rect.width, height: rect.height, closeWidth: close.width, closeHeight: close.height };
+  });
+  expect(authGeometry.width).toBeLessThanOrEqual(440);
+  expect(authGeometry.closeWidth).toBe(40);
+  expect(authGeometry.closeHeight).toBe(40);
+});
+
+test('modal long metadata and failed preview remain contained without a broken-image glyph', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  const manifest = JSON.parse(await readFile(path.resolve('src/generated/assets.json'), 'utf8'));
+  const asset = manifest.find(item => item.id === 'nv-147');
+  await page.route('**/nv-147.jpg', route => route.abort());
+  await page.goto(`/asset/${asset.id}/${asset.slug}`);
+  await expect(page.locator('.modal-preview')).toHaveClass(/image-error/);
+  await expect(page.locator('.modal-preview img')).toHaveCount(0);
+  await page.locator('.meta-row dd').first().evaluate(element => {
+    element.textContent = 'A deliberately long metadata value that validates natural wrapping without changing production data or modal behavior';
+  });
+  const containment = await page.evaluate(() => {
+    const shell = document.querySelector('.modal-shell').getBoundingClientRect();
+    const info = document.querySelector('.modal-info').getBoundingClientRect();
+    return {
+      shellWidth: shell.width,
+      infoWidth: info.width,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      valueOverflow: document.querySelector('.meta-row dd').scrollWidth - document.querySelector('.meta-row dd').clientWidth,
+    };
+  });
+  expect(containment.shellWidth).toBeLessThanOrEqual(1180);
+  expect(containment.infoWidth).toBeLessThanOrEqual(380);
+  expect(containment.overflow).toBeLessThanOrEqual(0);
+  expect(containment.valueOverflow).toBeLessThanOrEqual(0);
+});
+
 test('clean routes, active navigation, deep links, and legacy migration work', async ({ page, request }) => {
   await page.goto('/'); await expect(page.locator('.site-header .brand')).toHaveAttribute('aria-current', 'page'); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1);
   for (const [pathName, label] of [['/recent', 'Recently Added'], ['/icons', 'Icons'], ['/banners', 'Banners'], ['/animated', 'Animated'], ['/wallpapers', 'Wallpapers'], ['/search', 'Search'], ['/about', 'About']]) {
