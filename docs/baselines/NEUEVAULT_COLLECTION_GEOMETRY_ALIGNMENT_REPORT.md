@@ -225,5 +225,5 @@ accessibility, or restricted-media safety.
 - [x] Chromium and Firefox targeted geometry checks pass.
 - [x] Side-by-side evidence captured and sanitized.
 - [x] Complete unit, build, E2E, asset, bundle, cache, secret, and Cloudinary gate.
-- [ ] Atomic commit and push.
-- [ ] Cloudflare deployment and production-host verification.
+- [x] Atomic commit and push.
+- [x] Cloudflare deployment and production-host verification.

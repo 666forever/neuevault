@@ -27,7 +27,39 @@
     </div>
   </header>
   <main id="app" tabindex="-1"></main>
-  <footer><a class="brand brand-small" href="/" aria-label="Neuevault home"><span class="brand-logo-shell" aria-hidden="true"><span class="brand-logo"></span></span><span>Neuevault.</span></a><p>Independently curated. Built for discovery.</p><p>© 2026 Neuevault</p></footer>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-main">
+        <div class="footer-brand-block">
+          <a class="brand brand-small" href="/" aria-label="Neuevault home"><span class="brand-logo-shell" aria-hidden="true"><span class="brand-logo"></span></span><span class="brand-wordmark">Neuevault.</span></a>
+          <p class="footer-description">Independently curated. Built for discovery.</p>
+        </div>
+        <div class="footer-nav-grid">
+          <nav class="footer-group" aria-labelledby="footer-browse-title">
+            <h2 id="footer-browse-title">Browse</h2>
+            <ul>
+              <li><a href="/recent">Recently Added</a></li>
+              <li><a href="/icons">Icons</a></li>
+              <li><a href="/banners">Banners</a></li>
+              <li><a href="/animated">Animated</a></li>
+              <li><a href="/wallpapers">Wallpapers</a></li>
+            </ul>
+          </nav>
+          <nav class="footer-group" aria-labelledby="footer-neuevault-title">
+            <h2 id="footer-neuevault-title">Neuevault</h2>
+            <ul>
+              <li><a href="/collections">Collections</a></li>
+              <li><a href="/search">Search</a></li>
+              <li><a href="/about">About</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <p>© 2026 Neuevault</p>
+      </div>
+    </div>
+  </footer>
   <div class="modal" id="asset-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden></div>
   <div class="auth-dialog" id="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

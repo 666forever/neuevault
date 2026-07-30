@@ -27,6 +27,8 @@ describe('public design system', () => {
       '--asset-card-radius', '--asset-card-border', '--asset-overlay-min-height',
       '--asset-overlay-padding-inline', '--asset-title-size', '--asset-meta-size',
       '--asset-badge-offset', '--asset-badge-size',
+      '--footer-max', '--footer-space-before', '--footer-padding-top', '--footer-padding-bottom',
+      '--footer-grid-gap', '--footer-group-gap', '--footer-link-gap', '--footer-divider',
     ]) expect(css).toMatch(new RegExp(`${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`));
   });
 
@@ -37,7 +39,7 @@ describe('public design system', () => {
     expect(css).toMatch(/\.select,[\s\S]*?\.search-input\s*\{[\s\S]*?height:\s*var\(--control-height-field\)/);
     expect(css).toMatch(/\.modal\s*\{[\s\S]*?z-index:\s*var\(--z-modal\)/);
     expect(css).toMatch(/\.auth-dialog\s*\{[\s\S]*?z-index:\s*var\(--z-auth-dialog\)/);
-    expect(css).toMatch(/footer\s*\{[\s\S]*?var\(--container-footer\)/);
+    expect(css).toMatch(/\.footer-inner\s*\{[\s\S]*?var\(--footer-max\)/);
   });
 
   it('keeps one canonical rule for formerly duplicated component selectors', () => {

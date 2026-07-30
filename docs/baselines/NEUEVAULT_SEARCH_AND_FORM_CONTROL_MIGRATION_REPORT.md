@@ -268,5 +268,5 @@ typography, icons, cards, masonry, or deployment configuration.
 - [x] keyboard/touch/reduced-motion pass
 - [x] Chromium/Firefox matrix passes without overflow
 - [x] complete release gate passes
-- [ ] atomic commit and push complete
-- [ ] Cloudflare deployment and production-host verification complete
+- [x] atomic commit and push complete
+- [x] Cloudflare deployment and production-host verification complete

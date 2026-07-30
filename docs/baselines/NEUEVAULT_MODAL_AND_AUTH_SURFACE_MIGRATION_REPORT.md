@@ -301,5 +301,5 @@ typography, icons, or deployment configuration.
 - [x] mobile full-screen composition passes
 - [x] Chromium and Firefox matrices pass without overflow
 - [x] complete release gate passes
-- [ ] atomic commit and push complete
-- [ ] Cloudflare deployment and production-host verification complete
+- [x] atomic commit and push complete
+- [x] Cloudflare deployment and production-host verification complete

@@ -277,5 +277,5 @@ Cloudinary, or prior category/collection phases.
 - [x] Restricted sources remain protected.
 - [x] Chromium and Firefox matrices pass without overflow/errors.
 - [x] Complete release gate passes.
-- [ ] Atomic commit and push complete.
-- [ ] Cloudflare deployment and production-host verification complete.
+- [x] Atomic commit and push complete.
+- [x] Cloudflare deployment and production-host verification complete.

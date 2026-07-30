@@ -137,7 +137,7 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   expect(await logoShell.evaluate(element => { const style = getComputedStyle(element); return { width: style.width, height: style.height, radius: style.borderRadius, overflow: style.overflow, background: style.backgroundColor }; })).toEqual({ width: '54px', height: '28px', radius: '16px', overflow: 'hidden', background: 'rgb(18, 18, 18)' });
   await expect(logo).toHaveCSS('width', '18px');
   await expect(logo).toHaveCSS('height', '18px');
-  await expect(page.locator('.brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
+  await expect(page.locator('.site-header .brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
   await expect(page.locator('.collections-button').first()).toHaveAttribute('href', '/collections');
   const eyebrow = page.locator('.hero-eyebrow');
   await expect(eyebrow).toHaveText('Meet pfseeker 2.0');
@@ -176,7 +176,7 @@ test('approved local fonts load without italic or legacy fallbacks', async ({ pa
   }
   expect(fontResponses.some(item => item.url.includes('Italic-VariableFont'))).toBe(false);
   expect(fontResponses.some(item => /Arimo|Archivo|Inter/.test(item.url))).toBe(false);
-  expect(await page.locator('.brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('TBJ Neuetra');
+  expect(await page.locator('.site-header .brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('TBJ Neuetra');
   expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro Rounded');
   expect(await page.locator('.hero-eyebrow').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro Rounded');
 });
@@ -249,7 +249,7 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     await page.setViewportSize({ width, height: width < 700 ? 780 : 900 });
     await page.goto('/');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-    await expect(page.locator('.brand-wordmark')).toBeVisible();
+    await expect(page.locator('.site-header .brand-wordmark')).toBeVisible();
     await expect(page.locator('.hero h1')).toBeVisible();
     if (width >= 1200) {
       await expect(page.locator('.hero h1')).toHaveCSS('max-width', '658px');
@@ -653,6 +653,42 @@ test('route editorial surfaces preserve hierarchy, containment, and route behavi
   await page.goto('/phase-11-not-found');
   await expect(page.getByRole('heading', { name: 'Nothing here.' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
+});
+
+test('footer and application shell preserve landmarks, routes, and short-page flow', async ({ page }) => {
+  await page.goto('/phase-12-not-found');
+  await expect(page.locator('header')).toHaveCount(1);
+  await expect(page.locator('main')).toHaveCount(1);
+  await expect(page.locator('footer')).toHaveCount(1);
+  await expect(page.locator('.footer-group')).toHaveCount(2);
+  await expect(page.locator('.footer-group a')).toHaveCount(8);
+  await expect(page.locator('footer .brand')).toHaveAccessibleName('Neuevault home');
+  await expect(page.locator('.footer-legal')).toContainText('© 2026 Neuevault');
+
+  const shell = await page.evaluate(() => {
+    const header = document.querySelector('header').getBoundingClientRect();
+    const main = document.querySelector('main').getBoundingClientRect();
+    const footer = document.querySelector('footer').getBoundingClientRect();
+    return {
+      order: header.top <= main.top && main.bottom <= footer.top,
+      bottomAligned: footer.bottom >= innerHeight - 1,
+      overlap: Math.max(0, main.bottom - footer.top),
+      position: getComputedStyle(document.querySelector('footer')).position,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  expect(shell).toMatchObject({ order: true, bottomAligned: true, overlap: 0, position: 'static', overflow: 0 });
+
+  const about = page.locator('.footer-group a[href="/about"]');
+  await about.focus();
+  await expect(about).toBeFocused();
+  await about.click();
+  await expect(page).toHaveURL('/about');
+  await expect(page.locator('footer')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'Saved with intent.' })).toBeVisible();
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.footer-group a[href="/search"]')).toHaveCSS('transition-duration', '0s');
 });
 
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
