@@ -537,6 +537,83 @@ test('clean routes, active navigation, deep links, and legacy migration work', a
   expect(await page.locator('.main-nav a').evaluateAll(links => links.every(link => !link.getAttribute('href').includes('#/')))).toBe(true);
 });
 
+test('Search controls preserve bounded geometry, native semantics, and accessible filter state', async ({ page }, testInfo) => {
+  await page.goto('/search?q=icon&type=Icons');
+  const search = page.getByRole('search');
+  const input = page.getByRole('searchbox', { name: 'Search assets' });
+  const select = page.getByRole('combobox', { name: 'Filter by access' });
+  const active = page.getByRole('button', { name: 'Icons', exact: true });
+  await expect(search).toBeVisible();
+  await expect(input).toHaveValue('icon');
+  await expect(select).toHaveValue('all');
+  await expect(active).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.filter[aria-pressed="true"]')).toHaveCount(1);
+  const geometry = await page.evaluate(() => {
+    const box = selector => {
+      const rect = document.querySelector(selector).getBoundingClientRect();
+      const style = getComputedStyle(document.querySelector(selector));
+      return { width: rect.width, height: rect.height, radius: style.borderRadius, padding: style.padding };
+    };
+    return {
+      content: box('.search-content'),
+      input: box('.search-input'),
+      select: box('.select'),
+      filter: box('.filter'),
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  expect(geometry.content.width).toBeLessThanOrEqual(1180);
+  expect(geometry.input.height).toBe(42);
+  expect(geometry.select.height).toBe(42);
+  expect(geometry.filter.height).toBe(36);
+  expect(geometry.input.radius).toBe('999px');
+  expect(geometry.overflow).toBeLessThanOrEqual(0);
+  if (testInfo.project.name === 'mobile') {
+    expect(geometry.input.width).toBeCloseTo(geometry.content.width, 0);
+    expect(geometry.select.width).toBeCloseTo(geometry.content.width, 0);
+  }
+
+  await page.getByRole('button', { name: 'Banners', exact: true }).focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('button', { name: 'Banners', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(active).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.filter[aria-pressed="true"]')).toHaveCount(1);
+});
+
+test('Search state, empty presentation, and modal history preserve the existing URL contract', async ({ page }) => {
+  await page.goto('/search?q=icon&type=Icons');
+  const originalUrl = page.url();
+  await page.getByRole('searchbox', { name: 'Search assets' }).fill('banner');
+  await page.waitForTimeout(220);
+  await page.getByRole('combobox', { name: 'Filter by access' }).selectOption('public');
+  await page.getByRole('button', { name: 'Banners', exact: true }).click();
+  await expect(page).toHaveURL(originalUrl);
+  await page.reload();
+  await expect(page.getByRole('searchbox', { name: 'Search assets' })).toHaveValue('icon');
+  await expect(page.getByRole('button', { name: 'Icons', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('combobox', { name: 'Filter by access' })).toHaveValue('all');
+
+  await page.goto('/search?q=__phase10_no_result__');
+  await expect(page.getByRole('heading', { name: 'No matching assets' })).toBeVisible();
+  await expect(page.getByText('No assets match these filters.')).toBeVisible();
+  await expect(page.locator('#results-count')).toHaveText('0 preview results');
+  await expect(page.locator('.search-empty')).toHaveCSS('border-style', 'solid');
+
+  await page.goto('/search?q=icon');
+  const query = await page.getByRole('searchbox', { name: 'Search assets' }).inputValue();
+  const card = page.locator('.asset-card').first();
+  await card.focus();
+  await card.press('Enter');
+  await expect(page.locator('#asset-modal')).toBeVisible();
+  expect(page.url()).toContain('/asset/');
+  await page.goBack();
+  await expect(page).toHaveURL(/\/search\?q=icon$/);
+  await expect(page.getByRole('searchbox', { name: 'Search assets' })).toHaveValue(query);
+  await expect(card).toBeFocused();
+  await page.goForward();
+  await expect(page.locator('#asset-modal')).toBeVisible();
+});
+
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/') && !request.url().endsWith('/api/auth/session')) protectedRequests.push(request.url()); });
   await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
