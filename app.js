@@ -115,7 +115,7 @@ function disposePage() {
 }
 
 function renderRouteLoadError() {
-  app.innerHTML = `<div class="page"><div class="empty-state"><h1>This page could not be loaded.</h1><p>Check your connection and try again.</p>${Button({ label: 'Retry', variant: 'dark', attributes: 'data-route-retry' })}</div></div>`;
+  app.innerHTML = `<div class="page route-page"><section class="route-state route-error" role="alert" aria-labelledby="route-error-title"><h1 id="route-error-title">This page could not be loaded.</h1><p>Check your connection and try again.</p>${Button({ label: 'Retry', variant: 'dark', attributes: 'data-route-retry' })}</section></div>`;
   app.querySelector('[data-route-retry]').onclick = () => route({ scroll: false });
   enhanceRollingControls(app);
 }
@@ -123,7 +123,7 @@ function renderRouteLoadError() {
 function showRouteLoading(route) {
   if (!['search', 'type'].includes(route.name)) return;
   app.setAttribute('aria-busy', 'true');
-  app.innerHTML = '<div class="page"><div class="route-loading" role="status" aria-live="polite">Loading archive tools…</div></div>';
+  app.innerHTML = '<div class="page route-page"><div class="route-state route-loading" role="status" aria-live="polite">Loading archive tools…</div></div>';
 }
 
 const pages = createPages(repository, app, async (items, index, trigger) => {

@@ -614,6 +614,47 @@ test('Search state, empty presentation, and modal history preserve the existing 
   await expect(page.locator('#asset-modal')).toBeVisible();
 });
 
+test('route editorial surfaces preserve hierarchy, containment, and route behavior', async ({ page }, testInfo) => {
+  const routes = ['/icons', '/banners', '/animated', '/wallpapers', '/recent', '/collections', '/collections/noface-icons', '/categories/ethereal', '/about', '/phase-11-not-found'];
+  for (const route of routes) {
+    await page.goto(route);
+    await expect(page.locator('h1')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  }
+
+  await page.goto('/collections/noface-icons');
+  await expect(page.getByRole('link', { name: 'All collections' })).toHaveAttribute('href', '/collections');
+  await expect(page.locator('.route-hero')).toHaveCSS('border-radius', testInfo.project.name === 'mobile' ? '14px' : '20px');
+  await expect(page.locator('.route-copy h1')).toHaveCSS('font-weight', '600');
+  await expect(page.locator('.tag').first()).toHaveCSS('min-height', '28px');
+  await page.locator('.back-link').focus();
+  await expect(page.locator('.back-link')).toBeFocused();
+  const longContent = await page.evaluate(() => {
+    const title = document.querySelector('.route-copy h1');
+    const copy = document.querySelector('.route-copy > p');
+    const tag = document.querySelector('.tag');
+    title.textContent = 'A deliberately long collection title that must remain contained';
+    copy.textContent = 'A deliberately long collection description that tests natural wrapping without changing the route, grid, or authored production data.';
+    tag.textContent = 'a-deliberately-long-metadata-label-that-must-contain';
+    const hero = document.querySelector('.route-hero').getBoundingClientRect();
+    return {
+      titleContained: title.getBoundingClientRect().right <= hero.right,
+      copyContained: copy.getBoundingClientRect().right <= hero.right,
+      tagContained: tag.getBoundingClientRect().right <= hero.right,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  expect(longContent).toEqual({ titleContained: true, copyContained: true, tagContained: true, overflow: 0 });
+
+  await page.goto('/categories/ethereal');
+  await expect(page.getByRole('heading', { name: 'This category is empty.' })).toBeVisible();
+  await expect(page.locator('.route-empty')).toHaveCSS('border-style', 'solid');
+
+  await page.goto('/phase-11-not-found');
+  await expect(page.getByRole('heading', { name: 'Nothing here.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
+});
+
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/') && !request.url().endsWith('/api/auth/session')) protectedRequests.push(request.url()); });
   await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();

@@ -26,15 +26,18 @@ test('a delayed lazy route cannot overwrite a newer navigation', async ({ page }
   test.skip(testInfo.project.name !== 'desktop');
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.route('**/src/pages/searchPage.js*', async route => {
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     await route.continue();
   });
   await page.goto('/');
   await page.locator('.main-nav [data-nav="search"]').click();
+  await expect(page.locator('.route-loading')).toHaveText('Loading archive tools…');
+  await expect(page.locator('.route-loading')).toHaveAttribute('role', 'status');
+  await expect(page.locator('#app')).toHaveAttribute('aria-busy', 'true');
   await page.locator('.main-nav [data-nav="about"]').click();
   await expect(page).toHaveURL('/about');
   await expect(page.getByRole('heading', { name: 'Saved with intent.' })).toBeVisible();
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(1100);
   await expect(page.locator('#search-input')).toHaveCount(0);
 });
 
@@ -49,6 +52,8 @@ test('a failed route chunk reloads once and then exposes a retry state', async (
   await page.locator('.main-nav [data-nav="search"]').click();
   await expect(page).toHaveURL('/search');
   await expect(page.getByRole('heading', { name: 'This page could not be loaded.' })).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('Check your connection and try again.');
+  await expect(page.locator('.route-error')).toHaveCSS('border-style', 'solid');
   expect(chunkRequests).toBe(2);
   expect(documentRequests).toBe(2);
   await page.getByRole('button', { name: 'Retry' }).click();
