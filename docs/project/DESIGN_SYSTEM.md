@@ -1,183 +1,175 @@
 ---
 title: Neuevault Design System
 status: active
-authority: project
-last-reviewed: 2026-07-23
+authority: project-overview
+last-reviewed: 2026-07-31
 ---
 
 # Neuevault design system
 
-Neuevault uses a restrained, editorial interface: near-black surfaces, quiet borders, compact typography, and acid green reserved for actions, focus, and route state. The deployed interface is the visual baseline. Tokens make that baseline repeatable; they are not permission to redesign it.
+Neuevault uses a restrained editorial interface: near-black surfaces, quiet borders, compact rounded typography, and acid green reserved for primary action, focus, and deliberate emphasis. The deployed interface is the visual baseline. Tokens and primitives make that interface repeatable; they are not permission to redesign it.
+
+## Authority and use
+
+This page is an orientation guide, not the normative product specification. Resolve conflicts in this order:
+
+1. [`NEUEVAULT_DESIGN_SYSTEM_SPEC.md`](../specifications/NEUEVAULT_DESIGN_SYSTEM_SPEC.md) defines the approved system and implementation requirements.
+2. [`NEUEVAULT_FINAL_RELEASE_BASELINE.md`](../baselines/NEUEVAULT_FINAL_RELEASE_BASELINE.md) records the verified integrated release.
+3. Migration reports, including the [typography](../baselines/NEUEVAULT_TYPOGRAPHY_MIGRATION_REPORT.md) and [token-alias](../baselines/NEUEVAULT_TOKEN_ALIAS_MIGRATION_REPORT.md) reports, provide phase evidence and rollback boundaries.
+4. This overview summarizes the resulting system for day-to-day work.
 
 ## Token hierarchy
 
 Tokens live in `styles.css` and follow four levels:
 
-1. **Primitives** define the palette and numerical scales: `--gray-*`, `--text-*`, `--space-*`, and `--radius-*`.
-2. **Semantic tokens** describe interface roles: `--bg-page`, `--text-muted`, `--border-default`, and `--focus-ring`.
-3. **Component tokens** preserve deliberate component contracts: `--type-nav-size`, `--control-height-field`, `--radius-media`, and `--nav-gap`.
-4. **Intentional exceptions** remain local when they are unique optical or media values, such as hero gradient stops, crop positions, overlay alpha, and modal navigation offsets.
+1. **Primitives** define palette and numerical scales, such as `--gray-*`, `--space-*`, and `--radius-*`.
+2. **Semantic tokens** describe roles, such as `--bg-page`, `--text-muted`, `--border-default`, and `--focus-ring`.
+3. **Component tokens** preserve deliberate contracts, such as navigation gaps, control heights, card geometry, and hero composition.
+4. **Intentional exceptions** remain local when unique optical or media values cannot form a reusable role, such as crop positions, gradient stops, overlay alpha, and modal navigation offsets.
 
-Component rules should consume semantic or component tokens. Raw primitives are acceptable in the token layer and for a documented visual distinction that has no reusable role.
+Component rules consume semantic or component tokens. A raw primitive is acceptable in the token layer or for a documented distinction with no reusable role.
 
-## Color
+## Foundations
 
-The primitive palette runs from `--color-black` and `--gray-950` through `--gray-50` and `--color-white`. `--color-acid` is `#c2f13c`.
+### Color
 
-Common semantic roles:
+The palette runs from `--color-black` and `--gray-950` through `--gray-50` and `--color-white`; `--color-acid` is `#c2f13c`. Components use semantic roles:
 
-- `--bg-page`, `--bg-surface`, `--bg-surface-raised`, `--bg-control`, `--bg-modal`
-- `--text-primary`, `--text-secondary`, `--text-muted`, `--text-subtle`, `--text-inverse`, `--text-accent`
-- `--border-subtle`, `--border-default`, `--border-strong`, `--border-interactive-color`
-- `--focus-ring` for keyboard focus
+- backgrounds: page, surface, raised surface, control, modal, overlay, hover surface, and active surface;
+- text: primary, secondary, muted, subtle, inverse, accent, and interactive states;
+- borders: subtle, default, strong, and interactive;
+- interaction: focus ring and deliberate accent action.
 
-Media darkness, hero gradients, cover grayscale, and readability overlays remain locally tuned because their alpha values are image-dependent rather than general surface colors.
+Media darkness, hero gradients, cover effects, and readability overlays stay locally tuned because their alpha values depend on authored imagery.
 
-## Typography
+### Typography
 
-- UI: `--font-ui` (`Inter`)
-- Brand: `--font-brand` (`TBJ Neuetra`)
-- Category and hero copy: `--font-category` (local Arimo variable font, 400–700)
-- Hero eyebrow: `--font-hero-eyebrow` (local Archivo variable font, 100–900 with 62–125% width)
-- Scale: `--text-xs` through `--text-hero`
-- Weights: regular, medium, semibold, bold, and heavy
-- Semantic roles: body, nav, button, caption, card title, modal/auth title, and hero title/copy
+- **Public UI and display:** locally served `SF Pro Rounded` Regular 400, Medium 500, and Semibold 600.
+- **Wordmark only:** `TBJ Neuetra` at its approved 400 role.
+- **No public role:** Arimo, Archivo, Inter, CSS weight 700, italic faces, or synthesized weight/style.
 
-Use a semantic type role when a component contract exists. Use a primitive size for secondary copy that does not form a repeated role. Preserve the existing tracking tokens for brand, navigation, buttons, and compact labels.
+Regular roles include body, metadata, captions, fields, category counts, and ordinary footer copy. Medium roles include navigation, the hero eyebrow and description, category titles, and medium labels. Semibold roles include buttons, the hero title and CTA, route/section/card/modal headings, badges, and emphasized footer copy.
 
-## Spacing and layout
+The hero title starts at 46/48px desktop and Semibold 600. Route H1 starts at 36/40px and becomes 28/32px on narrow screens. Section, card, metadata, and control roles use their semantic type tokens rather than recreating family/size/weight declarations.
 
-The spacing scale is `4, 8, 12, 16, 20, 24, 32, 40, 48, 64px`. Optical values may remain local when moving them to the scale would alter approved alignment.
+Font synthesis is disabled. Animated glyph layers settle at exact zero translation and rotation, never at a fractional transform or scale. Browser and Figma rasterization may differ by platform; do not fake antialiasing with blur, filters, or extra shadows.
 
-Containers:
+### Spacing, radius, and surfaces
 
-- Navigation: `--container-nav` (1536px)
-- Page/media: `--container-page` (2024px)
-- Content sections: `--container-content` (1080px)
-- Footer: `--container-footer` (1320px)
-- Desktop hero gutter: `--page-gutter` (12px)
+The base spacing scale is 4, 8, 12, 16, 20, 24, 32, 40, 48, and 64px. Semantic roles cover control gaps, section rhythm, page gutters, card padding, and modal spacing. Optical exceptions remain local only when adopting the nearest role would change the approved composition.
 
-Section rhythm uses `--section-space`, `--section-space-wide`, and `--section-space-mobile`. Responsive gutters are applied by the existing breakpoints rather than by component-specific offsets.
+Radius roles cover compact controls, standard controls, nested media, cards, feature cards, hero/modal shells, pills, and circles. Important final distinctions include 20px hero/category/modal shells, 20px collection shells with 14px nested media, 15px asset cards, and pill/circular controls. Borders remain quiet; focus uses a visible semantic outline and is never conveyed by color alone.
 
-## Radius, controls, and icons
+### Layout contracts
 
-Radius roles include compact, standard, card, media, asset, large, hero/modal, pill, and circle. The 13px nested cover and 15px asset radii remain explicit component tokens because they preserve the approved nested geometry. Shared cards reduce from 16px to 14px below 700px.
+| Family | Final contract |
+|---|---|
+| Navigation | 1536px inner cap; 62px header |
+| Homepage hero | 1890px cap; `1890 / 887`; 887px maximum height |
+| Category grid | 1888px cap |
+| Collection section | 1440px cap |
+| Asset grid | 1440px cap |
+| Search | 1180px cap |
+| Editorial content | 1080px cap |
+| Route hero | 1536 × 400px desktop composition |
+| Asset modal | 1180 × 820px desktop shell, capped at 94vh |
+| Footer inner | 1320px cap within a full-width footer |
 
-Control heights:
+Do not nest wide media families inside the editorial container or reproduce alignment with negative margins and transforms.
 
-- Small navigation control: `--control-height-sm` (34px)
-- Medium/hero control: `--control-height-md` (40px)
-- Search/select field: `--control-height-field` (42px)
-- Authentication control: `--control-height-auth` (44px)
-- Large modal action: `--control-height-lg` (46px)
+## Shared primitives
 
-Icon roles are small, medium, large, extra-large, circular control, and brand artwork. Masked SVG icons inherit `currentColor`; do not force dimensions that distort their aspect ratio.
+### Button, IconButton, and Icon
 
-## Motion, shadows, and layers
+`Button` owns control alignment, minimum height, padding, pill radius, typography, disabled state, focus behavior, and the approved rolling-label option. Its semantic variants cover light authentication, acid Collections, gradient hero CTA, dark/secondary actions, and full-width actions. Button shells remain stationary; only approved internal label/icon layers move.
 
-Interactions use `--duration-fast`, `--duration-normal`, `--duration-media`, `--duration-cover`, and `--ease-standard`. Button shells remain stationary while approved internal text/icon layers may animate. Image scaling, static/animated crossfades, the grid spinner, and toast motion retain their established behavior.
+`IconButton` owns square/circular geometry, accessible naming, disabled state, and focus treatment for icon-only actions. `Icon` resolves semantic names from the local registry, renders with `currentColor`, preserves its viewBox/aspect ratio, and is decorative when the control already owns the accessible name.
 
-Hero title and description shadows use named tokens. Do not introduce new elevation or glow without an approved visual need.
+Use the registry for menu, close, previous/next, back, share, download, restricted, Discord, bookmark, bolt, and other approved utility roles. Do not introduce utility Unicode symbols, CSS-drawn icons, duplicated inline paths, or an external icon library.
 
-Layer order:
+### Fields, filters, badges, and cards
 
-- Header: `--z-header`
-- Asset modal: `--z-modal`
-- Authentication dialog: `--z-auth-dialog`
-- Toast: `--z-toast`
+Search inputs and selects share the field surface, 42px height, border, text/placeholder roles, pill radius, padding, and focus treatment. Filter pills are 36px high with an 8px gap and use `aria-pressed` for selection.
 
-Media overlays use the low `--z-content-overlay` and `--z-control-overlay` roles. Hero copy sits above both through `--z-hero-content`.
+Badges, format labels, restricted labels, tags, user controls, and compact status pills share radius and typography roles while retaining distinct semantics. Category, collection, and asset cards share surface, border, clipping, focus, and motion foundations, but keep their own media geometry and lifecycle.
 
-## Component primitives
+## Navigation and application shell
 
-### Buttons
+Desktop navigation uses its semantic type and gap tokens. The active route is identified by `aria-current`, brighter text, and a quiet persistent `#151515` pill—not acid color or an underline. Sign in/account and Collections remain distinct shared button variants.
 
-`.button` owns alignment, minimum height, padding, pill radius, typography, cursor, transition, hover, disabled, and focus behavior. Use existing variants:
+Rolling labels use a 40px clipping viewport and 40px travel. Text enters from above while paired registry icons enter from below. Pointer entry waits 10ms; pointer exit and keyboard focus are immediate. Label motion lasts 300ms, the navigation pill fades in 150ms, and entry uses the restrained approved settle without corrupting stable rest/active transforms. Duplicate visual layers are hidden from assistive technology. Touch and reduced-motion environments expose the primary layer without requiring animation.
 
-```html
-<button class="button button-light">Sign in</button>
-<a class="button button-accent">Collections</a>
-<button class="button button-dark">Secondary action</button>
-<a class="button hero-cta">Get Full Access</a>
-```
+Below 1200px, the mobile menu preserves one-tap navigation, focus restoration, Escape close, outside-pointer close, successful-route close, and body-scroll handling. The brand lockup and wordmark do not participate in rolling animation.
 
-Use a modifier or semantic parent rule for a genuine variant. Do not recreate the button foundation on a feature class.
+The global header, main, and footer form one application shell. There is one landmark of each type. Short pages keep the footer at the viewport bottom; long pages flow naturally. The footer is full width with one 1320px inner frame and grouped real internal links—never invented destinations.
 
-### Inputs and selects
+## Homepage hero
 
-`.search-input` and `.select` share surface, border, foreground, pill radius, field height, padding, and focus border. New text controls should reuse this foundation before adding a new control contract.
+The homepage hero is its own media component and must not be reused as a route hero. It uses the responsive `1890 / 887` composition, centered 658px content column, 20px clipping, video with poster/fallback behavior, the approved linear gradient, and the single non-repeating authored `1890 × 887` grain.
 
-### Cards
+Layer order is content, grain, gradient, video, fallback. Decorative layers do not intercept input. The eyebrow is non-interactive. The two semantic title lines, three semantic description lines, and `Get Full Access` CTA retain their authored copy and responsive fallback. The CTA uses the shared Button/Icon primitive and preserves its route action.
 
-Category, collection, and asset cards share semantic surfaces, subtle borders, radius roles, overflow behavior, and motion tokens. Their media ratios and interaction treatments intentionally remain distinct. Modal and authentication panels use the same surface and border roles without being forced into gallery-card geometry.
+Reduced motion avoids autoplay/motion while retaining poster, grain, gradient, readable content, and a usable CTA. Viewport lifecycle management stops unnecessary playback.
 
-Homepage category cards use a dedicated responsive contract derived from the Figma composition: `--category-grid-max` is 1888px, the desktop gap is 16px, cards use the 460/478 ratio and a 20px radius, and the centered copy block is capped at 225px. Count and title copy use the locally served Arimo variable font at weight 621, with 12px and 24px sizes respectively and a shared 29px line height. The copy block owns the subtle drop shadow.
+## Category cards
 
-On hover-capable devices, category media rests at zero opacity and reveals at full opacity on hover or keyboard focus, with original color and only an 8% readability veil. Non-hover devices keep the static preview visible so the cards do not depend on pointer hover. Public animated covers still load only during hover/focus, unload afterward, and stay static for reduced motion or restricted media. Figma absolute coordinates describe the reference frame only and must never be copied into responsive production components.
+The category grid is capped at 1888px with four columns from 1200px and two below it. Cards use the `460 / 478` ratio and 20px radius. The centered label stack uses SF Pro Rounded Regular 400 for the 12px count and Medium 500 for the 24/29px title, with a real 10px layout gap and responsive mobile calibration.
 
-### Homepage hero
+On hover-capable devices the shared media wrapper rests at opacity 0 and scale 1.4, then resolves to opacity 1 and scale 1 on pointer hover or keyboard focus. Static and animated layers crossfade inside that wrapper. Touch and reduced-motion states remain statically visible at opacity 1/scale 1. Restricted covers remain static, and public animated sources load only while policy permits and are cleaned up after interaction. Content remains accessible without animation.
 
-The homepage hero uses a responsive `1890 / 887` frame capped at 1890px wide and 887px high, with the existing 560px minimum height on non-mobile layouts and the established 540px mobile height. Its content flows naturally inside a centered 658px column; Figma's fixed internal coordinates are reference measurements, not production positioning.
+## Collection cards
 
-The visual stack is content, the single non-repeating `1890 × 887` authored grain, the Figma linear gradient, video, and the `--bg-surface` fallback. Grain uses `/assets/textures/hero_grain.png` at `100% 100%` and full authored opacity. The gradient is the sole hero shade layer; do not restore the previous radial vignette.
+The collection section is capped at 1440px. It uses three desktop columns and one mobile column, with a 15px gap; at the cap, cards are approximately 470px wide and 605px tall. Cards use a 20px outer radius and 14px nested-media radius.
 
-The eyebrow uses Archivo at 12px/500 inside a 28px-high non-interactive pill. The title, description, and CTA use Arimo. Desktop title typography is 46/48px at weight 700; description typography is 13/14px at weight 500. The CTA remains a shared `.button` variant with a 164×47px contract and preserves its `/recent` destination.
+Hover/focus may retain the approved restrained card lift, media scale/crossfade, and text treatment. Animated covers load only for eligible public media during interaction, unload afterward, and remain static for restricted or reduced-motion states. Links, counts, badges, and focus behavior remain data-driven and keyboard accessible.
 
-### Badges and pills
+## Asset grid and media lifecycle
 
-`.badge`, `.format-badge`, `.lock`, `.tag`, `.filter`, `.user-menu`, and `.sign-out` use the shared pill radius and compact type roles. Preserve format/lock placement and access meaning.
+The asset grid is a CSS-column masonry layout capped at 1440px, with four desktop columns, a 15px desktop gap, and an 8px mobile gap. Initial rendering batches eight records and advances to sixteen on the next batch. Each asset card contributes one tab stop; nested decorative/media layers do not create extra focus stops.
 
-### Modals
+Intrinsic media geometry is preserved. Static previews load first; eligible animated sources attach only while viewport and interaction policy allow, and observers, listeners, timers, and sources are cleaned up on exit or route disposal. Malformed/failing media receives an honest state. Restricted records never expose an original URL and remain compatible with the same grid geometry.
 
-The asset and authentication overlays use separate layer tokens and layouts. Asset actions share the button foundation and remain sticky within the information panel. Close and navigation controls use circular radius and control-size roles. Preserve focus trapping, Escape behavior, and background scroll locking.
+## Modal, authentication, and protected delivery
 
-### Navigation
+The asset modal is a history-aware overlay with an approximately 798/380 desktop media/info split inside the 1180 × 820 shell. Opening updates the canonical stable-ID route; Back closes, Forward reopens, direct routes work, cyclic previous/next navigation works, and gallery scroll is restored. Focus is trapped and restored, Escape closes, the background and Lenis are locked, and the information panel retains native scrolling.
 
-Navigation uses `--type-nav-*`, `--nav-gap`, and semantic link colors. The active route uses a quiet persistent pill, brighter text, and `aria-current`; it does not use an underline or acid color. The intermediate desktop gap uses `--nav-gap-compact`; mobile menu spacing remains inside the shared breakpoint.
+The authentication dialog is a distinct component and route flow, not a modal variant that grants client-side access. Session state, logout, and Discord OAuth remain server-backed.
 
-Repeated composition contracts use component tokens: `--brand-gap`, `--nav-actions-gap`, `--hero-frame-*`, `--hero-content-max`, `--tracking-hero-title`, and the hero content-gap tokens. Keep unique crop and overlay adjustments local rather than expanding this set mechanically.
+Restricted previews may be public, but the public manifest keeps the original `src` null. Originals are delivered only through the authenticated Pages Function. Copy link uses the stable public application URL, never a protected Cloudinary identifier or signed original URL. Session and restricted responses remain `no-store`; client state cannot authorize delivery.
 
-### Rolling control labels
+## Search, route pages, and states
 
-`.has-roll-animation` is the shared hover/focus treatment for primary navigation, Sign in, Collections, the hero CTA, and equivalent text actions such as load-more and modal action buttons. `.roll-text` and `.roll-icon` use a 40px clipping viewport matching the fixed travel distance: the readable first layer exits downward while the duplicate `aria-hidden` layer enters from above. Equal viewport, layer, and travel heights ensure at least one layer intersects the viewport throughout entry and exit. Stable outer-layer transforms transition between rest and active states in both directions. An inner `.roll-layer-content` supplies the entry-only settling motion without owning or corrupting those positioning transforms. The incoming text uses a restrained 49% transform origin, a 1.5px overshoot, and one 0.5px rebound before settling at exact zero translation and rotation. Paired masked icons enter from below with the inverse 1.5px/0.5px settling motion. Both use the same 300ms duration and `cubic-bezier(.76,0,.24,1)` easing; exit has no delay or rebound.
+Search uses the 1180px shell, 42px input/select fields, 36px filter pills, and 8px filter gap. URL-authored query/type state reconstructs on direct load and history navigation. Local search and filter interactions update results without rewriting the URL; a full interactive URL-rewrite policy remains deferred. Search retains batching, result counts, keyboard semantics, and the shared asset grid/modal behavior.
 
-Pointer entry waits 10ms; pointer exit and keyboard focus have no delay. Navbar links add an independently fading 40px-high `#151515` pill without changing link width, the navigation gap, or the 62px header. Its opacity settles in 150ms while the roll continues for 300ms. Hover keeps the normal link color and adds no underline. The active route uses a persistent quiet pill plus slightly brighter text, backed by `aria-current`, with no acid color or underline. Button shells remain stationary; only their internal text and paired icons move.
+Editorial route content is capped at 1080px. Route H1 uses 36/40px desktop and 28/32px mobile. Collection detail uses the distinct 1536 × 400px route hero. About, back links, tags, loading, empty, error, and Not Found states use shared type, control, surface, and focus roles without borrowing the homepage hero.
 
-`will-change` is limited to roll layers and pill surfaces in hover-capable environments, allowing compositor state to survive the complete reverse transition. Never promote static copy or use `translateZ(0)`. Touch environments show only the normal layer and do not retain a hover-only pill, so a first tap activates the control. Reduced-motion environments hide duplicate layers, disable settling animations, and switch the pill immediately. Never apply the primitive to headings, copy, labels, category titles, metadata, form fields, identity text, disabled controls, or icon-only controls.
+Lazy route loading keeps the header/footer mounted, prevents stale async renders, exposes a restrained delayed loading state with `aria-busy`/live status when perceptible, and offers a normal retry state on chunk failure.
 
-### Font rendering
+## Motion, scrolling, and layers
 
-Tracked normal variable fonts are served locally: Archivo (`wght` 100–900, `wdth` 62–125), Arimo (`wght` 400–700), and TBJ Neuetra (`wght` 100–900). Their `@font-face` ranges must match those axes, and normal UI must never request the untracked italic sources. The root disables synthetic styles and uses `optimizeLegibility` plus platform smoothing hints; these hints are advisory, especially on Windows. Animated glyph layers must settle at exact zero translation and rotation—never a fractional resting transform or scale—and compositor hints stay interaction-scoped.
+Motion tokens cover fast interaction, standard UI transition, media/crossfade timing, rolling labels, and the standard easing. Motion is never required to reveal meaning. `will-change` is scoped to active hover-capable animation layers and is never global.
 
-Figma and browsers use different text renderers. Pixel-identical rasterization cannot be guaranteed across Figma, Windows, macOS, Chromium, Firefox, display scaling, and device-pixel ratios; implementation work should correct avoidable fallback, synthesis, axis, transform, and font-file problems without faking antialiasing with shadows, blur, or filters.
+One Lenis instance is initialized centrally for the public application. Reduced-motion visitors and initialization failures retain native scrolling. Route navigation, Back/Forward restoration, and modal history use the explicit shared scroll policy. Modal/auth scroll locks pause Lenis while designated nested panels retain native scrolling.
 
-### Smooth scrolling
+Named layers cover header, content/control overlays, hero content, asset modal, authentication dialog, and toast. Do not introduce arbitrary z-index values that bypass that order.
 
-The public application owns one Lenis instance in `src/scroll/lenis.js`, initialized once from `app.js` with `autoRaf`, anchors, and navigation inertia stopping enabled. Reduced-motion visitors and initialization failures retain native scrolling. Normal route navigation uses an immediate Lenis-aware top reset; each History API entry records its native scroll position so Back/Forward and asset-modal history restore the underlying page position explicitly.
+## Responsive and accessibility requirements
 
-Dialog scroll locking pauses Lenis through the shared modal lifecycle. `.modal-info` and the authentication card use `data-lenis-prevent`, keeping nested panel scrolling native while the background remains locked. Do not initialize Lenis in the Content Tool or create route-specific instances or animation-frame loops.
+The approved responsive boundaries are 700/701, 1199/1200, and 1439/1440px. Validate at 320, 375, 700, 701, 768, 1024, 1199, 1200, 1439, 1440, 1890, and 1920px, plus 200%-equivalent zoom.
 
-### Lazy route states
-
-The global header and footer remain mounted while a first-use search/type chunk loads. The route region uses the existing page spacing, a fixed minimum block to prevent layout collapse, muted body typography, `aria-busy`, and an `aria-live` status. Chunk failures receive the standard empty-state surface and a normal dark retry button. Loading must remain restrained and must never replace navigation, introduce decorative animation, or expose stale content from an earlier route.
-
-## Responsive and reduced motion
-
-The desktop navigation collapses below 1200px. Shared card radius changes below 700px, the gallery becomes two columns, modal layout stacks, and controls remain reachable. New work must be checked at 320, 375, 768, 1024, 1199, 1200, 1439, 1440, and 1920px.
-
-`prefers-reduced-motion: reduce` disables transitions and smooth scrolling and prevents hero animation behavior. New motion must respect the same media query and must not be essential to understanding or operating a control.
+Every range must preserve containment, no horizontal overflow, readable type, reachable controls, deliberate media crops, usable modal stacking, and stable navigation. Pointer, keyboard, touch, and reduced-motion users receive equivalent content and actions. Focus remains visible; active state is not color-only; controls have singular accessible names; decorative icons are hidden; headings and landmarks remain semantic; dialog containment, Escape, focus restoration, and scroll locking remain intact.
 
 ## Adding UI or tokens
 
 **New UI work must use an existing token and component primitive before introducing a new value.**
 
-A new token should be added only when the value is reused, represents a genuine semantic role, or belongs to an intentional scale. Do not create a token merely to hide every individual literal. Do not introduce one-off one- or two-pixel variations when an existing control, spacing, radius, or type role already applies.
+Add a token only when its value is reused, represents a genuine semantic role, or belongs to an intentional scale. Do not create a token merely to hide an individual literal or introduce one- or two-pixel drift.
 
-When an exception is necessary:
+For a necessary exception:
 
-1. Confirm that using the nearest existing role changes the approved composition.
-2. Keep the value local if it is unique.
-3. Add a short comment only when its intent would otherwise be unclear.
-4. Verify responsive, keyboard, and reduced-motion states.
+1. Confirm that the nearest existing role changes the approved composition.
+2. Keep a unique value local.
+3. Comment only when intent would otherwise be unclear.
+4. Verify responsive, keyboard, touch, reduced-motion, protected-content, and failure states.
 
-Before merging CSS work, build the application, compare representative computed styles against production, check horizontal overflow at every supported breakpoint, and run the complete unit and browser suites.
+Before merging UI work, build the application, compare representative computed styles with the approved baseline, check every supported breakpoint and 200% zoom for overflow, and run the required unit, browser, asset, bundle, cache, secret, and Cloudinary gates.
