@@ -50,7 +50,7 @@ Direct Chromium and Firefox measurements at 1200, 1440, 1600, and 1920px recorde
 | Link padding | 20px reference | pill expanded outside link | 15px owned by link | 15px |
 | Link/pill height | ~39.6px | 40px | 40px | 40px |
 | Actions | ~247.6×38px | 234.5×40px signed-out | compact 38px controls | 221.5×38px |
-| Header roll | Unknown | 300ms + settle | clean immediate roll | 220ms, no settle |
+| Header roll | Unknown | 300ms + settle | clean immediate roll | 440ms, no settle |
 
 Firefox final widths differ by less than 0.15px from Chromium.
 
@@ -72,15 +72,15 @@ Each link owns its 15px inline padding and 40px height. The pill pseudo-element 
 
 ## 11. Final active and hover treatment
 
-Hover uses `#1a1a1a`; the persistent `aria-current` route uses `#151515`. Both use the same full pill radius. Text color, width, and geometry remain stable and the global focus ring remains visible.
+Hover uses `#1e1e1e`; the persistent `aria-current` route uses `#151515`. Both use the same full pill radius. Text color, width, and geometry remain stable and the global focus ring remains visible.
 
 ## 12. Final rolling-label behavior
 
-Header labels retain two accessibility-safe visual layers and exact 40px travel. Duplicate layers remain `aria-hidden`. The header override removes the settle keyframes and uses one clean reversible transform. Non-header rolling controls retain their established behavior.
+Header labels retain two accessibility-safe visual layers and use navbar-scoped 30px travel. Duplicate layers remain `aria-hidden`. The header override removes the settle keyframes and uses one clean reversible transform. Non-header rolling controls retain their established 40px behavior.
 
 ## 13. Final motion timing
 
-Header text, paired header icons, and the pill use 220ms with the standard cubic-bezier easing and no entry delay. Exit reverses immediately. Touch and reduced-motion rules expose only the primary label.
+Header text and paired header icons use 440ms with `cubic-bezier(0.54, 0.2, 0.24, 1)` and no delay. Navbar color and pill transitions use `cubic-bezier(0.54, 1.5, 0.24, 1)`; the hover pill retains its pointer-hover-only 30ms entry delay while focus and exit remain immediate. Primary navigation text uses navbar-scoped weight 400. Touch and reduced-motion rules expose only the primary label.
 
 ## 14. Final right-action treatment
 

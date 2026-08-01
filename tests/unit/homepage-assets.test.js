@@ -10,6 +10,7 @@ const permanentAssets = [
   'public/assets/icons/bolt.svg',
   'public/assets/video/furina-hero-1080p.mp4',
   'public/assets/video/furina-hero-1440p.mp4',
+  'public/assets/video/heronew.gif',
   'public/assets/textures/hero_grain.png',
   'public/fonts/SF-Pro-Rounded-Regular.woff2',
   'public/fonts/SF-Pro-Rounded-Medium.woff2',
@@ -33,7 +34,9 @@ describe('homepage presentation assets', () => {
     expect(sources.join('\n')).not.toContain('temp/');
     expect(sources.join('\n')).toContain('/fonts/tbj-neuetra-vf.woff2');
     expect(sources.join('\n')).toContain('/assets/brand/logo28x28.svg');
-    expect(sources.join('\n')).toContain('/assets/textures/hero_grain.png');
+    expect(sources.join('\n')).toContain('/assets/video/heronew.gif');
+    expect(sources.join('\n')).not.toContain('/assets/video/hero.gif');
+    expect(await readFile(path.join(root, 'src/pages/pages.js'), 'utf8')).not.toContain('furina-hero-');
     expect(sources.join('\n')).not.toContain('/assets/textures/hero-grain-1000px.png');
   });
 
@@ -41,19 +44,25 @@ describe('homepage presentation assets', () => {
     const html = await readFile(path.join(root, 'index.html'), 'utf8'); const css = await readFile(path.join(root, 'styles.css'), 'utf8');
     expect(html).toContain('<title>Banners &amp; Icons with intent</title>');
     expect(html).not.toContain('href="#/'); expect(html.match(/brand-logo-shell/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(css).toContain('--color-acid: #c2f13c'); expect(css).toContain('--nav-item-gap: 2px'); expect(css).toContain('--tracking-nav: -0.05px');
+    expect(css).toContain('--color-acid: #5865F2'); expect(css).toContain('--nav-item-gap: 2px'); expect(css).toContain('--tracking-nav: 0');
     const manifest = JSON.parse(await readFile(path.join(root, 'public/assets/brand/site.webmanifest'), 'utf8'));
     expect(manifest.icons.every(icon => icon.src.startsWith('/assets/brand/'))).toBe(true);
   });
 
-  it('defines deliberate desktop hero lines with a natural mobile fallback', async () => {
+  it('defines the revised hero copy and preserves its deliberate paragraph break', async () => {
     const pages = await readFile(path.join(root, 'src/pages/pages.js'), 'utf8');
     const css = await readFile(path.join(root, 'styles.css'), 'utf8');
-    expect(pages).toContain('<h1><span>Discover the Best</span> <span>Banners on the internet. Literally.</span></h1>');
-    expect(pages).toContain('<span>Stop digging through endless pages of repeats, trend-chasing, or whatever everyone else is already using.</span> <span>Browse alt, emo, dark, soft, strange, cute, messy, and the spaces where they cross.</span> <span>Let different aesthetics coexist. Identity forms in the borderland.</span>');
-    expect(css).toMatch(/\.hero h1 span,[\s\S]*?\.hero-description span\s*\{\s*display:\s*block/);
-    expect(css).toMatch(/@media \(max-width: 700px\)[\s\S]*?\.hero h1 span,[\s\S]*?\.hero-description span\s*\{\s*display:\s*inline/);
+    expect(pages).toContain('<h1>Timeless. Bold. Forever.</h1>');
+    expect(pages).toContain('<span>Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.</span> <span>Your identity forms in this borderland.</span>');
+    expect(pages).not.toContain('hero-eyebrow');
+    expect(css).toMatch(/\.hero-description span\s*\{\s*display:\s*block/);
     expect(css).not.toMatch(/\.hero h1\s*\{[^}]*text-wrap:\s*balance/);
+    for (const token of ['--text-hero: 60px', '--hero-content-max: auto', '--hero-title-copy-gap: 24px', '--hero-copy-size: 15px', '--radius-discord-auth: 12px']) expect(css).toContain(token);
+    expect(css).toMatch(/\.button\s*\{[\s\S]*?border-radius:\s*var\(--radius-discord-auth\)/);
+    expect(css).toMatch(/\.button-light\s*\{\s*background:\s*var\(--color-acid\)/);
+    expect(css).toMatch(/\.hero-media\s*\{[\s\S]*?object-fit:\s*fill;[\s\S]*?object-position:\s*center;[\s\S]*?opacity:\s*0\.15/);
+    expect(css).toContain('linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)');
+    expect(pages).not.toContain('hero-grain');
   });
 
   it('uses the approved local SF Pro Rounded faces without italic production references', async () => {

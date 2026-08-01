@@ -78,10 +78,7 @@ function syncActiveNavigationAccessibility() {
     if (parseRoute(location).name === 'home') document.querySelector('.site-header .brand')?.setAttribute('aria-current', 'page');
     return;
   }
-  const selector = active === 'collections'
-    ? `${desktopNavigation.matches ? '.nav-actions' : '.mobile-nav-actions'} [data-nav="collections"]`
-    : `.main-nav > [data-nav="${active}"]`;
-  document.querySelector(selector)?.setAttribute('aria-current', 'page');
+  document.querySelector(`.main-nav > [data-nav="${active}"]`)?.setAttribute('aria-current', 'page');
 }
 
 const mobileNavigation = createMobileNavigation({
@@ -214,7 +211,7 @@ document.addEventListener('click', event => {
 
 function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
-    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Sign in' : 'Sign in unavailable';
+    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Connect with Discord' : 'Sign in unavailable';
     const accessibleLabel = auth.state.configured && !auth.state.authenticated ? 'Sign in with Discord' : label;
     button.classList.remove('has-roll-animation'); button.replaceChildren();
     button.dataset.userIdentity = String(auth.state.authenticated);

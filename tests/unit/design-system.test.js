@@ -16,8 +16,8 @@ describe('public design system', () => {
       '--container-page', '--page-gutter', '--section-space', '--brand-gap', '--nav-actions-gap', '--hero-content-max',
       '--tracking-hero-title', '--hero-title-copy-gap', '--type-auth-title-mobile-size', '--z-header', '--z-hero-content',
       '--z-modal', '--z-auth-dialog', '--z-toast',
-      '--font-hero-eyebrow', '--hero-frame-max', '--hero-frame-ratio', '--hero-frame-max-height', '--hero-eyebrow-height',
-      '--hero-eyebrow-title-gap', '--hero-copy-cta-gap', '--hero-cta-width', '--hero-cta-height', '--hero-cta-radius',
+      '--hero-frame-max', '--hero-frame-ratio', '--hero-frame-max-height', '--hero-copy-cta-gap', '--hero-cta-width',
+      '--hero-cta-height', '--hero-cta-radius',
       '--font-category', '--category-grid-max', '--category-grid-gap', '--category-card-ratio', '--category-card-radius',
       '--category-copy-max', '--category-copy-min-height', '--category-count-size', '--category-title-size',
       '--category-copy-line', '--type-category-count-weight', '--type-category-title-weight',
@@ -109,9 +109,9 @@ describe('public design system', () => {
   it('defines the revised responsive hero without the obsolete vignette or tiled grain', () => {
     expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-family:\s*var\(--font-category\)[\s\S]*?font-weight:\s*var\(--weight-semibold\)[\s\S]*?font-size:\s*var\(--type-hero-size\)[\s\S]*?line-height:\s*var\(--type-hero-line\)/);
     expect(css).toMatch(/\.hero\s*\{[\s\S]*?aspect-ratio:\s*var\(--hero-frame-ratio\)[\s\S]*?max-height:\s*var\(--hero-frame-max-height\)[\s\S]*?background:\s*var\(--bg-surface\)/);
-    expect(css).toContain('linear-gradient(180deg, rgba(255, 255, 255, 0) -35.43%, rgba(0, 0, 0, 0.33) 36.66%)');
+    expect(css).toContain('linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)');
     expect(css).not.toContain('radial-gradient(177.97% 93.94%');
-    expect(css).toContain('url("/assets/textures/hero_grain.png") center / 100% 100% no-repeat');
+    expect(css).not.toContain('url("/assets/textures/hero_grain.png") center / 100% 100% no-repeat');
     expect(css).not.toContain('url("/assets/textures/hero-grain-1000px.png")');
   });
 });

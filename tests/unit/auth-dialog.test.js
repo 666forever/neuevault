@@ -31,7 +31,7 @@ describe('authentication dialog surface contract', () => {
       'Signed in',
       'Sign in with Discord',
       'Authentication unavailable',
-      'Continue with Discord',
+      'Connect with Discord',
       'Discord sign-in unavailable',
       'Sign out',
     ]) {

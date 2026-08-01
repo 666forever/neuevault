@@ -23,7 +23,7 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
     return {
       header: rect('.site-header'), shell: rect('.nav-shell'), brand: rect('.brand'), logo: rect('.brand-logo-shell'),
       nav: rect('.main-nav'), link: rect('.main-nav > a'), actions: rect('.nav-actions'), signIn: rect('.sign-in'),
-      collections: rect('.nav-actions .collections-button'), gap: getComputedStyle(document.querySelector('.main-nav')).gap,
+      gap: getComputedStyle(document.querySelector('.main-nav')).gap,
       paddingInline: linkStyle.paddingInline, pillInset: [pill.top, pill.right, pill.bottom, pill.left],
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
@@ -40,7 +40,7 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
   expect(geometry.pillInset).toEqual(['0px', '0px', '0px', '0px']);
   expect(geometry.actions.height).toBe(38);
   expect(geometry.signIn.height).toBe(38);
-  expect(geometry.collections.height).toBe(38);
+  await expect(page.locator('.collections-button')).toHaveCount(0);
   expect(Math.abs(geometry.nav.center - 720)).toBeLessThanOrEqual(1);
   expect(geometry.overflow).toBe(0);
   await expect(page.locator('[data-nav="recent"]')).toHaveAttribute('aria-current', 'page');
@@ -54,18 +54,21 @@ test('navbar pill and rolling label share one stable hit box', async ({ page }, 
   const link = page.locator('.main-nav > a').first();
   const before = await link.boundingBox();
   await link.hover();
-  await page.waitForTimeout(240);
+  await page.waitForTimeout(480);
   const active = await link.evaluate(element => ({
     pillOpacity: getComputedStyle(element, '::before').opacity,
     pillDuration: getComputedStyle(element, '::before').transitionDuration,
+    pillDelay: getComputedStyle(element, '::before').transitionDelay,
     textDuration: getComputedStyle(element.querySelector('.roll-text-layer')).transitionDuration,
+    textTiming: getComputedStyle(element.querySelector('.roll-text-layer')).transitionTimingFunction,
     textDelay: getComputedStyle(element.querySelector('.roll-text-layer')).transitionDelay,
+    fontWeight: getComputedStyle(element).fontWeight,
     settleAnimation: getComputedStyle(element.querySelector('.roll-layer-content')).animationName,
   }));
-  expect(active).toEqual({ pillOpacity: '1', pillDuration: '0.22s', textDuration: '0.22s', textDelay: '0s', settleAnimation: 'none' });
+  expect(active).toEqual({ pillOpacity: '1', pillDuration: '0.44s', pillDelay: '0.03s', textDuration: '0.44s', textTiming: 'cubic-bezier(0.54, 1.5, 0.24, 1)', textDelay: '0s', fontWeight: '400', settleAnimation: 'none' });
   expect(await link.boundingBox()).toEqual(before);
   await page.locator('.hero').hover();
-  await page.waitForTimeout(240);
+  await page.waitForTimeout(480);
   await expect(link.locator('.roll-text-layer').first()).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
   await link.focus();
   await expect(link).toBeFocused();

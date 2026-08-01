@@ -2,7 +2,6 @@ const rollingSelector = [
   '.main-nav > a',
   '.sign-in',
   '.sign-in-mobile',
-  '.collections-button',
   '.hero-cta',
   '.text-link',
   '.back-link',
