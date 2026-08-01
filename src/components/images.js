@@ -1,5 +1,6 @@
 export function bindImageErrors(scope = document) {
-  scope.querySelectorAll('img[data-image-fallback]').forEach(image => {
+  scope.querySelectorAll('img[data-image-fallback]:not([data-bound])').forEach(image => {
+    image.dataset.bound = 'true';
     image.addEventListener('error', () => {
       if (image.classList.contains('cover-animated') && image.closest('.collection-card')) {
         image.closest('.collection-card')?.classList.remove('cover-playing');

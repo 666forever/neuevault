@@ -22,11 +22,10 @@ const asset = (overrides = {}) => ({
   ...overrides,
 });
 
-describe('asset card and masonry contract', () => {
+describe('asset card and stable masonry contract', () => {
   it('keeps one semantic control, stable identity, intrinsic preview, and logical index', () => {
     const card = renderAssetCard(asset(), 3, 'asset-grid-stable');
     expect(card.match(/<button\b/g)).toHaveLength(1);
-    expect(card).toContain('data-grid-id="asset-grid-stable"');
     expect(card).toContain('data-asset-id="nv-test"');
     expect(card).toContain('data-asset-index="3"');
     expect(card).toContain('aria-label="Open Stable preview"');
@@ -57,12 +56,12 @@ describe('asset card and masonry contract', () => {
     const malformed = renderAssetCard(asset({ width: 0, height: 0 }), 0, 'grid');
     expect(malformed).toContain('asset-card malformed-media');
     expect(malformed).not.toMatch(/\swidth="0"\sheight="0"/);
-    expect(css).toMatch(/\.malformed-media \.asset-thumb\s*\{[^}]*max-height:\s*min\(70vh, 720px\)/);
+    expect(css).toMatch(/\.malformed-media \.asset-thumb\s*\{[^}]*height:\s*100%/);
     expect(css).toMatch(/\.image-error\s*\{[^}]*min-height:\s*180px/);
     expect(imageSource).toMatch(/classList\.contains\('asset-animated'\)[\s\S]*?classList\.remove\('asset-playing'\)[\s\S]*?image\.remove\(\)[\s\S]*?return/);
   });
 
-  it('uses the measured four-column desktop and approved two-column mobile masonry', () => {
+  it('uses deterministic positioned masonry with approved desktop and mobile gaps', () => {
     for (const [token, value] of [
       ['--asset-grid-max', '1440px'],
       ['--asset-grid-gutter', '15px'],
@@ -70,9 +69,9 @@ describe('asset card and masonry contract', () => {
       ['--asset-row-gap', '15px'],
       ['--asset-card-radius', 'var\\(--radius-asset\\)'],
     ]) expect(css).toMatch(new RegExp(`${token}:\\s*${value}`));
-    expect(css).toMatch(/\.masonry\s*\{[\s\S]*?columns:\s*4 260px;[\s\S]*?column-gap:\s*var\(--asset-column-gap\)/);
-    expect(css).toMatch(/@media \(max-width: 700px\)[\s\S]*?\.masonry\s*\{[\s\S]*?columns:\s*2 135px;[\s\S]*?column-gap:\s*var\(--asset-column-gap-mobile\)/);
-    expect(css).not.toMatch(/grid-template-columns[^;]*asset-card|position:\s*absolute[^}]*asset-card/);
+    expect(css).toMatch(/\.masonry\s*\{[\s\S]*?position:\s*relative;[\s\S]*?width:\s*100%/);
+    expect(css).toMatch(/\.asset-card\s*\{[\s\S]*?position:\s*absolute/);
+    expect(css).not.toMatch(/\.masonry\s*\{[^}]*columns:/);
   });
 
   it('caps media scale at 1.025 and gives keyboard focus visual parity', () => {
@@ -93,11 +92,15 @@ describe('asset card and masonry contract', () => {
     expect(grid.match(/class="asset-card/g)).toHaveLength(8);
     expect(grid).toMatch(/class="[^"]*\bload-more\b[^"]*"/);
     expect(gridSource).toContain('batchSize = 8');
-    expect(gridSource).toContain("rootMargin: '240px 0px'");
+    expect(gridSource).toContain('APPEND_BATCH_SIZE = 16');
+    expect(gridSource).toContain("rootMargin: '600px 0px'");
+    expect(gridSource).toContain('appendMasonryLayout(state.plan, added)');
+    expect(gridSource).toContain('new ResizeObserver');
+    expect(gridSource).toContain("image.decode?.()");
     expect(gridSource).toContain('entry.intersectionRatio >= 0.35');
     expect(gridSource).toContain('setTimeout(unload, 220)');
-    expect(gridSource).toContain('state?.observer?.disconnect()');
-    expect(gridSource).toContain('state?.animationObserver?.disconnect()');
+    expect(gridSource).toContain('state?.loader?.disconnect()');
+    expect(gridSource).toContain('state?.animator?.disconnect()');
     expect(gridSource).toContain('onOpen(state.items, Number(button.dataset.assetIndex), button)');
   });
 });
