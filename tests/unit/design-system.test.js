@@ -34,7 +34,7 @@ describe('public design system', () => {
 
   it('uses semantic tokens in representative shared components', () => {
     expect(css).toMatch(/\.button\s*\{[\s\S]*?min-height:\s*var\(--control-height-sm\)/);
-    expect(css).toMatch(/\.main-nav\s*\{[\s\S]*?gap:\s*var\(--nav-gap\)/);
+    expect(css).toMatch(/\.main-nav\s*\{[\s\S]*?gap:\s*var\(--nav-item-gap\)/);
     expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-size:\s*var\(--type-hero-size\)/);
     expect(css).toMatch(/\.select,[\s\S]*?\.search-input\s*\{[\s\S]*?height:\s*var\(--control-height-field\)/);
     expect(css).toMatch(/\.modal\s*\{[\s\S]*?z-index:\s*var\(--z-modal\)/);
