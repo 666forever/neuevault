@@ -7,19 +7,29 @@ import { sortAssets } from '../utils/filter.js';
 import { countDescription } from '../utils/content.js';
 import { loadLazyModule } from '../utils/lazy.js';
 
-export function createPages(repository, app, openAsset) {
+export const HERO_WORDS = Object.freeze(['Banners', 'Icons', 'Wallpapers']);
+
+export function selectHeroWord(random = Math.random) {
+  return HERO_WORDS[Math.floor(random() * HERO_WORDS.length)];
+}
+
+export function createPages(repository, app, openAsset, { random = Math.random } = {}) {
   const assets = repository.getAssets();
   const collections = repository.getCollections();
   const categories = repository.getCategories();
   const mount = () => { mountAssetGrids(app, openAsset); bindImageErrors(app); bindAnimatedCovers(app); };
 
   function home() {
-    const featured = collections.filter(collection => collection.featured).slice(0, 3);
+    const heroWord = selectHeroWord(random);
+    const featured = collections.filter(collection => collection.featured).slice(0, 6);
+    const emptyCollectionSlots = Array.from(
+      { length: Math.max(0, 6 - featured.length) },
+      () => '<div class="collection-card collection-card-empty" aria-hidden="true"><div class="collection-cover"></div><div class="collection-meta"></div></div>',
+    );
     const categorySection = categories.length ? `<section class="category-grid" aria-label="Browse categories">${categories.map(categoryCard).join('')}</section>` : '';
-    const collectionSection = featured.length ? `<section class="section collection-section"><div class="section-head"><div><h2>Popular Collections</h2><p>Curated packs worth keeping close.</p></div><a class="text-link" href="/collections">View all</a></div><div class="collection-grid">${featured.map(collectionCard).join('')}</div></section>` : '';
-    app.innerHTML = `<div class="page"><section class="hero"><img class="hero-media" src="/assets/video/heronew.gif" alt="" aria-hidden="true"><div class="hero-gradient" aria-hidden="true"></div><div class="hero-content"><h1>Timeless. Bold. Forever.</h1><p class="hero-description"><span>Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.</span> <span>Your identity forms in this borderland.</span></p>${Button({ label: 'Collections', icon: 'bolt', iconClassName: 'hero-cta-icon', href: '/collections', variant: 'accent', size: 'large', className: 'hero-cta' })}</div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link" href="/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
+    const collectionSection = `<section class="section collection-section"><div class="section-head home-section-head"><div><h2>Popular Collections</h2><p>Curated packs worth keeping close.</p></div><a class="text-link section-head-action" href="/collections">View all</a></div><div class="collection-grid">${[...featured.map(collectionCard), ...emptyCollectionSlots].join('')}</div></section>`;
+    app.innerHTML = `<div class="page"><section class="hero"><video class="hero-media" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1"><source src="/assets/video/sailor_hero-mobile.mp4" type="video/mp4" media="(max-width: 700px)"><source src="/assets/video/sailor_hero-desktop.mp4" type="video/mp4"></video><div class="hero-gradient" aria-hidden="true"></div><div class="hero-decorations" aria-hidden="true"></div><div class="hero-content"><h1><span>Probably the best</span> <span><span class="hero-title-dynamic">${escapeHtml(heroWord)}</span> on the Internet.</span></h1><p class="hero-description"><span>Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.</span> <span>Your identity forms in this borderland.</span></p>${Button({ label: 'Collections', icon: 'bolt', iconClassName: 'hero-cta-icon', href: '/collections', variant: 'accent', size: 'large', className: 'hero-cta' })}</div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head home-section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link section-head-action" href="/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
     mount();
-    return () => {};
   }
   function collectionsPage() {
     const content = collections.length ? `<div class="collection-grid">${collections.map(collectionCard).join('')}</div>` : '<section class="route-state route-empty" aria-labelledby="collections-empty-title"><h2 id="collections-empty-title">No public collections yet.</h2><p>Collections will appear here when they are marked public in the local content manager.</p></section>';

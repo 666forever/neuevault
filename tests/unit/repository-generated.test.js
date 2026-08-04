@@ -3,6 +3,7 @@ import generatedAssets from '../../src/generated/assets.json';
 import generatedCategories from '../../src/generated/categories.json';
 import generatedCollections from '../../src/generated/collections.json';
 import { repository } from '../../src/data/repository.js';
+import { animatedCoverUrl } from '../../src/data/mediaUrls.js';
 
 describe('generated repository', () => {
   it('consumes generated manifests behind the existing repository interface', () => {
@@ -11,5 +12,12 @@ describe('generated repository', () => {
     expect(repository.getAsset(first.id)).toMatchObject({ title: first.title, preview: first.previewUrl || first.previewFile, src: first.src });
     expect(repository.getCategories().map(item => item.id)).toEqual(generatedCategories.filter(item => item.visible).map(item => item.id));
     expect(repository.getCollections().map(item => item.id)).toEqual(generatedCollections.filter(item => item.public).map(item => item.id));
+    for (const collection of repository.getCollections()) {
+      const generated = generatedCollections.find(item => item.id === collection.id);
+      const expectedAlternateId = generated.assetIds.find(id => id !== generated.coverAssetId);
+      const expectedAlternate = generatedAssets.find(asset => asset.id === expectedAlternateId);
+      expect(collection.alt).toBe(expectedAlternate ? expectedAlternate.previewUrl || expectedAlternate.previewFile : '');
+      expect(collection.altGif).toBe(animatedCoverUrl(expectedAlternate));
+    }
   });
 });

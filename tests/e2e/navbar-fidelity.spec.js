@@ -10,7 +10,7 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
   test.skip(testInfo.project.name !== 'desktop');
   await signedOut(page);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/recent');
+  await page.goto('/collections');
 
   const geometry = await page.evaluate(() => {
     const rect = selector => {
@@ -43,7 +43,12 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
   await expect(page.locator('.collections-button')).toHaveCount(0);
   expect(Math.abs(geometry.nav.center - 720)).toBeLessThanOrEqual(1);
   expect(geometry.overflow).toBe(0);
-  await expect(page.locator('[data-nav="recent"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-nav="collections"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.main-nav > a')).toHaveCount(4);
+  expect(await page.locator('.main-nav > a').evaluateAll(links => links.map(link => link.querySelector('.roll-text-layer:first-child')?.textContent.trim()))).toEqual(['Icons', 'Banners', 'Wallpapers', 'Collections']);
+  await expect(page.locator('.site-header')).toHaveCSS('position', 'sticky');
+  await expect(page.locator('.site-header')).toHaveCSS('top', '0px');
+  await expect(page.locator('.site-header')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
 });
 
 test('navbar pill and rolling label share one stable hit box', async ({ page }, testInfo) => {
@@ -105,4 +110,25 @@ test('mobile navbar retains lifecycle in the refined panel', async ({ page }, te
   await page.setViewportSize({ width: 1200, height: 900 });
   await expect(page.locator('.menu-toggle')).not.toBeVisible();
   await expect(page.locator('.main-nav')).toBeVisible();
+});
+
+test('sticky header remains opaque and correctly layered while routes scroll', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await signedOut(page);
+  for (const route of ['/', '/recent', '/collections/noface-icons', '/search', '/about']) {
+    await page.goto(route);
+    await page.evaluate(() => window.scrollTo(0, Math.max(0, document.documentElement.scrollHeight - innerHeight)));
+    const header = await page.locator('.site-header').evaluate(element => {
+      const style = getComputedStyle(element); const bounds = element.getBoundingClientRect();
+      return { top: bounds.top, position: style.position, background: style.backgroundColor, zIndex: Number(style.zIndex), overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+    });
+    expect(header).toMatchObject({ top: 0, position: 'sticky', background: 'rgb(0, 0, 0)', overflow: 0 });
+    expect(header.zIndex).toBeLessThan(100);
+  }
+  await page.setViewportSize({ width: 700, height: 700 });
+  await page.goto('/recent');
+  await page.evaluate(() => window.scrollTo(0, 600));
+  await page.locator('.menu-toggle').click();
+  const panelTop = await page.locator('.main-nav').evaluate(element => element.getBoundingClientRect().top);
+  expect(panelTop).toBe(70);
 });

@@ -2,7 +2,6 @@ import { repository } from './src/data/repository.js';
 import { disposeAssetGrids } from './src/components/AssetGrid.js';
 import { createPages } from './src/pages/pages.js';
 import { activeNavigation, assetRoute, legacyHashPath, parseRoute } from './src/routing/routes.js';
-import { trapDialogKey } from './src/overlays/dialog.js';
 import { disposeAnimatedCovers } from './src/components/cards.js';
 import { AuthClient } from './src/auth/AuthClient.js';
 import { enhanceRollingControls } from './src/components/rollingControls.js';
@@ -43,16 +42,15 @@ const showToast = message => {
 const auth = new AuthClient();
 let assetModal = null;
 let authDialog = null;
+let trapDialogKey = null;
 let overlayPromise = null;
 let pageCleanup = null;
 let routeSequence = 0;
 
 function loadOverlays() {
   if (!overlayPromise) {
-    overlayPromise = loadLazyModule(() => Promise.all([
-      import('./src/overlays/AssetModal.js'),
-      import('./src/overlays/AuthDialog.js'),
-    ])).then(([{ AssetModal }, { AuthDialog }]) => {
+    overlayPromise = loadLazyModule(() => import('./src/overlays/index.js')).then(({ AssetModal, AuthDialog, trapDialogKey: trapKey }) => {
+      trapDialogKey = trapKey;
       assetModal = new AssetModal(modalElement, repository, showToast, auth);
       authDialog = new AuthDialog(authElement, assetModal, auth, showToast);
       assetModal.setAuthDialog(authDialog);
@@ -211,11 +209,13 @@ document.addEventListener('click', event => {
 
 function renderAuthControls() {
   document.querySelectorAll('.sign-in, .sign-in-mobile').forEach(button => {
-    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : auth.state.configured ? 'Connect with Discord' : 'Sign in unavailable';
+    const label = auth.state.loading ? 'Checking sign in…' : auth.state.authenticated ? auth.state.user.displayName : 'Sign In';
     const accessibleLabel = auth.state.configured && !auth.state.authenticated ? 'Sign in with Discord' : label;
     button.classList.remove('has-roll-animation'); button.replaceChildren();
     button.dataset.userIdentity = String(auth.state.authenticated);
-    if (!auth.state.authenticated) button.insertAdjacentHTML('beforeend', Icon('discord', { size: 'large', className: 'button-icon discord-icon' }));
+    if (!auth.state.authenticated) {
+      button.insertAdjacentHTML('beforeend', Icon('discord', { size: 'large', className: 'button-icon discord-icon' }));
+    }
     const text = document.createElement('span'); text.textContent = label; button.append(text);
     button.setAttribute('aria-label', accessibleLabel); button.disabled = auth.state.loading;
     button.onclick = async () => {

@@ -12,7 +12,7 @@ export class AuthDialog {
     const title = loading ? 'Checking authentication' : authenticated ? 'Signed in' : configured ? 'Sign in with Discord' : 'Authentication unavailable';
     const action = authenticated
       ? Button({ label: 'Sign out', variant: 'dark', className: 'auth-logout' })
-      : Button({ label: configured ? 'Connect with Discord' : 'Discord sign-in unavailable', icon: 'discord', iconSize: 'large', variant: 'accent', className: 'auth-continue', disabled: !configured || loading });
+      : Button({ label: 'Sign In', icon: 'discord', iconSize: 'large', variant: 'accent', className: 'auth-continue', disabled: !configured || loading });
     const status = authenticated ? `Signed in as <strong>${escapeHtml(user.displayName)}</strong>.` : configured ? 'Discord handles identity; Neuevault never sends OAuth tokens to the browser.' : 'The required server secrets have not been configured. Restricted originals remain unavailable.';
     this.element.innerHTML = `<div class="auth-dialog-card" data-lenis-prevent>${IconButton({ icon: 'close', label: 'Close sign-in dialog', size: 'compact', className: 'auth-close' })}<p class="eyebrow">Restricted access</p><h2 id="auth-title">${title}</h2><p>${context}</p>${action}<p class="integration-status">${status}</p></div>`;
     this.element.hidden = false; syncScrollLock(this.element, this.assetModal.element);

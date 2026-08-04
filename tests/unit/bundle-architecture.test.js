@@ -13,8 +13,9 @@ describe('browser bundle architecture', () => {
     ]);
     expect(repository).not.toMatch(/^import .*schema/m);
     expect(repository).toContain("import('./schema.js')");
-    expect(app).toContain("import('./src/overlays/AssetModal.js')");
-    expect(app).toContain("import('./src/overlays/AuthDialog.js')");
+    expect(app).toContain("import('./src/overlays/index.js')");
+    expect(app).not.toContain("import('./src/overlays/AssetModal.js')");
+    expect(app).not.toContain("import('./src/overlays/AuthDialog.js')");
     expect(app).not.toMatch(/^import .*AssetModal/m);
     expect(pages).toContain("import('./searchPage.js')");
     expect(lazy).toContain("sessionStorage.getItem(key) !== 'retried'");

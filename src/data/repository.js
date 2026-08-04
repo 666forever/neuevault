@@ -20,12 +20,18 @@ const assets = generated.assets.map(asset => ({
   fileSize: formatBytes(asset.fileSize),
 }));
 const assetById = new Map(assets.map(asset => [asset.id, asset]));
-const collections = generated.collections.filter(collection => collection.public).map(collection => ({
-  ...collection,
-  cover: assetById.get(collection.coverAssetId)?.preview || '',
-  coverAnimated: animatedCoverUrl(assetById.get(collection.coverAssetId)),
-  restricted: collection.assetIds.some(id => assetById.get(id)?.requiresDiscordAuth),
-}));
+const collections = generated.collections.filter(collection => collection.public).map(collection => {
+  const cover = assetById.get(collection.coverAssetId);
+  const alternate = assetById.get(collection.assetIds.find(id => id !== collection.coverAssetId && assetById.get(id)?.preview));
+  return {
+    ...collection,
+    cover: cover?.preview || '',
+    coverAnimated: animatedCoverUrl(cover),
+    alt: alternate?.preview || '',
+    altGif: animatedCoverUrl(alternate),
+    restricted: collection.assetIds.some(id => assetById.get(id)?.requiresDiscordAuth),
+  };
+});
 const categories = generated.categories.filter(category => category.visible).map(category => ({
   ...category,
   image: assetById.get(category.coverAssetId)?.preview || category.image || '',

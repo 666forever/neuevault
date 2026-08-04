@@ -3,11 +3,12 @@ import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 
-test('mobile navigation keeps sign-in reachable without a duplicate Collections action', async ({ page }, testInfo) => {
+test('mobile navigation keeps the compact primary order and sign-in reachable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile');
   await page.goto('/'); await page.getByRole('button', { name: 'Open menu' }).click();
   await expect(page.locator('.mobile-nav-actions .collections-button')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Sign in unavailable' }).last()).toBeVisible();
+  expect(await page.locator('.main-nav > a').evaluateAll(links => links.map(link => link.querySelector('.roll-text-layer:first-child')?.textContent.trim()))).toEqual(['Icons', 'Banners', 'Wallpapers', 'Collections']);
+  await expect(page.getByRole('button', { name: 'Sign In' }).last()).toBeVisible();
 });
 
 test('collapsed navigation owns dismissal, focus, route, and breakpoint state', async ({ page }, testInfo) => {
@@ -32,11 +33,11 @@ test('collapsed navigation owns dismissal, focus, route, and breakpoint state', 
   await expect(panel).not.toHaveClass(/open/); await expect(toggle).not.toBeFocused(); await expect(page).toHaveURL(beforeEscape);
 
   await toggle.click();
-  await panel.locator('a[href="/about"]').evaluate(element => element.addEventListener('click', event => event.preventDefault(), { once: true }));
-  await panel.locator('a[href="/about"]').click(); await expect(panel).toHaveClass(/open/); await expect(page).toHaveURL(beforeEscape);
-  await panel.locator('a[href="/about"]').click(); await expect(page).toHaveURL(/\/about$/);
+  await panel.locator('a[href="/collections"]').evaluate(element => element.addEventListener('click', event => event.preventDefault(), { once: true }));
+  await panel.locator('a[href="/collections"]').click(); await expect(panel).toHaveClass(/open/); await expect(page).toHaveURL(beforeEscape);
+  await panel.locator('a[href="/collections"]').click(); await expect(page).toHaveURL(/\/collections$/);
   await expect(panel).not.toHaveClass(/open/); await expect(toggle).toHaveAttribute('aria-expanded', 'false'); await expect(toggle).not.toBeFocused();
-  await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1); await expect(panel.locator('[data-nav="about"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1); await expect(panel.locator('[data-nav="collections"]')).toHaveAttribute('aria-current', 'page');
   await page.goBack(); await expect(page).toHaveURL(/\/$/); await expect(panel).not.toHaveClass(/open/);
 
   await page.setViewportSize({ width: 1199, height: 900 }); await toggle.click(); await expect(panel).toHaveClass(/open/);
@@ -82,6 +83,39 @@ test('registry icons preserve control names, state, and geometry', async ({ page
   await expect(page.locator('.download-action .roll-icon svg.icon')).toHaveCount(2);
 });
 
+test('icon-and-text buttons fade a variant-owned outside border without geometry change', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  await page.goto('/');
+  const hero = page.locator('.hero-cta');
+  const signIn = page.locator('.sign-in');
+  for (const control of [hero, signIn]) {
+    await expect(control).toHaveClass(/button-with-icon/);
+    const before = await control.boundingBox();
+    const rest = await control.evaluate(element => {
+      const style = getComputedStyle(element, '::after');
+      return { width: style.borderTopWidth, color: style.borderTopColor, opacity: style.opacity, duration: style.transitionDuration, easing: style.transitionTimingFunction, radius: style.borderRadius, inset: [style.top, style.right, style.bottom, style.left], overflow: getComputedStyle(element.parentElement).overflow };
+    });
+    expect(rest).toMatchObject({ width: '3px', opacity: '0', duration: '0.2s', easing: 'cubic-bezier(0.76, 0, 0.24, 1)' });
+    expect(rest.color).toMatch(/(?:0\.2\)|\/ 0\.2\))/);
+    expect(rest.inset).toEqual(['-3px', '-3px', '-3px', '-3px']);
+    expect(rest.overflow).not.toBe('hidden');
+    expect(rest.radius).toBe(await control.evaluate(element => getComputedStyle(element).borderRadius));
+    await control.hover();
+    await expect.poll(() => control.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('1');
+    const after = await control.boundingBox();
+    expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
+    await page.locator('.hero h1').hover();
+    await expect.poll(() => control.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('0');
+    await control.focus();
+    await expect(control).toHaveCSS('outline-style', 'solid');
+    await expect.poll(() => control.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('1');
+  }
+  await expect(page.locator('.collection-section .section-head-action')).not.toHaveClass(/button-with-icon/);
+  await expect(page.locator('.load-more')).not.toHaveClass(/button-with-icon/);
+  await expect(page.locator('.menu-toggle')).not.toHaveClass(/button-with-icon/);
+});
+
 test('hero bolt uses normalized artwork bounds without changing CTA geometry', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   for (const width of [320, 375, 700, 1200, 1440, 1920]) {
@@ -118,7 +152,7 @@ test('hero bolt uses normalized artwork bounds without changing CTA geometry', a
     });
     expect(measurement.cta.height).toBe(47);
     expect(measurement.cta.width).toBeGreaterThan(100);
-    expect(measurement.icon).toEqual({ width: 13, height: 16 });
+    expect(measurement.icon).toEqual({ width: 16, height: 19 });
     expect(measurement.viewBox).toEqual([3, 1, 18, 22]);
     expect(measurement.occupancy.width).toBeGreaterThan(0.88);
     expect(measurement.occupancy.height).toBeGreaterThan(0.9);
@@ -141,7 +175,7 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(page.locator('.site-header .brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
   await expect(page.locator('.collections-button')).toHaveCount(0);
   await expect(page.locator('.hero-eyebrow')).toHaveCount(0);
-  await expect(page.locator('.hero h1')).toHaveText('Timeless. Bold. Forever.');
+  await expect(page.locator('.hero h1')).toHaveText(/Probably the best (?:Banners|Icons|Wallpapers) on the Internet\./);
   await expect(page.locator('.hero h1')).toHaveCSS('font-family', /SF Pro/);
   await expect(page.locator('.hero h1')).toHaveCSS('font-weight', '600');
   const heroCta = page.locator('.hero-cta');
@@ -153,17 +187,18 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(description).toHaveCSS('font-weight', '400');
   const media = page.locator('.hero-media');
   await expect(media).toHaveCount(1);
-  await expect(media).toHaveAttribute('src', '/assets/video/heronew.gif');
+  const expectedHeroSource = await page.evaluate(() => innerWidth <= 700 ? '/assets/video/sailor_hero-mobile.mp4' : '/assets/video/sailor_hero-desktop.mp4');
+  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe(expectedHeroSource);
   await expect(media).toHaveCSS('opacity', '0.15');
-  await expect(media).toHaveCSS('object-fit', 'fill');
+  await expect(media).toHaveCSS('object-fit', 'cover');
   await expect(media).toHaveCSS('object-position', '50% 50%');
   await expect(page.locator('.hero-grain')).toHaveCount(0);
   await expect(page.locator('.hero-gradient')).toHaveCSS('background-image', /linear-gradient/);
   await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
   expect(await page.locator('.hero').evaluate(element => {
     const z = selector => Number(getComputedStyle(element.querySelector(selector)).zIndex);
-    return [z('.hero-media'), z('.hero-gradient'), z('.hero-content')];
-  })).toEqual([0, 1, 3]);
+    return [z('.hero-media'), z('.hero-gradient'), z('.hero-decorations'), z('.hero-content')];
+  })).toEqual([0, 1, 2, 3]);
   await heroCta.click(); await expect(page).toHaveURL(/\/collections$/);
   await page.goto('/recent');
   await expect(page.locator('.hero-media')).toHaveCount(0);
@@ -183,22 +218,31 @@ test('approved local fonts load without italic or legacy fallbacks', async ({ pa
   expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro');
 });
 
-test('large displays request only the new GIF hero media', async ({ page }, testInfo) => {
+test('large displays request only the desktop hero video', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.setViewportSize({ width: 1920, height: 1080 });
   const requests = [];
-  page.on('request', request => { if (/hero(?:new)?\.(?:gif|mp4)|furina-hero-/.test(request.url())) requests.push(request.url()); });
+  page.on('request', request => { if (/sailor_hero-|hero(?:new)?\.(?:gif|mp4)|furina-hero-/.test(request.url())) requests.push(request.url()); });
   await page.goto('/');
-  await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heronew.gif');
+  await expect.poll(() => page.locator('.hero-media').evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-desktop.mp4');
   await page.waitForTimeout(400);
-  expect(requests.filter(url => url.endsWith('/assets/video/heronew.gif'))).toHaveLength(1);
-  expect(requests.some(url => /furina-hero-|\.mp4$/.test(url))).toBe(false);
+  expect(requests.some(url => url.endsWith('/assets/video/sailor_hero-desktop.mp4'))).toBe(true);
+  expect(requests.some(url => /sailor_hero-mobile|furina-hero-|heronew\.gif/.test(url))).toBe(false);
 });
 
-test('hero uses revised heading and deliberate two-part description', async ({ page }) => {
+test('hero chooses one approved word per render and keeps deliberate line structure', async ({ page }) => {
   await page.goto('/');
+  const titleLines = page.locator('.hero h1 > span');
   const descriptionLines = page.locator('.hero-description > span');
-  await expect(page.locator('.hero h1')).toHaveText('Timeless. Bold. Forever.');
+  await expect(titleLines).toHaveCount(2);
+  await expect(titleLines.first()).toHaveText('Probably the best');
+  await expect(page.locator('.hero-title-dynamic')).toHaveText(/^(Banners|Icons|Wallpapers)$/);
+  await expect(titleLines.last()).toHaveText(/^(Banners|Icons|Wallpapers) on the Internet\.$/);
+  const selectedWord = await page.locator('.hero-title-dynamic').textContent();
+  await page.mouse.wheel(0, 400);
+  await page.locator('.hero h1').hover();
+  await page.waitForTimeout(100);
+  await expect(page.locator('.hero-title-dynamic')).toHaveText(selectedWord);
   await expect(descriptionLines).toHaveCount(2);
   await expect(descriptionLines).toHaveText([
     'Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.',
@@ -210,29 +254,55 @@ test('hero uses revised heading and deliberate two-part description', async ({ p
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
+for (const [word, randomValue] of [['Banners', 0], ['Icons', 0.34], ['Wallpapers', 0.67]]) {
+  test(`hero ${word} variant remains centered and bounded at every target width`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop');
+    await page.addInitScript(value => { Math.random = () => value; }, randomValue);
+    for (const width of [320, 375, 700, 701, 1024, 1199, 1200, 1440, 1600, 1920]) {
+      await page.setViewportSize({ width, height: width <= 700 ? 780 : 900 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      await expect(page.locator('.hero-title-dynamic')).toHaveText(word);
+      expect(await page.locator('.hero').evaluate(hero => {
+        const title = hero.querySelector('h1').getBoundingClientRect();
+        const heroBox = hero.getBoundingClientRect();
+        const lines = [...hero.querySelectorAll('h1 > span')];
+        return {
+          semanticLines: lines.length,
+          centered: Math.abs((title.left + title.width / 2) - (heroBox.left + heroBox.width / 2)) <= 1,
+          bounded: title.left >= heroBox.left - 1 && title.right <= heroBox.right + 1,
+          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        };
+      })).toEqual({ semanticLines: 2, centered: true, bounded: true, overflow: false });
+    }
+  });
+}
+
 test('signed-out copy stays compact while the Discord OAuth action remains explicit', async ({ page }, testInfo) => {
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.route('**/api/auth/discord**', route => route.fulfill({ status: 204 }));
   await page.goto('/');
   if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
   const signIn = page.locator('.sign-in:visible, .sign-in-mobile:visible');
-  await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Connect with Discord');
+  await expect(signIn.locator('.roll-text-layer').first()).toHaveText('Sign In');
   await expect(signIn).toHaveAttribute('aria-label', 'Sign in with Discord');
   await signIn.click();
+  await expect(page.locator('.auth-dialog-card')).toBeVisible();
   const oauthRequest = page.waitForRequest(request => new URL(request.url()).pathname === '/api/auth/discord');
-  await page.getByRole('button', { name: 'Connect with Discord' }).click();
+  await page.locator('.auth-continue').click();
   expect(await oauthRequest).toBeTruthy();
 });
 
-test('reduced motion keeps the GIF hero visible and correctly aligned', async ({ page }, testInfo) => {
+test('reduced motion keeps the hero video visible, aligned, and paused', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const media = page.locator('.hero-media');
-  await expect(media).toHaveAttribute('src', '/assets/video/heronew.gif');
+  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-desktop.mp4');
   await expect(media).toHaveCSS('opacity', '0.15');
-  await expect(media).toHaveCSS('object-fit', 'fill');
+  await expect(media).toHaveCSS('object-fit', 'cover');
   await expect(media).toHaveCSS('object-position', '50% 50%');
+  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
 });
 
 test('navbar and hero remain bounded across target responsive widths', async ({ page }, testInfo) => {
@@ -245,7 +315,7 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     await expect(page.locator('.site-header .brand-wordmark')).toBeVisible();
     await expect(page.locator('.hero h1')).toBeVisible();
     if (width >= 1200) {
-      await expect(page.locator('.hero h1')).toHaveCSS('font-size', '60px');
+      await expect(page.locator('.hero h1')).toHaveCSS('font-size', '76px');
       await expect(page.locator('.hero-cta')).toHaveCSS('height', '47px');
     }
     const heroBox = await page.locator('.hero').boundingBox();
@@ -257,15 +327,24 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     expect(titleBox.x).toBeGreaterThanOrEqual(heroBox.x);
     expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
     expect(Math.abs((contentBox.y + contentBox.height / 2) - (heroBox.y + heroBox.height / 2))).toBeLessThanOrEqual(1);
-    expect(descriptionBox.y - (titleBox.y + titleBox.height)).toBeCloseTo(24, 0);
+    expect(descriptionBox.y - (titleBox.y + titleBox.height)).toBeCloseTo(32, 0);
     expect(ctaBox.y).toBeGreaterThan(descriptionBox.y + descriptionBox.height);
     expect(ctaBox.y + ctaBox.height).toBeLessThanOrEqual(heroBox.y + heroBox.height + 1);
-    await expect(page.locator('.hero-cta')).toHaveCSS('border-radius', '12px');
+    await expect(page.locator('.hero-cta')).toHaveCSS('border-radius', '99px');
     expect(mediaBox.y + mediaBox.height).toBeCloseTo(heroBox.y + heroBox.height, 0);
+    await expect.poll(() => page.locator('.hero-media').evaluate(video => new URL(video.currentSrc).pathname)).toBe(width <= 700 ? '/assets/video/sailor_hero-mobile.mp4' : '/assets/video/sailor_hero-desktop.mp4');
     await expect(page.locator('.hero-media')).toHaveCSS('opacity', '0.15');
-    await expect(page.locator('.hero-media')).toHaveCSS('object-fit', 'fill');
+    await expect(page.locator('.hero-media')).toHaveCSS('object-fit', 'cover');
     await expect(page.locator('.hero-media')).toHaveCSS('object-position', '50% 50%');
-    await expect(page.locator('.hero-description')).toHaveCSS('font-size', '15px');
+    await expect(page.locator('.hero-decorations')).toHaveCSS('pointer-events', 'none');
+    const decorationImages = await page.locator('.hero-decorations').evaluate(element => ({
+      primary: getComputedStyle(element, '::before').backgroundImage,
+      line: getComputedStyle(element, '::after').backgroundImage,
+    }));
+    for (const name of ['globe.svg', 'spark.svg', 'tilts.svg']) expect(decorationImages.primary).toContain(name);
+    expect(decorationImages.line).toContain('lines.svg');
+    await expect(page.locator('.hero-description')).toHaveCSS('font-size', '17px');
+    await expect(page.locator('.hero-cta')).toHaveCSS('font-size', '17px');
     await expect(page.locator('.hero-eyebrow')).toHaveCount(0);
     if (width < 1200) {
       const toggle = page.getByRole('button', { name: 'Open menu' });
@@ -274,13 +353,13 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
       await expect(page.locator('.mobile-nav-actions .sign-in-mobile')).toBeVisible();
       await expect(page.locator('.mobile-nav-actions .collections-button')).toHaveCount(0);
       await expect(page.locator('.sign-in-mobile')).toHaveCSS('border-radius', '12px');
-      await expect(page.locator('.sign-in-mobile .roll-text-layer').first()).toHaveText('Connect with Discord');
+      await expect(page.locator('.sign-in-mobile .roll-text-layer').first()).toHaveText('Sign In');
     } else {
       await expect(page.locator('.main-nav')).toBeVisible();
       await expect(page.locator('.nav-actions .sign-in')).toBeVisible();
       await expect(page.locator('.nav-actions .collections-button')).toHaveCount(0);
       await expect(page.locator('.sign-in')).toHaveCSS('border-radius', '12px');
-      await expect(page.locator('.sign-in .roll-text-layer').first()).toHaveText('Connect with Discord');
+      await expect(page.locator('.sign-in .roll-text-layer').first()).toHaveText('Sign In');
     }
   }
 });
@@ -405,7 +484,7 @@ test('Lenis pauses for dialogs while modal panels retain native scrolling', asyn
   await expect(page.locator('html')).toHaveClass(/lenis/);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await page.waitForTimeout(200);
   const originalScroll = await page.evaluate(() => scrollY); expect(originalScroll).toBeGreaterThan(0);
-  await page.locator('.main-nav a[href="/about"]').evaluate(element => element.click()); await expect(page).toHaveURL(/\/about$/); await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.locator('.site-footer a[href="/about"]').evaluate(element => element.click()); await expect(page).toHaveURL(/\/about$/); await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
   await page.goBack(); await expect(page).toHaveURL(/\/$/); await page.waitForTimeout(300); expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
   await page.locator('.asset-card').first().click();
   const modalScroll = await page.evaluate(() => scrollY);
@@ -488,7 +567,7 @@ test('asset modal and auth surfaces preserve aligned geometry and accessible con
   await expect(authCard).toHaveAttribute('data-lenis-prevent', '');
   await expect(page.getByRole('button', { name: 'Close sign-in dialog' })).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.getByRole('button', { name: 'Connect with Discord' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Sign In', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Close sign-in dialog' })).toBeFocused();
   const authGeometry = await authCard.evaluate(element => {
@@ -530,14 +609,17 @@ test('modal long metadata and failed preview remain contained without a broken-i
 
 test('clean routes, active navigation, deep links, and legacy migration work', async ({ page, request }) => {
   await page.goto('/'); await expect(page.locator('.site-header .brand')).toHaveAttribute('aria-current', 'page'); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1);
-  for (const [pathName, label] of [['/recent', 'Recently Added'], ['/icons', 'Icons'], ['/banners', 'Banners'], ['/animated', 'Animated'], ['/wallpapers', 'Wallpapers'], ['/search', 'Search'], ['/about', 'About']]) {
+  for (const pathName of ['/icons', '/banners', '/wallpapers', '/collections']) {
     const response = await request.get(pathName); expect(response.status()).toBe(200);
     await page.goto(pathName); await expect(page.locator(`.main-nav [data-nav="${pathName.slice(1)}"]`)).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1);
   }
-  await page.goto('/collections'); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(0); await expect(page.locator('.site-header [data-nav="collections"]')).toHaveCount(0);
-  await page.goto('/recent');
-  const activeNav = page.locator('.main-nav [data-nav="recent"]');
+  for (const pathName of ['/recent', '/animated', '/search', '/about']) {
+    const response = await request.get(pathName); expect(response.status()).toBe(200);
+    await page.goto(pathName); await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(0);
+  }
+  await page.goto('/collections');
+  const activeNav = page.locator('.main-nav [data-nav="collections"]');
   await expect(activeNav).toHaveCSS('color', 'rgb(245, 245, 242)');
   await expect.poll(() => activeNav.evaluate(element => getComputedStyle(element, '::before').opacity)).toBe('1');
   expect(await activeNav.evaluate(element => getComputedStyle(element).textDecorationLine)).toBe('none');
@@ -707,7 +789,7 @@ test('footer and application shell preserve landmarks, routes, and short-page fl
 test('sign-in remains an unavailable boundary without backend requests', async ({ page }, testInfo) => {
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/api/') && !request.url().endsWith('/api/auth/session')) protectedRequests.push(request.url()); });
   await page.goto('/'); if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.getByRole('button', { name: 'Sign in unavailable' }).last().click();
+  await page.getByRole('button', { name: 'Sign In' }).last().click();
   await expect(page.locator('#auth-title')).toHaveText('Authentication unavailable'); expect(protectedRequests).toEqual([]);
 });
 
@@ -724,7 +806,7 @@ test('authenticated session is reflected and logout is CSRF-protected', async ({
   await signIn.click(); await expect(page.locator('#auth-title')).toHaveText('Signed in');
   await page.locator('.auth-logout').click();
   if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Open menu' }).click();
-  await expect(page.locator('.sign-in:visible, .sign-in-mobile:visible').locator('.roll-text-layer').first()).toHaveText('Connect with Discord');
+  await expect(page.locator('.sign-in:visible, .sign-in-mobile:visible').locator('.roll-text-layer').first()).toHaveText('Sign In');
 });
 
 test('a directly linked restricted panel refreshes after session discovery', async ({ page }) => {
@@ -793,7 +875,7 @@ test('homepage collection section follows the reference geometry contract', asyn
   const section = page.locator('.collection-section');
   const grid = section.locator('.collection-grid');
   const cards = grid.locator('.collection-card');
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(6);
 
   const geometry = await section.evaluate(element => {
     const grid = element.querySelector('.collection-grid');
@@ -838,6 +920,53 @@ test('homepage collection section follows the reference geometry contract', asyn
   }
 });
 
+test('homepage reserves six collection slots without fake interactive records', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  for (const width of [320, 375, 700, 701, 1024, 1199, 1200, 1440, 1600, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const slots = page.locator('.collection-grid > .collection-card');
+    const real = page.locator('.collection-grid > a.collection-card');
+    const empty = page.locator('.collection-grid > .collection-card-empty');
+    await expect(slots).toHaveCount(6);
+    await expect(real).toHaveCount(4);
+    await expect(empty).toHaveCount(2);
+    expect(await real.evaluateAll(cards => cards.map(card => card.getAttribute('href')))).toEqual([
+      '/collections/noface-icons', '/collections/anime-girl-icons', '/collections/imvu-pack-01', '/collections/white-minimal-banners',
+    ]);
+    expect(await empty.evaluateAll(cards => cards.map(card => ({ tag: card.tagName, hidden: card.getAttribute('aria-hidden'), text: card.textContent.trim(), focusable: card.matches('a, button, [tabindex]') })))).toEqual([
+      { tag: 'DIV', hidden: 'true', text: '', focusable: false },
+      { tag: 'DIV', hidden: 'true', text: '', focusable: false },
+    ]);
+    const geometry = await slots.evaluateAll(cards => cards.map(card => ({ width: card.getBoundingClientRect().width, height: card.getBoundingClientRect().height, empty: card.classList.contains('collection-card-empty') })));
+    const reference = geometry[3];
+    expect(geometry.filter(card => card.empty).every(card => Math.abs(card.width - reference.width) < 0.6 && Math.abs(card.height - reference.height) < 0.6)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+  }
+});
+
+test('homepage section headings and actions share one visual contract', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(() => {
+    const collection = document.querySelector('.collection-section .home-section-head');
+    const recent = document.querySelector('.recent-section .home-section-head');
+    const project = header => {
+      const heading = header.querySelector('h2');
+      const action = header.querySelector('.section-head-action');
+      const headingStyle = getComputedStyle(heading);
+      const actionStyle = getComputedStyle(action);
+      const bounds = header.getBoundingClientRect();
+      return {
+        x: bounds.x, width: bounds.width, alignItems: getComputedStyle(header).alignItems,
+        heading: [headingStyle.fontSize, headingStyle.lineHeight, headingStyle.fontWeight, headingStyle.letterSpacing],
+        action: [actionStyle.height, actionStyle.padding, actionStyle.borderRadius, actionStyle.fontFamily, actionStyle.fontSize, actionStyle.lineHeight, actionStyle.fontWeight, actionStyle.backgroundColor, actionStyle.border],
+      };
+    };
+    return { collection: project(collection), recent: project(recent) };
+  });
+  expect(result.recent).toEqual(result.collection);
+});
+
 test('collection metadata remains natural-height for real copy', async ({ page }) => {
   await page.goto('/collections');
   const results = await page.locator('.collection-card').evaluateAll(cards => cards.map(card => {
@@ -853,63 +982,73 @@ test('collection metadata remains natural-height for real copy', async ({ page }
   expect(results.every(result => Object.values(result).every(Boolean))).toBe(true);
 });
 
-test('collection cards preserve editorial geometry across pointer, focus, and exit', async ({ page }, testInfo) => {
+test('collection cards crossfade deterministic alternate previews without geometry movement', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/collections');
   const card = page.locator('a[href="/collections/white-minimal-banners"]');
-  const frame = card.locator('.collection-media-frame');
-  const staticCover = card.locator('.cover-static');
-  const animated = card.locator('.cover-animated');
-  const matrixValue = (value, index) => Number.parseFloat(value.match(/^matrix\(([^)]+)\)$/)?.[1].split(',')[index] || (index === 0 ? 1 : 0));
+  const frame = card.locator('.media-default');
+  const staticCover = card.locator('.media-default .cover-static');
+  const alternate = card.locator('.cover-alternate');
+  const defaultAnimated = card.locator('.media-default .cover-animated');
+  const alternateAnimated = card.locator('.media-alternate .cover-animated');
+  await card.scrollIntoViewIfNeeded();
   const state = () => card.evaluate(element => {
     const shell = getComputedStyle(element);
     const cover = element.querySelector('.collection-cover');
-    const media = element.querySelector('.collection-media-frame');
-    const staticLayer = element.querySelector('.cover-static');
-    const animatedLayer = element.querySelector('.cover-animated');
+    const media = element.querySelector('.media-default');
+    const staticLayer = element.querySelector('.media-default');
+    const alternateLayer = element.querySelector('.media-alternate');
     return {
       shellTransform: shell.transform,
       mediaTransform: getComputedStyle(media).transform,
       shellRadius: shell.borderRadius,
       mediaRadius: getComputedStyle(cover).borderRadius,
-      border: shell.borderColor,
+      borderWidth: shell.borderWidth,
+      size: { width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height },
       staticOpacity: getComputedStyle(staticLayer).opacity,
-      animatedOpacity: animatedLayer ? getComputedStyle(animatedLayer).opacity : null,
+      alternateOpacity: alternateLayer ? getComputedStyle(alternateLayer).opacity : null,
+      alternateDuration: alternateLayer ? getComputedStyle(alternateLayer).transitionDuration : null,
       outline: shell.outlineStyle,
     };
   });
 
   await expect(card).toHaveAccessibleName('White Banners Collection 11 Bright and minimal banners');
   await expect(staticCover).toBeVisible();
-  expect(await state()).toMatchObject({ shellTransform: 'none', mediaTransform: 'matrix(1, 0, 0, 1, 0, 0)', shellRadius: '20px', mediaRadius: '15px', staticOpacity: '1', animatedOpacity: '0' });
+  await expect(defaultAnimated).toHaveAttribute('src', /nv-054\.gif$/);
+  await expect(defaultAnimated).toHaveCSS('opacity', '1');
+  const initial = await state();
+  expect(initial).toMatchObject({ shellTransform: 'none', mediaTransform: 'none', shellRadius: '20px', mediaRadius: '15px', borderWidth: '0px', staticOpacity: '1', alternateOpacity: '0', alternateDuration: '1s' });
 
   await card.hover();
-  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/);
+  await expect(alternate).toHaveAttribute('src', /nv-026\./);
   await expect(card).toHaveClass(/cover-playing/);
-  await page.waitForTimeout(650);
+  await expect(alternateAnimated).toHaveAttribute('src', /nv-026\.gif$/);
+  await expect(alternateAnimated).toHaveCSS('opacity', '1');
+  await page.waitForTimeout(1100);
   const hovered = await state();
-  expect(matrixValue(hovered.shellTransform, 5)).toBeGreaterThanOrEqual(-4);
-  expect(matrixValue(hovered.mediaTransform, 0)).toBeLessThanOrEqual(1.03);
-  expect(hovered).toMatchObject({ staticOpacity: '0', animatedOpacity: '1' });
+  expect(hovered).toMatchObject({ shellTransform: 'none', mediaTransform: 'none', borderWidth: '0px', staticOpacity: '0', alternateOpacity: '1', size: initial.size });
 
   await page.locator('.page-title').hover();
   await expect(card).not.toHaveClass(/cover-playing/);
+  await page.waitForTimeout(1100);
+  await expect(alternateAnimated).not.toHaveAttribute('src');
+  await expect(defaultAnimated).not.toHaveAttribute('src');
   const exit = await state();
-  expect(exit.staticOpacity).toBe('1');
-  await page.waitForTimeout(250);
-  await expect(animated).not.toHaveAttribute('src');
-  await expect(frame).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+  expect(exit).toMatchObject({ staticOpacity: '1', alternateOpacity: '0', size: initial.size });
+  await expect(alternate).toHaveAttribute('src', /nv-026\./);
+  await expect(frame).toHaveCSS('transform', 'none');
   await expect(card).toHaveCSS('transform', 'none');
 
   await card.focus();
   await expect(card).toBeFocused();
+  await expect(defaultAnimated).toHaveAttribute('src', /nv-054\.gif$/);
   await expect(card).toHaveCSS('outline-style', 'solid');
-  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/);
-  await page.waitForTimeout(650);
-  expect(matrixValue((await state()).mediaTransform, 0)).toBeLessThanOrEqual(1.03);
+  await expect(alternate).toHaveAttribute('src', /nv-026\./);
+  await page.waitForTimeout(1100);
+  expect(await state()).toMatchObject({ shellTransform: 'none', mediaTransform: 'none', alternateOpacity: '1', size: initial.size });
   await page.keyboard.press('Tab');
-  await page.waitForTimeout(250);
-  await expect(animated).not.toHaveAttribute('src');
+  await page.waitForTimeout(1100);
+  expect(await state()).toMatchObject({ staticOpacity: '1', alternateOpacity: '0', size: initial.size });
 });
 
 test('collection cards stay static for touch and reduced motion', async ({ page }, testInfo) => {
@@ -917,7 +1056,7 @@ test('collection cards stay static for touch and reduced motion', async ({ page 
     await page.goto('/collections');
     const card = page.locator('a[href="/collections/white-minimal-banners"]');
     const initialUrl = page.url();
-    await expect(card.locator('.cover-static')).toBeVisible();
+    await expect(card.locator('.media-default .cover-static')).toBeVisible();
     await card.tap();
     await expect(page).toHaveURL(/\/collections\/white-minimal-banners$/);
     expect(page.url()).not.toBe(initialUrl);
@@ -927,11 +1066,24 @@ test('collection cards stay static for touch and reduced motion', async ({ page 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/collections');
   const card = page.locator('a[href="/collections/white-minimal-banners"]');
-  const animated = card.locator('.cover-animated');
+  const alternate = card.locator('.cover-alternate');
   await card.hover();
   await expect(card).toHaveCSS('transform', 'none');
-  await expect(card.locator('.collection-media-frame')).toHaveCSS('transform', 'none');
-  await expect(animated).not.toHaveAttribute('src');
+  expect(await card.locator('.collection-media-frame').evaluateAll(frames => frames.every(frame => getComputedStyle(frame).transform === 'none'))).toBe(true);
+  await expect(alternate).not.toHaveAttribute('src');
+  await expect(card.locator('.media-default .cover-static')).toBeVisible();
+});
+
+test('single-preview collections remain static on pointer and keyboard interaction', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/collections');
+  const card = page.locator('a[href="/collections/imvu-pack-01"]');
+  await expect(card.locator('.media-default .cover-static')).toBeVisible();
+  await expect(card.locator('.cover-alternate')).toHaveCount(0);
+  await card.hover();
+  await expect(card).not.toHaveClass(/cover-playing/);
+  await card.focus();
+  await expect(card).not.toHaveClass(/cover-playing/);
   await expect(card.locator('.cover-static')).toBeVisible();
 });
 
@@ -940,7 +1092,7 @@ test('collection preview failures retain media geometry without blanking healthy
   await page.goto('/collections');
   const staticCard = page.locator('a[href="/collections/noface-icons"]');
   const before = await staticCard.locator('.collection-cover').boundingBox();
-  await staticCard.locator('.cover-static').evaluate(image => {
+  await staticCard.locator('.media-default .cover-static').evaluate(image => {
     image.src = '/missing-collection-preview.jpg';
   });
   await expect(staticCard.locator('.collection-cover')).toHaveClass(/image-error/);
@@ -949,31 +1101,49 @@ test('collection preview failures retain media geometry without blanking healthy
   expect(Math.round(after.width)).toBe(Math.round(before.width));
   expect(Math.round(after.height)).toBe(Math.round(before.height));
 
-  const animatedCard = page.locator('a[href="/collections/white-minimal-banners"]');
-  const animated = animatedCard.locator('.cover-animated');
-  await animated.evaluate(image => {
-    image.dataset.animatedSrc = '/missing-collection-animation.gif';
+  const alternateCard = page.locator('a[href="/collections/white-minimal-banners"]');
+  const alternate = alternateCard.locator('.cover-alternate');
+  await alternate.evaluate(image => {
+    image.dataset.alternateSrc = '/missing-collection-preview.jpg';
   });
+  await alternateCard.hover();
+  await expect(alternateCard).not.toHaveClass(/cover-playing/);
+  await expect(alternateCard.locator('.media-default .cover-static')).toBeVisible();
+  await expect(alternateCard.locator('.cover-alternate')).toHaveCount(0);
+  await expect(alternateCard.locator('.collection-cover')).not.toHaveClass(/image-error/);
+
+  await page.reload();
+  const animatedCard = page.locator('a[href="/collections/white-minimal-banners"]');
+  const animatedDefault = animatedCard.locator('.media-default .cover-animated');
+  await animatedDefault.evaluate(image => { image.src = '/missing-default-animation.gif'; });
+  await expect(animatedDefault).toHaveCount(0);
+  await expect(animatedCard.locator('.media-default .cover-static')).toBeVisible();
+
+  const animatedAlternate = animatedCard.locator('.media-alternate .cover-animated');
+  await page.locator('.page-title').hover();
+  await animatedAlternate.evaluate(image => { image.removeAttribute('src'); image.dataset.animatedSrc = '/missing-alternate-animation.gif'; });
   await animatedCard.hover();
-  await expect(animatedCard).not.toHaveClass(/cover-playing/);
-  await expect(animatedCard.locator('.cover-static')).toBeVisible();
-  await expect(animatedCard.locator('.collection-cover')).not.toHaveClass(/image-error/);
+  await expect(animatedCard).toHaveClass(/cover-playing/);
+  await expect(animatedAlternate).toHaveCount(0);
+  await expect(animatedCard.locator('.media-alternate .cover-alternate')).toBeVisible();
 });
 
-test('public animated cover loads only during hover or focus and returns static', async ({ page }, testInfo) => {
+test('collection alternate preview loads on hover or focus and returns to static', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
-  await expect(animated).not.toHaveAttribute('src'); await card.hover();
-  await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await expect(card).toHaveClass(/cover-playing/);
-  await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await page.waitForTimeout(250); await expect(animated).not.toHaveAttribute('src');
-  await card.focus(); await expect(animated).toHaveAttribute('src', /nv-054\.gif$/); await page.keyboard.press('Tab'); await page.waitForTimeout(250); await expect(card).not.toHaveClass(/cover-playing/);
+  await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const alternate = card.locator('.cover-alternate');
+  await expect(alternate).not.toHaveAttribute('src'); await card.hover();
+  await expect(alternate).toHaveAttribute('src', /nv-026\./); await expect(card).toHaveClass(/cover-playing/);
+  await page.locator('.page-title').hover(); await expect(card).not.toHaveClass(/cover-playing/); await expect(alternate).toHaveAttribute('src', /nv-026\./);
+  await card.focus(); await expect(card).toHaveClass(/cover-playing/); await page.keyboard.press('Tab'); await expect(card).not.toHaveClass(/cover-playing/);
+  await page.goto('/about');
+  expect(await page.evaluate(async () => (await import('/src/components/cards.js')).activeCoverBindingCount())).toBe(0);
 });
 
 test('reduced motion and restricted cover policy remain static', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const protectedRequests = []; page.on('request', request => { if (request.url().includes('/restricted/') || request.url().includes('/authenticated/')) protectedRequests.push(request.url()); });
-  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const animated = card.locator('.cover-animated');
-  await card.hover(); await expect(animated).not.toHaveAttribute('src');
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/collections'); const card = page.locator('a[href="/collections/white-minimal-banners"]'); const alternate = card.locator('.cover-alternate');
+  await card.hover(); await expect(alternate).not.toHaveAttribute('src');
   const restrictedUrl = await page.evaluate(async () => (await import('/src/data/mediaUrls.js')).animatedCoverUrl({ animated: true, requiresDiscordAuth: true, src: null }));
   expect(restrictedUrl).toBe(''); expect(protectedRequests).toEqual([]);
 });
@@ -1082,9 +1252,9 @@ test('category cards share base and hover visual treatment', async ({ page }, te
     return { opacity: media.opacity, scale: matrix.a, staticTransform: getComputedStyle(element.querySelector('.cover-static')).transform, border: getComputedStyle(element).borderColor, overlay: getComputedStyle(element, '::after').backgroundColor };
   });
   expect(await visual(first)).toEqual(await visual(fourth)); expect((await visual(first))).toMatchObject({ opacity: '0', scale: 1.4, staticTransform: 'none' });
-  await first.hover(); await page.waitForTimeout(700); const firstHover = await visual(first); expect(firstHover).toMatchObject({ opacity: '1', scale: 1, staticTransform: 'none', overlay: 'rgba(0, 0, 0, 0.08)' });
-  await page.locator('.hero').hover(); await first.focus(); await page.waitForTimeout(700); expect((await visual(first))).toMatchObject({ opacity: '1', scale: 1 });
-  await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(700); const fourthHover = await fourth.locator('.cover-animated').evaluate(element => getComputedStyle(element).opacity);
+  await first.hover(); await page.waitForTimeout(1100); const firstHover = await visual(first); expect(firstHover).toMatchObject({ opacity: '1', scale: 1, staticTransform: 'none', overlay: 'rgba(0, 0, 0, 0.08)' });
+  await page.locator('.hero').hover(); await first.focus(); await page.waitForTimeout(1100); expect((await visual(first))).toMatchObject({ opacity: '1', scale: 1 });
+  await page.locator('.hero').hover(); await page.waitForTimeout(250); await fourth.hover(); await expect(fourth).toHaveClass(/cover-playing/); await page.waitForTimeout(1100); const fourthHover = await fourth.locator('.cover-animated').evaluate(element => getComputedStyle(element).opacity);
   expect(fourthHover).toBe('1');
   await expect(fourth.locator('.cover-animated')).toHaveAttribute('src', /nv-044\.gif$/);
   const loadedAnimated = await fourth.locator('.cover-animated').evaluate(element => ({ complete: element.complete, naturalWidth: element.naturalWidth }));

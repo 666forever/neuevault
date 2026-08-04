@@ -26,6 +26,7 @@ export function Button({
     'button',
     `button-${variant}`,
     `button-${size}`,
+    icon ? 'button-with-icon' : '',
     className,
   ].filter(Boolean).map(escapeHtml).join(' ');
   const semantics = href

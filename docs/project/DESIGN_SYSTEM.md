@@ -95,7 +95,7 @@ Badges, format labels, restricted labels, tags, user controls, and compact statu
 
 ## Navigation and application shell
 
-Desktop navigation uses its semantic type and gap tokens. The active route is identified by `aria-current`, brighter text, and a quiet persistent `#151515` pill—not acid color or an underline. Sign in/account and Collections remain distinct shared button variants.
+Desktop and mobile primary navigation use the same ordered route set: Icons, Banners, Wallpapers, and Collections. The active route is identified by `aria-current`, brighter text, and a quiet persistent `#151515` pill—not acid color or an underline. The 62px desktop/70px mobile header is sticky at the viewport top on an opaque black surface; modal and authentication layers remain above it. Sign in/account remains the separate header action.
 
 Rolling labels use a 40px clipping viewport and 40px travel. Text enters from above while paired registry icons enter from below. Pointer entry waits 10ms; pointer exit and keyboard focus are immediate. Label motion lasts 300ms, the navigation pill fades in 150ms, and entry uses the restrained approved settle without corrupting stable rest/active transforms. Duplicate visual layers are hidden from assistive technology. Touch and reduced-motion environments expose the primary layer without requiring animation.
 
@@ -121,7 +121,7 @@ On hover-capable devices the shared media wrapper rests at opacity 0 and scale 1
 
 The collection section is capped at 1440px. It uses three desktop columns and one mobile column, with a 15px gap; at the cap, cards are approximately 470px wide and 605px tall. Cards use a 20px outer radius and 14px nested-media radius.
 
-Hover/focus may retain the approved restrained card lift, media scale/crossfade, and text treatment. Animated covers load only for eligible public media during interaction, unload afterward, and remain static for restricted or reduced-motion states. Links, counts, badges, and focus behavior remain data-driven and keyboard accessible.
+Collection shells and media remain stationary and borderless during pointer and keyboard interaction. Hover/focus crossfades over 1s from the authored cover to the first different valid preview in collection membership order; the alternate is loaded before reveal, retained until route disposal, and omitted for one-image collections. Failed alternates leave the original preview visible. Touch and reduced-motion states remain static. Links, counts, badges, restricted-preview safety, and focus behavior remain data-driven and keyboard accessible.
 
 ## Asset grid and media lifecycle
 

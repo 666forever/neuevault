@@ -51,6 +51,22 @@ describe('shared icon and control primitives', () => {
     expect(action).toMatch(/^<button /);
     expect(action).toContain('type="button"');
     expect(action).not.toContain('href=');
+    expect(link).toContain('button-with-icon');
+    expect(action).toContain('button-with-icon');
+    expect(Button({ label: 'Load more', variant: 'dark' })).not.toContain('button-with-icon');
+  });
+
+  it('scopes the semantic hover border to icon-and-text Button controls', async () => {
+    const css = await readFile(path.join(root, 'styles.css'), 'utf8');
+    expect(css).toContain('--button-hover-border-width: 3px');
+    expect(css).toContain('--button-hover-border-opacity: 0.2');
+    expect(css).toContain('--button-hover-border-duration: var(--duration-fast)');
+    expect(css).toContain('--button-hover-border-easing: cubic-bezier(0.76, 0, 0.24, 1)');
+    expect(css).toMatch(/\.button-with-icon::after\s*\{[\s\S]*?inset:\s*calc\(var\(--button-hover-border-width\) \* -1\)/);
+    expect(css).toMatch(/\.button-with-icon::after\s*\{[\s\S]*?border:\s*var\(--button-hover-border-width\) solid color-mix\([\s\S]*?var\(--button-primary-color\)[\s\S]*?var\(--button-hover-border-opacity\)[\s\S]*?pointer-events:\s*none;[\s\S]*?transition:\s*opacity var\(--button-hover-border-duration\) var\(--button-hover-border-easing\)/);
+    expect(css).toMatch(/\.button-with-icon:has\(\.button-icon\):not\(:disabled\):is\(:hover, :focus-visible\)::after\s*\{\s*opacity:\s*1/);
+    expect(css).not.toMatch(/\.icon-button[^}]*::after/);
+    expect(css).not.toMatch(/\.text-link[^}]*::after/);
   });
 
   it('removes migrated Unicode, CSS bars, and utility masks from consumers', async () => {

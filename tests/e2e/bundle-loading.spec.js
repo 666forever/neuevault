@@ -10,7 +10,7 @@ test('homepage defers search and overlay feature modules until they are needed',
   expect(scripts.some(url => url.includes('AssetModal'))).toBe(false);
   expect(scripts.some(url => url.includes('AuthDialog'))).toBe(false);
 
-  await page.locator('.main-nav [data-nav="search"]').click();
+  await page.locator('.site-footer a[href="/search"]').click();
   await expect(page).toHaveURL('/search');
   await expect(page.locator('#search-input')).toBeVisible();
   expect(scripts.filter(url => url.includes('searchPage'))).toHaveLength(1);
@@ -30,11 +30,11 @@ test('a delayed lazy route cannot overwrite a newer navigation', async ({ page }
     await route.continue();
   });
   await page.goto('/');
-  await page.locator('.main-nav [data-nav="search"]').click();
+  await page.locator('.site-footer a[href="/search"]').click();
   await expect(page.locator('.route-loading')).toHaveText('Loading archive tools…');
   await expect(page.locator('.route-loading')).toHaveAttribute('role', 'status');
   await expect(page.locator('#app')).toHaveAttribute('aria-busy', 'true');
-  await page.locator('.main-nav [data-nav="about"]').click();
+  await page.locator('.site-footer a[href="/about"]').click();
   await expect(page).toHaveURL('/about');
   await expect(page.getByRole('heading', { name: 'Saved with intent.' })).toBeVisible();
   await page.waitForTimeout(1100);
@@ -49,7 +49,7 @@ test('a failed route chunk reloads once and then exposes a retry state', async (
   page.on('request', request => { if (request.resourceType() === 'document') documentRequests += 1; });
   await page.route('**/src/pages/searchPage.js*', route => { chunkRequests += 1; return route.abort('failed'); });
   await page.goto('/');
-  await page.locator('.main-nav [data-nav="search"]').click();
+  await page.locator('.site-footer a[href="/search"]').click();
   await expect(page).toHaveURL('/search');
   await expect(page.getByRole('heading', { name: 'This page could not be loaded.' })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('Check your connection and try again.');

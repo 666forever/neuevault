@@ -31,8 +31,7 @@ describe('authentication dialog surface contract', () => {
       'Signed in',
       'Sign in with Discord',
       'Authentication unavailable',
-      'Connect with Discord',
-      'Discord sign-in unavailable',
+      'Sign In',
       'Sign out',
     ]) {
       expect(auth).toContain(label);

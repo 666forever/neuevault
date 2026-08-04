@@ -2,10 +2,13 @@ export function bindImageErrors(scope = document) {
   scope.querySelectorAll('img[data-image-fallback]:not([data-bound])').forEach(image => {
     image.dataset.bound = 'true';
     image.addEventListener('error', () => {
-      if (image.classList.contains('cover-animated') && image.closest('.collection-card')) {
-        image.closest('.collection-card')?.classList.remove('cover-playing');
-        image.remove();
-        return;
+      const collectionCard = image.closest('.collection-card');
+      if (collectionCard) {
+        if (image.classList.contains('cover-alternate')) collectionCard.classList.remove('cover-playing');
+        if (image.classList.contains('cover-animated') || image.classList.contains('cover-alternate')) {
+          image.remove();
+          return;
+        }
       }
       if (image.classList.contains('asset-animated')) {
         image.closest('.asset-card')?.classList.remove('asset-playing');
