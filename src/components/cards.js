@@ -33,7 +33,8 @@ export function bindAnimatedCovers(scope = document) {
     let visible = true;
     const update = entry => {
       if (entry) visible = entry.isIntersecting;
-      hero[!reducedMotion && !document.hidden && visible ? 'play' : 'pause']().catch?.(() => {});
+      if (!reducedMotion && !document.hidden && visible) hero.play()?.catch(() => {});
+      else hero.pause();
     };
     hero.__startAnimatedCover = hero.__stopAnimatedCover = update;
     observer?.observe(hero); hero.addEventListener('loadeddata', update, { once: true });

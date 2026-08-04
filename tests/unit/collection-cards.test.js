@@ -76,6 +76,12 @@ describe('collection-card blueprint contract', () => {
     expect(cardsSource).toContain('if (!card || reducedMotion || !hoverCapable) return;');
   });
 
+  it('handles Promise-returning hero playback separately from synchronous pause', () => {
+    expect(cardsSource).toContain("hero.play()?.catch(() => {})");
+    expect(cardsSource).toContain('else hero.pause()');
+    expect(cardsSource).not.toMatch(/hero\[[^\]]+\]\(\)\.catch/);
+  });
+
   it('loads the deterministic alternate before crossfade and cleans sources on disposal', () => {
     expect(cardsSource).toMatch(/if \(!alternate\.src\) alternate\.src = alternate\.dataset\.alternateSrc/);
     expect(cardsSource).toMatch(/alternate\.complete && alternate\.naturalWidth/);
