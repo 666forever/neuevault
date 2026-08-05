@@ -305,6 +305,38 @@ test('reduced motion keeps the hero video visible, aligned, and paused', async (
   await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
 });
 
+test('hero playback resynchronizes after readiness, refresh, visibility, viewport, and route changes', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  const errors = [];
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error' && !message.text().includes('/api/auth/session')) errors.push(message.text()); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    if (attempt === 0) await page.goto('/'); else await page.reload({ waitUntil: 'domcontentloaded' });
+    const media = page.locator('.hero-media');
+    await expect(media).toHaveCount(1);
+    await expect.poll(() => media.evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+  }
+  const media = page.locator('.hero-media');
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(() => media.evaluate(video => video.paused)).toBe(false);
+  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); });
+  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
+  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); document.dispatchEvent(new Event('visibilitychange')); });
+  await expect.poll(() => media.evaluate(video => video.paused)).toBe(false);
+  await page.setViewportSize({ width: 375, height: 780 });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-mobile.mp4');
+  await expect.poll(() => media.evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+  await page.goto('/about'); await expect(page.locator('.hero-media')).toHaveCount(0);
+  await page.goto('/'); await expect(page.locator('.hero-media')).toHaveCount(1);
+  await expect.poll(() => page.locator('.hero-media').evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('navbar and hero remain bounded across target responsive widths', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));

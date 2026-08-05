@@ -30,15 +30,20 @@ export function bindAnimatedCovers(scope = document) {
   const cleanups = []; const observer = !reducedMotion && 'IntersectionObserver' in window ? new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) entry.target.__startAnimatedCover?.(entry); else entry.target.__stopAnimatedCover?.(entry); })) : null;
   const hero = scope.querySelector('.hero-media');
   if (hero) {
-    let visible = true;
-    const update = entry => {
-      if (entry) visible = entry.isIntersecting;
-      if (!reducedMotion && !document.hidden && visible) hero.play()?.catch(() => {});
-      else hero.pause();
+    let visible = hero.getBoundingClientRect().bottom > 0;
+    let playPending = false;
+    const syncHeroPlayback = () => {
+      const shouldPlay = !reducedMotion && !document.hidden && visible;
+      if (!shouldPlay) { hero.pause(); return; }
+      if (!hero.paused || playPending) return;
+      playPending = true;
+      Promise.resolve(hero.play()).catch(() => {}).finally(() => { playPending = false; });
     };
-    hero.__startAnimatedCover = hero.__stopAnimatedCover = update;
-    observer?.observe(hero); hero.addEventListener('loadeddata', update, { once: true });
-    cleanups.push(() => hero.pause());
+    const updateVisibility = entry => { if (entry) visible = entry.isIntersecting; syncHeroPlayback(); };
+    hero.__startAnimatedCover = hero.__stopAnimatedCover = updateVisibility;
+    hero.onloadeddata = hero.onplay = syncHeroPlayback;
+    observer?.observe(hero); syncHeroPlayback();
+    cleanups.push(() => { hero.onloadeddata = hero.onplay = null; hero.pause(); });
   }
   scope.querySelectorAll('.collection-card').forEach(card => {
     const alternate = card.querySelector('[data-alternate-src]');

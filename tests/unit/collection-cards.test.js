@@ -77,9 +77,14 @@ describe('collection-card blueprint contract', () => {
   });
 
   it('handles Promise-returning hero playback separately from synchronous pause', () => {
-    expect(cardsSource).toContain("hero.play()?.catch(() => {})");
-    expect(cardsSource).toContain('else hero.pause()');
+    expect(cardsSource).toContain('const shouldPlay = !reducedMotion && !document.hidden && visible');
+    expect(cardsSource).toContain('const updateVisibility = entry => { if (entry) visible = entry.isIntersecting; syncHeroPlayback(); }');
+    expect(cardsSource).toContain('hero.onloadeddata = hero.onplay = syncHeroPlayback');
+    expect(cardsSource).toContain('Promise.resolve(hero.play()).catch(() => {}).finally(() => { playPending = false; })');
+    expect(cardsSource).toContain('if (!shouldPlay) { hero.pause(); return; }');
+    expect(cardsSource).toContain('hero.onloadeddata = hero.onplay = null');
     expect(cardsSource).not.toMatch(/hero\[[^\]]+\]\(\)\.catch/);
+    expect(cardsSource).not.toMatch(/loadeddata[^\n]+updateVisibility/);
   });
 
   it('loads the deterministic alternate before crossfade and cleans sources on disposal', () => {
