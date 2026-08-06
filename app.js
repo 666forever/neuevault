@@ -116,9 +116,10 @@ function renderRouteLoadError() {
 }
 
 function showRouteLoading(route) {
-  if (!['search', 'type'].includes(route.name)) return;
+  if (!['search', 'type', 'admin'].includes(route.name)) return;
   app.setAttribute('aria-busy', 'true');
-  app.innerHTML = '<div class="page route-page"><div class="route-state route-loading" role="status" aria-live="polite">Loading archive tools…</div></div>';
+  const message = route.name === 'admin' ? 'Checking administration access…' : 'Loading archive tools…';
+  app.innerHTML = `<div class="page route-page"><div class="route-state route-loading" role="status" aria-live="polite">${message}</div></div>`;
 }
 
 const pages = createPages(repository, app, async (items, index, trigger) => {
@@ -142,6 +143,11 @@ async function renderPage(route, sequence = routeSequence) {
   else if (route.name === 'type') pageCleanup = await pages.typePage(route.params.type, () => sequence === routeSequence);
   else if (route.name === 'search') pageCleanup = await pages.searchPage(route.query, () => sequence === routeSequence);
   else if (route.name === 'about') pages.aboutPage();
+  else if (route.name === 'admin') {
+    const { renderAdminPage } = await loadLazyModule(() => import('./src/admin/AdminPage.js'));
+    if (sequence !== routeSequence) return;
+    pageCleanup = renderAdminPage(app);
+  }
   else pages.notFound();
 }
 
@@ -152,7 +158,7 @@ function updateRouteMetadata(route, backgroundRoute = null, asset = null) {
     link.classList.toggle('active', selected);
   });
   syncActiveNavigationAccessibility();
-  const title = asset?.title || ({ recent: 'Recently Added', icons: 'Icons', banners: 'Banners', animated: 'Animated', wallpapers: 'Wallpapers', search: 'Search', about: 'About', collections: 'Collections' })[active];
+  const title = asset?.title || (route.name === 'admin' ? 'Admin' : ({ recent: 'Recently Added', icons: 'Icons', banners: 'Banners', animated: 'Animated', wallpapers: 'Wallpapers', search: 'Search', about: 'About', collections: 'Collections' })[active]);
   document.title = title ? `${title} — ${BASE_TITLE}` : BASE_TITLE;
   const canonical = document.querySelector('#canonical-url');
   if (canonical) canonical.href = `https://www.pfseeker.com${location.pathname}`;

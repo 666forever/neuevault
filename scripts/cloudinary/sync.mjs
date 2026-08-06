@@ -10,7 +10,7 @@ import { withRetry } from './retry.mjs';
 
 export const syncStatePath = path.join(projectRoot, 'content/cloudinary-sync.json');
 const hashFile = async file => createHash('sha256').update(await readFile(file)).digest('hex');
-const uploadRecord = response => ({ assetId: response.asset_id, publicId: response.public_id, version: response.version, format: response.format, bytes: response.bytes, width: response.width, height: response.height, resourceType: response.resource_type, deliveryType: response.type, secureUrl: response.secure_url });
+const uploadRecord = (response, { includeSecureUrl = true } = {}) => ({ assetId: response.asset_id, publicId: response.public_id, version: response.version, format: response.format, bytes: response.bytes, width: response.width, height: response.height, resourceType: response.resource_type, deliveryType: response.type, ...(includeSecureUrl ? { secureUrl: response.secure_url } : {}) });
 
 async function readState(file) { return await exists(file) ? readJson(file) : { version: 1, assets: {} }; }
 function stateMatches(previous, hash, asset) { return previous?.sourceHash === hash && previous.original?.publicId === cloudinaryOriginalPublicId(asset) && previous.original?.deliveryType === expectedDeliveryType(asset) && (!asset.requiresDiscordAuth || previous.preview?.publicId === cloudinaryPreviewPublicId(asset)); }
@@ -30,7 +30,7 @@ export async function syncCloudinary({ transport, dryRun = false, config = pipel
       const original = await withRetry(() => transport.upload(path.join(config.sourceRoot, asset.sourceFile), { public_id: cloudinaryOriginalPublicId(asset), resource_type: 'image', type: expectedDeliveryType(asset), overwrite: true, unique_filename: false, use_filename: false, invalidate: true, tags: ['neuevault', asset.requiresDiscordAuth ? 'restricted' : 'public'] }));
       let preview = null;
       if (asset.requiresDiscordAuth) preview = await withRetry(() => transport.upload(path.join(config.publicPreviewRoot, path.basename(asset.previewFile)), { public_id: cloudinaryPreviewPublicId(asset), resource_type: 'image', type: 'upload', overwrite: true, unique_filename: false, use_filename: false, invalidate: true, tags: ['neuevault', 'restricted-preview'] }));
-      nextState.assets[asset.id] = { sourceHash: hashes.get(asset.id), original: uploadRecord(original), ...(preview ? { preview: uploadRecord(preview) } : {}) }; completed.push(asset.id);
+      nextState.assets[asset.id] = { sourceHash: hashes.get(asset.id), original: uploadRecord(original, { includeSecureUrl: !asset.requiresDiscordAuth }), ...(preview ? { preview: uploadRecord(preview) } : {}) }; completed.push(asset.id);
     }
   } catch (error) { throw new Error(`Cloudinary synchronization stopped after ${completed.length} successful asset(s) [${completed.join(', ')}]. State and manifests were not updated. Re-run safely after resolving: ${error.message}`); }
   const migratedAssets = local.assets.map(asset => {

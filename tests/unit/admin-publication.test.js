@@ -1,0 +1,28 @@
+import { beforeAll,describe,expect,it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { createLocalAdminCatalogProvider } from '../../scripts/admin/local-catalog-provider.mjs';
+import { compileCatalog } from '../../server/catalog/compiler.js';
+import { reconstructHostedAssetFacts } from '../../server/catalog/hosted-adapter.js';
+import { applyCatalogMutation } from '../../server/catalog/mutations.js';
+import { createMockGitProvider } from '../../server/admin/mock-git-provider.js';
+import { createMemoryPublicationStore } from '../../server/admin/publication-store.js';
+import { publishCatalogMutation } from '../../server/admin/publication.js';
+
+const sha='a'.repeat(40); let snapshot; const hash=value=>createHash('sha256').update(`${JSON.stringify(value,null,2)}\n`).digest('hex').toUpperCase();
+beforeAll(async()=>{snapshot=(await createLocalAdminCatalogProvider({baseCommitSha:sha}).read()).snapshot;});
+
+describe('hosted catalog reconstruction',()=>{
+  it('reconstructs all 234 records without files, Sharp, or Cloudinary and preserves exact manifests',()=>{const facts=reconstructHostedAssetFacts(snapshot.assetsFile.assets,snapshot.generated.assets);const output=compileCatalog({assets:snapshot.assetsFile.assets,categories:snapshot.categoriesFile.categories,collections:snapshot.collectionsFile.collections,resolvedAssets:facts});expect(facts).toHaveLength(234);expect(hash(output.assets)).toBe(hash(snapshot.generated.assets));expect(hash(output.categories)).toBe(hash(snapshot.generated.categories));expect(hash(output.collections)).toBe(hash(snapshot.generated.collections));expect(output.assets.find(item=>item.id==='nv-166')).toEqual(snapshot.generated.assets.find(item=>item.id==='nv-166'));});
+});
+
+describe('typed category and collection mutations',()=>{
+  const catalog=()=>({assets:structuredClone(snapshot.assetsFile.assets),categories:structuredClone(snapshot.categoriesFile.categories),collections:structuredClone(snapshot.collectionsFile.collections)});
+  it('allocates stable IDs and rejects browser IDs and duplicate slugs',()=>{const made=applyCatalogMutation(catalog(),{type:'category.create',changes:{slug:'new-category',title:'New',description:'',coverAssetId:null,visible:false,order:9,filter:{type:'assets',assetIds:[]}}});expect(made.categories.at(-1).id).toBe('cat-005');expect(()=>applyCatalogMutation(catalog(),{type:'category.create',id:'cat-999',changes:{}})).toThrow();expect(()=>{const value=catalog();value.categories.push({...value.categories[0],id:'cat-999'});return compileCatalog({assets:[],categories:value.categories,collections:[],resolvedAssets:[]});}).toThrow();});
+  it('renames and deletes collection memberships atomically',()=>{const base=catalog();const item=base.collections[0];const renamed=applyCatalogMutation(base,{type:'collection.update',id:item.id,changes:{slug:'renamed'},confirmation:'collection.update'});expect(renamed.assets.some(asset=>asset.collectionSlugs.includes(item.slug))).toBe(false);expect(renamed.assets.some(asset=>asset.collectionSlugs.includes('renamed'))).toBe(true);const removed=applyCatalogMutation(renamed,{type:'collection.delete',id:item.id,confirmation:'collection.delete'});expect(removed.assets.some(asset=>asset.collectionSlugs.includes('renamed'))).toBe(false);});
+});
+
+describe('Git CAS publication and idempotency',()=>{
+  const mutation={type:'collection.update',id:'col-001',changes:{title:'Changed'}}; const admin={discordId:'1137950746751537152',role:'owner'};
+  it('creates one seven-file one-parent commit and leaves deployment pending',async()=>{const provider=createMockGitProvider({head:sha,snapshot});const store=createMemoryPublicationStore();const context={env:{},data:{adminGitProvider:provider,publicationStore:store}};const input={admin,requestId:'request-1',baseCommitSha:sha,idempotencyKey:'retry-key-1',mutation,now:new Date('2026-08-05T00:00:00Z')};const first=await publishCatalogMutation(context,input);const retry=await publishCatalogMutation(context,input);expect(first.status).toBe('deployment_pending');expect(retry.replayed).toBe(true);expect(provider.commits).toHaveLength(1);expect(provider.commits[0]).toMatchObject({baseSha:sha,parents:[sha],force:false});expect(provider.commits[0].files).toHaveLength(7);expect(provider.commits[0].files.find(file=>file.path==='public/catalog-version.json').content).not.toContain(first.commitSha);expect(store.audits.map(event=>event.action)).toEqual(['collection.update','publication.commit']);});
+  it('rejects stale heads, final ref races, and idempotency-key reuse',async()=>{const stale=createMockGitProvider({head:sha,snapshot});stale.setHead('c'.repeat(40));await expect(publishCatalogMutation({env:{},data:{adminGitProvider:stale,publicationStore:createMemoryPublicationStore()}},{admin,requestId:'r',baseCommitSha:sha,idempotencyKey:'stale-key',mutation})).rejects.toMatchObject({status:409,code:'catalog_conflict'});const race=createMockGitProvider({head:sha,snapshot,fail:'race'});await expect(publishCatalogMutation({env:{},data:{adminGitProvider:race,publicationStore:createMemoryPublicationStore()}},{admin,requestId:'r',baseCommitSha:sha,idempotencyKey:'race-key-1',mutation})).rejects.toMatchObject({status:409});const store=createMemoryPublicationStore(),provider=createMockGitProvider({head:sha,snapshot}),context={env:{},data:{adminGitProvider:provider,publicationStore:store}};await publishCatalogMutation(context,{admin,requestId:'r',baseCommitSha:sha,idempotencyKey:'same-key-1',mutation});await expect(publishCatalogMutation(context,{admin,requestId:'r',baseCommitSha:provider.commits[0].commitSha,idempotencyKey:'same-key-1',mutation:{...mutation,changes:{title:'Other'}}})).rejects.toMatchObject({code:'idempotency_key_reused'});});
+});

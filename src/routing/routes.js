@@ -17,7 +17,7 @@ export function parseRoute(value = '/') {
   if (parts[0] === 'collections') return parts[1] ? { name: 'collection', path, params: { slug: parts[1] }, query } : { name: 'collections', path, params: {}, query };
   if (parts[0] === 'categories' && parts[1]) return { name: 'category', path, params: { slug: parts[1] }, query };
   if (parts[0] === 'asset' && parts[1]) return { name: 'asset', path, params: { id: parts[1], slug: parts[2] || '' }, query };
-  if (['recent', 'search', 'about'].includes(parts[0]) && parts.length === 1) return { name: parts[0], path, params: {}, query };
+  if (['recent', 'search', 'about', 'admin'].includes(parts[0]) && parts.length === 1) return { name: parts[0], path, params: {}, query };
   return { name: 'notFound', path, params: {}, query };
 }
 

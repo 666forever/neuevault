@@ -53,6 +53,10 @@ describe('production authentication boundary', () => {
     expect(asset).toMatchObject({ id: 'nv-166', requiresDiscordAuth: true, src: null, cloudinaryDeliveryType: 'authenticated' });
     expect(asset.cloudinaryPublicId).toBeTruthy();
   });
+  it('keeps signed-out restricted delivery unauthorized and uncached', async () => {
+    const response = await downloadHandler({ request: new Request('https://www.pfseeker.com/api/download/nv-166'), params: { assetId: 'nv-166' }, env: {} });
+    expect(response.status).toBe(401); expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
   it('proxies protected downloads without exposing a signed delivery redirect', async () => {
     const secret = 'a sufficiently long test secret';
     const token = await signPayload({ user: { id: '1' }, csrf: 'csrf', exp: 9_999_999_999 }, secret);

@@ -1,0 +1,9 @@
+const delay=(milliseconds,signal)=>new Promise((resolve,reject)=>{const timer=setTimeout(resolve,milliseconds);signal.addEventListener('abort',()=>{clearTimeout(timer);reject(new DOMException('Aborted','AbortError'));},{once:true});});
+export function monitorAdminPublication(element,{publicationId,bootstrap,client,signal,onLive}){
+  const controller=new AbortController();signal.addEventListener('abort',()=>controller.abort(),{once:true});let attempts=0;
+  const verify=async manual=>{
+    if(controller.signal.aborted)return;element.textContent=manual?'Verifying deployment…':'Deployment pending…';
+    try{const response=await client.verifyPublication(publicationId,bootstrap.csrfToken,controller.signal),body=await response.json();if(response.ok&&body.publication?.live){element.textContent='Live. Refreshing the authoritative catalog…';await onLive?.();return;}if(body.publication?.status==='failed'){element.innerHTML='Deployment failed. <button type="button" data-publication-retry>Retry verification</button>';element.querySelector('button').onclick=()=>verify(true);return;}if(!response.ok&&response.status!==503){element.textContent=body.error||'Deployment verification failed.';return;}element.innerHTML=`${body.publication?.failureCode==='catalog_marker_mismatch'?'The deployment is serving the previous catalog.':'Deployment verification is temporarily unavailable.'} <button type="button" data-publication-retry>Retry now</button>`;element.querySelector('button').onclick=()=>verify(true);}catch(error){if(error.name!=='AbortError'){element.innerHTML='Deployment verification is temporarily unavailable. <button type="button" data-publication-retry>Retry now</button>';element.querySelector('button').onclick=()=>verify(true);}}
+    if(!manual&&++attempts<12&&!controller.signal.aborted){await delay(Math.min(5_000+attempts*1_000,15_000),controller.signal);return verify(false);}
+  };verify(false);return()=>controller.abort();
+}

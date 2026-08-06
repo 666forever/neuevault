@@ -3,5 +3,14 @@
   "name": "neuevault",
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2026-07-19",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "ADMIN_DB",
+      "database_name": "neuevault-admin-production",
+      "database_id": "c06f97e4-813f-4df3-bfe8-8b9d6ba597c4",
+      "preview_database_id": "73a63383-07c9-450b-874b-e7827a9f6657",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

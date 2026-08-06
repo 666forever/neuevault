@@ -18,6 +18,7 @@
     "audit:cloudinary-secrets": "node scripts/audit-cloudinary-secrets.mjs",
     "audit:bundle": "node scripts/audit-bundle.mjs",
     "audit:cache-headers": "node scripts/audit-cache-headers.mjs",
+    "audit:production-readiness": "node scripts/admin/production-readiness.mjs --read-only",
     "assets:update": "node scripts/assets-update.mjs",
     "manage:content": "node scripts/manage-content.mjs",
     "pages:dev": "npm run build && wrangler pages dev dist"
