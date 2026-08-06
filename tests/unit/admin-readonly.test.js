@@ -56,6 +56,11 @@ describe('read-only admin catalog endpoint', () => {
     expect(response.status).toBe(200); expect(response.headers.get('Cache-Control')).toBe('no-store'); expect(body).toMatchObject({ baseCommitSha: null, source: 'local', readOnly: true, catalog });
     expect(JSON.stringify(body)).not.toMatch(/signed|cloudinaryPublicId|api[_-]?secret/i);
   });
+  it('marks the production catalog writable when the existing publication providers are complete', async () => {
+    const githubAppProvider = { readHead: vi.fn(async () => 'a'.repeat(40)), readSnapshot: vi.fn(async () => ({ assetsFile: { assets: catalog.assets }, categoriesFile: { categories: catalog.categories }, collectionsFile: { collections: catalog.collections } })) };
+    const response = await catalogHandler({ request: await requestFor(ownerId, { url: 'https://www.pfseeker.com/api/admin/catalog' }), env: { ...env(db()), ADMIN_ENVIRONMENT: 'production', ADMIN_PRODUCTION_WRITES_ENABLED: 'true' }, data: { githubAppProvider, publicationStore: {} } });
+    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ source: 'github', readOnly: false, catalog });
+  });
   it('fails safely when production or preview has no GitHub provider', async () => {
     for (const environment of ['production', 'preview']) {
       const response = await catalogHandler({ request: await requestFor(ownerId, { url: 'https://www.pfseeker.com/api/admin/catalog' }), env: { ...env(db()), ADMIN_ENVIRONMENT: environment }, data: { adminCatalogProvider: provider } });

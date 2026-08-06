@@ -1,6 +1,7 @@
 import { AdminError } from './errors.js';
-import { adminEnvironment } from './capabilities.js';
+import { adminEnvironment, adminProviderCompleteness } from './capabilities.js';
 import { adminGitProvider, createCatalogReadProvider } from './git-provider.js';
+import { publicationStore } from './publication-store.js';
 
 export function adminCatalogProvider({ env, data } = {}) {
   const environment = adminEnvironment(env || {});
@@ -17,7 +18,7 @@ export async function readAdminCatalog(context) {
   try {
     const result = await provider.read();
     if (!result?.catalog || !Array.isArray(result.catalog.assets) || !Array.isArray(result.catalog.categories) || !Array.isArray(result.catalog.collections)) throw new Error('Invalid catalog provider response.');
-    const environment=adminEnvironment(context.env||{}); const writable=result.readOnly===false&&(['local','test'].includes(environment)||(environment==='production'&&context.data?.adminPublicationConfigured===true));
+    const environment=adminEnvironment(context.env||{}); const publicationConfigured=Boolean(adminProviderCompleteness(context).catalogWrites&&adminGitProvider(context)&&publicationStore(context)); const writable=result.readOnly===false&&(['local','test'].includes(environment)||(environment==='production'&&publicationConfigured));
     return { baseCommitSha: result.baseCommitSha || null, source: result.source || 'local', readOnly: !writable, catalog: result.catalog };
   } catch (error) {
     if (error instanceof AdminError) throw error;
