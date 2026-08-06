@@ -55,7 +55,7 @@ describe('deployed production readiness endpoint', () => {
     const methodContext = await context(ownerId); methodContext.request = await request(ownerId, 'POST'); expect((await readinessHandler(methodContext)).status).toBe(405);
     const owner = await context(ownerId); owner.request = await request(ownerId); const response = await readinessHandler(owner); const body = await response.json();
     expect(response.status).toBe(200); expect(response.headers.get('Cache-Control')).toBe('no-store');
-    expect(body).toMatchObject({ ready: true, environment: 'production', catalog: { assets: 234, categories: 4, collections: 4 } });
+    expect(body).toMatchObject({ ready: true, environment: 'production', writeGateDisabled: true, catalog: { assets: 234, categories: 4, collections: 4 } });
     expect(Object.values(body.capabilities).every(value => value === false)).toBe(true);
     expect(JSON.stringify(body)).not.toMatch(/token|private|publicId|commitSha|accountId|installation/i);
   });

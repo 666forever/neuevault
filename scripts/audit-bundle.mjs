@@ -49,7 +49,7 @@ const adminUpload = byFile.get(manifest[adminUploadKey]?.file);
 const adminPublication = byFile.get(manifest[adminPublicationKey]?.file);
 const adminNested = [...adminKeys].filter(key => key !== adminKey).map(key => byFile.get(manifest[key]?.file)).filter(Boolean);
 const largestAdminNested = adminNested.sort((a, b) => b.gzip - a.gzip)[0] || { file: 'none', bytes: 0, gzip: 0, brotli: 0 };
-const budgets = { entryBytes: 490_000, entryGzip: 51_500, publicGzip: 55_500, largestPublicLazyBytes: 10_000, adminShellGzip: 2_450, adminEditorGzip: 2_200, adminAccessGzip: 2_000, adminUploadGzip: 2_275, adminPublicationGzip: 800, adminAggregateGzip: 9_600 };
+const budgets = { entryBytes: 490_000, entryGzip: 51_500, publicGzip: 55_500, largestPublicLazyBytes: 10_000, adminShellGzip: 2_480, adminEditorGzip: 2_200, adminAccessGzip: 2_000, adminUploadGzip: 2_275, adminPublicationGzip: 800, adminAggregateGzip: 9_600 };
 const failures = [];
 if (!entryKey || !entry) failures.push('entry manifest graph is missing');
 if (!adminKey || !(manifest[entryKey]?.dynamicImports || []).includes(adminKey)) failures.push('admin shell is not an entry-level dynamic boundary');

@@ -49,7 +49,10 @@ export function renderAdminPage(app, { client = new AdminClient() } = {}) {
       }
       if (bootstrap.role === 'owner') {
         const { mountAdminAccess } = await import('./AdminAccess.js');
-        if (!signal.aborted && !disposed) mountAdminAccess(app.querySelector('.admin-access-mount'), { bootstrap, signal });
+        if (!signal.aborted && !disposed) {
+          mountAdminAccess(app.querySelector('.admin-access-mount'), { bootstrap, signal });
+          if (bootstrap.environment === 'production') app.onclick = event => { if (event.target.matches('[data-ready-run]')) client.fetcher('/api/admin/readiness').then(response => response.json()).then(value => { app.querySelector('[data-ready]').textContent = JSON.stringify(value); }); };
+        }
       }
     } catch (error) {
       if (signal.aborted || disposed || error?.name === 'AbortError') return;
@@ -57,5 +60,5 @@ export function renderAdminPage(app, { client = new AdminClient() } = {}) {
     }
   };
   load();
-  return () => { disposed = true; controller?.abort(); };
+  return () => { disposed = true; controller?.abort(); app.onclick = null; };
 }

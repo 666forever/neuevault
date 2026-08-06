@@ -87,6 +87,7 @@ export async function verifyProductionReadiness(context) {
       marker: true,
       zeroProviderMutations: true,
     },
+    writeGateDisabled: true,
     catalog: { assets: 234, categories: 4, collections: 4 },
     capabilities: mutationCapabilities,
   };

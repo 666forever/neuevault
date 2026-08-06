@@ -9,14 +9,15 @@ const catalog = { baseCommitSha: null, source: 'local', readOnly: true, catalog:
 async function commonRoutes(page) {
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
 }
-async function adminRoutes(page, { status = 200, role = 'owner', delay = 0, catalogStatus = 200, delegated = [], manage = role === 'owner', mutationStatus = 200, writeCatalog = false, uploadAssets = false, uploadRestrictedAssets = false, publicationStatus = 202, verifyDeployments = false, verificationResults = [] } = {}) {
-  let catalogRequests = 0; let delegatedRequests = 0; let uploadRequests=0;let verificationRequests=0; const uploadBodies=[];const rows = [...delegated];
+async function adminRoutes(page, { status = 200, role = 'owner', environment = 'test', delay = 0, catalogStatus = 200, delegated = [], manage = role === 'owner', mutationStatus = 200, writeCatalog = false, uploadAssets = false, uploadRestrictedAssets = false, publicationStatus = 202, verifyDeployments = false, verificationResults = [] } = {}) {
+  let catalogRequests = 0; let delegatedRequests = 0; let uploadRequests=0;let verificationRequests=0;let readinessRequests=0; const uploadBodies=[];const rows = [...delegated];
   await page.route('**/api/admin/bootstrap', async route => {
     if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-    const body = status === 200 ? { authenticated: true, role, user: { id: role === 'owner' ? '900000000000000001' : '900000000000000002', displayName: role === 'owner' ? 'Local owner' : 'Local delegated admin', avatarUrl: null }, csrfToken: 'fixture', environment: 'test', readOnly: !writeCatalog, capabilities: { readCatalog: true, readDelegatedAdmins: role === 'owner', writeCatalog, manageDelegatedAdmins: manage, uploadAssets, uploadRestrictedAssets, verifyDeployments, deleteMedia: false } } : { error: status === 401 ? 'Authentication is required.' : status === 403 ? 'Administrator access is not authorized.' : 'Administration is unavailable.' };
+    const body = status === 200 ? { authenticated: true, role, user: { id: role === 'owner' ? '900000000000000001' : '900000000000000002', displayName: role === 'owner' ? 'Local owner' : 'Local delegated admin', avatarUrl: null }, csrfToken: 'fixture', environment, readOnly: !writeCatalog, capabilities: { readCatalog: true, readDelegatedAdmins: role === 'owner', writeCatalog, manageDelegatedAdmins: manage, uploadAssets, uploadRestrictedAssets, verifyDeployments, deleteMedia: false } } : { error: status === 401 ? 'Authentication is required.' : status === 403 ? 'Administrator access is not authorized.' : 'Administration is unavailable.' };
     await route.fulfill({ status, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify(body) });
   });
   await page.route('**/api/admin/catalog', route => { catalogRequests += 1; return route.fulfill({ status: catalogStatus, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify(catalogStatus === 200 ? {...catalog,readOnly:!writeCatalog,baseCommitSha:'a'.repeat(40)} : { error: 'The administration catalog is unavailable.' }) }); });
+  await page.route('**/api/admin/readiness', route => { readinessRequests += 1; return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify({ ready:true, environment:'production', writeGateDisabled:true, checks:{ownerConfigured:true,discordConfigured:true,d1Schema:true,githubRead:true,githubTargetFixed:true,cloudinaryRead:true,cloudflareDeploymentRead:true,marker:true,zeroProviderMutations:true},catalog:{assets:234,categories:4,collections:4},capabilities:{manageDelegatedAdmins:false,writeCatalog:false,uploadAssets:false,uploadRestrictedAssets:false} }) }); });
   await page.route('**/api/admin/publications', route => route.fulfill({ status: publicationStatus, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify(publicationStatus===409?{code:'catalog_conflict'}:{publication:{publicationId:'pub-1',status:'deployment_pending',commitSha:'b'.repeat(40)}}) }));
   await page.route('**/api/admin/publications/pub-1/verify',route=>{verificationRequests++;const publication=verificationResults.shift()||{publicationId:'pub-1',status:'deployment_pending',live:false,retryable:true};return route.fulfill({status:publication.live?200:202,contentType:'application/json',headers:{'Cache-Control':'no-store'},body:JSON.stringify({publication})});});
   await page.route('**/api/admin/uploads',route=>{uploadRequests++;const requestBody=route.request().postDataJSON();uploadBodies.push(requestBody);const restricted=requestBody.requiresDiscordAuth===true,publicId=`neuevault/${restricted?'restricted':'public'}/icons/nv-999`;return route.fulfill({status:201,contentType:'application/json',headers:{'Cache-Control':'no-store'},body:JSON.stringify({job:{jobId:'job-1',assetId:'nv-999',status:'created',requiresDiscordAuth:restricted},authorization:{uploadUrl:'https://upload.fixture/image/upload',apiKey:'public-key',signature:'signed',parameters:{public_id:publicId,type:restricted?'authenticated':'upload'},expectedPublicId:publicId}})});});
@@ -30,7 +31,7 @@ async function adminRoutes(page, { status = 200, role = 'owner', delay = 0, cata
     const discordId = decodeURIComponent(path.split('/').at(-1)); const index = rows.findIndex(row => row.discordId === discordId); if (index < 0) return route.fulfill({ status: 404, contentType: 'application/json', body: '{"code":"delegated_admin_not_found"}' }); rows.splice(index, 1); return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ removed: true, discordId }) });
   };
   await page.route('**/api/admin/delegated-admins', delegatedRoute); await page.route('**/api/admin/delegated-admins/**', delegatedRoute);
-  const result = () => catalogRequests; result.delegated = () => delegatedRequests;result.uploads=()=>uploadRequests;result.uploadBodies=()=>uploadBodies;result.verifications=()=>verificationRequests; return result;
+  const result = () => catalogRequests; result.delegated = () => delegatedRequests;result.uploads=()=>uploadRequests;result.uploadBodies=()=>uploadBodies;result.verifications=()=>verificationRequests;result.readiness=()=>readinessRequests; return result;
 }
 
 test.beforeEach(async ({ page }) => commonRoutes(page));
@@ -51,6 +52,15 @@ for (const role of ['owner', 'delegated']) test(`authorized ${role} receives one
   const requests = await adminRoutes(page, { role }); await page.goto('/admin'); await expect(page.getByRole('heading', { name: 'Content manager' })).toBeVisible();
   await expect(page.locator('.admin-identity')).toContainText(role === 'owner' ? 'Owner' : 'Delegated administrator'); await expect(page.locator('.admin-summary')).toContainText('2');
   await expect(page.getByRole('button', { name: /save|delete|upload|publish/i })).toHaveCount(0); expect(requests()).toBe(1); await expect(page.locator('html')).not.toHaveCSS('overflow-x', 'scroll');
+});
+
+test('production owner can run the sanitized read-only readiness check while delegated users cannot', async ({ page }) => {
+  let requests = await adminRoutes(page, { environment: 'production', manage: false }); await page.goto('/admin');
+  await page.getByRole('button', { name: 'Readiness' }).click(); await expect(page.locator('[data-ready]')).toContainText('"ready":true');
+  await expect(page.locator('[data-ready]')).toContainText('"zeroProviderMutations":true'); await expect(page.locator('[data-ready]')).toContainText('"uploadRestrictedAssets":false'); expect(requests.readiness()).toBe(1);
+  await expect(page.locator('[data-ready]')).not.toContainText(/token|private key|publicId|commitSha|accountId/i);
+  await page.unrouteAll({ behavior: 'wait' }); await commonRoutes(page); requests = await adminRoutes(page, { role: 'delegated', environment: 'production', manage: false }); await page.reload();
+  await expect(page.getByRole('button', { name: 'Readiness' })).toHaveCount(0); expect(requests.readiness()).toBe(0);
 });
 
 test('manager never flashes before authorization and route disposal ignores the pending response', async ({ page }) => {
