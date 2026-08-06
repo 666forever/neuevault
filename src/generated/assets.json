@@ -1,5 +1,62 @@
 [
   {
+    "id": "nv-256",
+    "title": "150b41d36a2832cbdc5cd625f302b684",
+    "slug": "150b41d36a2832cbdc5cd625f302b684",
+    "sourceFile": "icons/nv-256.jpg",
+    "previewFile": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg",
+    "src": "https://res.cloudinary.com/ayghsuks/image/upload/v1786048330/neuevault/public/icons/nv-256.jpg",
+    "category": "Icons",
+    "collectionSlugs": [
+      "imvu-pack-01"
+    ],
+    "tags": [
+      "black hair",
+      "game",
+      "girl",
+      "imvu"
+    ],
+    "width": 736,
+    "height": 736,
+    "aspectRatio": 1,
+    "orientation": "Square",
+    "fileType": "JPG",
+    "mimeType": "image/jpeg",
+    "fileSize": 44828,
+    "uploadDate": "2026-08-06",
+    "animated": false,
+    "requiresDiscordAuth": false,
+    "previewUrl": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg",
+    "previewSources": [
+      {
+        "width": 320,
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_320,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg"
+      },
+      {
+        "width": 640,
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_640,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg"
+      },
+      {
+        "width": 960,
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_960,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg"
+      },
+      {
+        "width": 1200,
+        "url": "https://res.cloudinary.com/ayghsuks/image/upload/f_auto,q_auto,w_1200,c_limit/v1786048330/neuevault/public/icons/nv-256.jpg"
+      }
+    ],
+    "downloadUrl": "https://res.cloudinary.com/ayghsuks/image/upload/fl_attachment:nv-256/v1786048330/neuevault/public/icons/nv-256.jpg",
+    "cloudinaryAssetId": "0facbca9285fd7bd98079ce27c78c8fb",
+    "cloudinaryPublicId": "neuevault/public/icons/nv-256",
+    "cloudinaryVersion": 1786048330,
+    "cloudinaryDeliveryType": "upload",
+    "originalDelivery": {
+      "url": "https://res.cloudinary.com/ayghsuks/image/upload/v1786048330/neuevault/public/icons/nv-256.jpg",
+      "resourceType": "image",
+      "deliveryType": "upload"
+    }
+  },
+  {
     "id": "nv-040",
     "title": "6398979e0a90f6a8",
     "slug": "6398979e0a90f6a8",

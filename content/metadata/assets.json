@@ -2892,6 +2892,25 @@
       "requiresDiscordAuth": false,
       "animated": false,
       "sourceHash": "ecac1e80546304079fe2b9453f14517831fe967d61812c2d1bc7579015617ee6"
+    },
+    {
+      "id": "nv-256",
+      "sourceFile": "icons/nv-256.jpg",
+      "title": "150b41d36a2832cbdc5cd625f302b684",
+      "category": "Icons",
+      "collectionSlugs": [
+        "imvu-pack-01"
+      ],
+      "tags": [
+        "imvu",
+        "game",
+        "girl",
+        "black hair"
+      ],
+      "uploadDate": "2026-08-06",
+      "requiresDiscordAuth": false,
+      "animated": false,
+      "sourceHash": "69930b401890750c8b3c04e536f4ec2e47cb2dc70c6dd42e57e73775d14e8aa8"
     }
   ]
 }

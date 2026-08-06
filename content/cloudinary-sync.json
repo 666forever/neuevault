@@ -3522,6 +3522,21 @@
         "deliveryType": "upload",
         "secureUrl": "https://res.cloudinary.com/ayghsuks/image/upload/v1784379224/neuevault/public/banners/nv-077.png"
       }
+    },
+    "nv-256": {
+      "sourceHash": "69930b401890750c8b3c04e536f4ec2e47cb2dc70c6dd42e57e73775d14e8aa8",
+      "original": {
+        "assetId": "0facbca9285fd7bd98079ce27c78c8fb",
+        "publicId": "neuevault/public/icons/nv-256",
+        "version": 1786048330,
+        "format": "jpg",
+        "bytes": 44828,
+        "width": 736,
+        "height": 736,
+        "resourceType": "image",
+        "deliveryType": "upload",
+        "secureUrl": "https://res.cloudinary.com/ayghsuks/image/upload/v1786048330/neuevault/public/icons/nv-256.jpg"
+      }
     }
   }
 }
