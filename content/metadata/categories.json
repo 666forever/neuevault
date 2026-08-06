@@ -66,19 +66,6 @@
           "couple"
         ]
       }
-    },
-    {
-      "id": "cat-005",
-      "title": "Temporary Production Pipeline Check",
-      "description": "Temporary hidden taxonomy verification; remove immediately.",
-      "coverAssetId": null,
-      "visible": false,
-      "order": 4,
-      "filter": {
-        "type": "assets",
-        "assetIds": []
-      },
-      "slug": "temporary-production-pipeline-check"
     }
   ]
 }
