@@ -4,12 +4,13 @@ import { isChunkLoadError } from '../../src/utils/lazy.js';
 
 describe('browser bundle architecture', () => {
   it('keeps development validation and uncommon features behind dynamic imports', async () => {
-    const [app, repository, pages, lazy, adminPage, adminAccess, adminEditor, adminUpload, adminPublication, packageJson] = await Promise.all([
+    const [app, repository, pages, lazy, adminPage, adminWorkspace, adminAccess, adminEditor, adminUpload, adminPublication, packageJson] = await Promise.all([
       readFile('app.js', 'utf8'),
       readFile('src/data/repository.js', 'utf8'),
       readFile('src/pages/pages.js', 'utf8'),
       readFile('src/utils/lazy.js', 'utf8'),
       readFile('src/admin/AdminPage.js', 'utf8'),
+      readFile('src/admin/AdminWorkspace.js', 'utf8'),
       readFile('src/admin/AdminAccess.js', 'utf8'),
       readFile('src/admin/AdminCatalogEditor.js', 'utf8'),
       readFile('src/admin/AdminAssetUpload.js', 'utf8'),
@@ -25,17 +26,18 @@ describe('browser bundle architecture', () => {
     expect(pages).toContain("import('./searchPage.js')");
     expect(app).toContain("import('./src/admin/AdminPage.js')");
     expect(app).not.toMatch(/^import .*AdminPage/m);
-    expect(adminPage).toContain("import('./AdminAccess.js')");
-    expect(adminPage).toContain("import('./AdminCatalogEditor.js')");
-    expect(adminPage).not.toMatch(/^import .*AdminAccess/m);
-    expect(adminEditor).toContain("import('./AdminAssetUpload.js')");
-    expect(adminEditor).not.toMatch(/^import .*AdminAssetUpload/m);
+    expect(adminPage).toContain("import('./AdminWorkspace.js')");
+    expect(adminWorkspace).toContain("import('./AdminAccess.js')");
+    expect(adminWorkspace).toContain("import('./AdminCatalogEditor.js')");
+    expect(adminWorkspace).not.toMatch(/^import .*AdminAccess/m);
+    expect(adminWorkspace).toContain("import('./AdminAssetUpload.js')");
+    expect(adminWorkspace).not.toMatch(/^import .*AdminAssetUpload/m);
     expect(adminEditor).toContain("import('./AdminPublicationStatus.js')");
     expect(adminUpload).toContain("import('./AdminPublicationStatus.js')");
     expect(adminPage).not.toMatch(/^import .*AdminPublicationStatus/m);
     expect(adminPage).not.toMatch(/content\/metadata|src\/generated|server\/admin|ADMIN_OWNER_DISCORD_ID|ADMIN_DB/);
-    expect(`${adminPage}\n${adminAccess}`).not.toMatch(/localStorage|sessionStorage|indexedDB|ADMIN_OWNER_DISCORD_ID|ADMIN_DB/);
-    expect(`${app}\n${repository}\n${adminPage}\n${adminAccess}\n${adminEditor}\n${adminUpload}\n${adminPublication}`).not.toMatch(/GITHUB_APP_PRIVATE_KEY|GITHUB_APP_INSTALLATION_ID|CLOUDFLARE_PAGES_READ_TOKEN|CLOUDINARY_API_SECRET|cloudinary-sync\.json|content\/metadata/);
+    expect(`${adminPage}\n${adminWorkspace}\n${adminAccess}`).not.toMatch(/localStorage|sessionStorage|indexedDB|ADMIN_OWNER_DISCORD_ID|ADMIN_DB/);
+    expect(`${app}\n${repository}\n${adminPage}\n${adminWorkspace}\n${adminAccess}\n${adminEditor}\n${adminUpload}\n${adminPublication}`).not.toMatch(/GITHUB_APP_PRIVATE_KEY|GITHUB_APP_INSTALLATION_ID|CLOUDFLARE_PAGES_READ_TOKEN|CLOUDINARY_API_SECRET|cloudinary-sync\.json|content\/metadata/);
     expect(adminUpload).not.toMatch(/server\/admin|ADMIN_DB|api_secret|localStorage|sessionStorage|indexedDB/);
     expect(lazy).toContain("sessionStorage.getItem(key) !== 'retried'");
     expect(lazy).toContain('location.reload()');
@@ -52,7 +54,7 @@ describe('browser bundle architecture', () => {
     expect(audit).toContain('publicTotals.gzip > budgets.publicGzip');
     expect(audit).toContain('adminPublicationGzip: 800');
     expect(audit).toContain('adminTotals.gzip > budgets.adminAggregateGzip');
-    expect(audit).toContain("asset upload is not lazy behind the catalog editor");
+    expect(audit).toContain("admin section is not lazy behind the workspace");
     expect(audit).not.toContain('totalGzip');
   });
 

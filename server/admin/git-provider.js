@@ -15,5 +15,14 @@ export function requireGitProvider(context) {
 }
 
 export function createCatalogReadProvider(gitProvider) {
-  return { async read(){ const baseCommitSha=await gitProvider.readHead(); const snapshot=await gitProvider.readSnapshot(baseCommitSha); return {baseCommitSha,source:'github',readOnly:false,catalog:{assets:snapshot.assetsFile.assets,categories:snapshot.categoriesFile.categories,collections:snapshot.collectionsFile.collections}}; } };
+  return { async read(){
+    const baseCommitSha=await gitProvider.readHead();
+    const snapshot=await gitProvider.readSnapshot(baseCommitSha);
+    const generatedById=new Map((snapshot.generated?.assets||[]).map(asset=>[asset.id,asset]));
+    const assets=snapshot.assetsFile.assets.map(asset=>{
+      const generated=generatedById.get(asset.id)||{};
+      return {...asset,previewUrl:generated.previewUrl||generated.previewFile||null,previewSources:Array.isArray(generated.previewSources)?generated.previewSources:[]};
+    });
+    return {baseCommitSha,source:'github',readOnly:false,catalog:{assets,categories:snapshot.categoriesFile.categories,collections:snapshot.collectionsFile.collections}};
+  } };
 }

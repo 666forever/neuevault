@@ -424,11 +424,11 @@ Cloudinary providers and require no real credentials or Cloudflare resource.
 
 The production bundle gate identifies admin capabilities by their Vite manifest
 source keys rather than emitted hash names. The loading graph is `AdminPage` to
-`AdminCatalogEditor` to `AdminAssetUpload`; the upload module is fetched only
-after an authorized writable administrator explicitly opens the upload tool.
-`AdminAccess` remains an independent owner-only branch. Public routes,
-signed-out/unauthorized administration, and read-only preview do not load the
-upload chunk.
+`AdminWorkspace`, with `AdminCatalogEditor`, `AdminAssetUpload`, and
+`AdminAccess` as independent section-level boundaries. Each section module is
+fetched only after an authorized administrator opens that section. Public
+routes and signed-out/unauthorized administration do not load the workspace or
+its section chunks.
 
 Phase 5 measured 5,977 gzip bytes for the aggregate admin graph. After removing
 duplicated authenticated request transport, Phase 6 measures approximately
@@ -513,15 +513,13 @@ does not apply migrations; and does not enable restricted upload, media
 deletion, or a deployment.
 
 The client verification controller is a separate dynamic boundary loaded only
-after a successful catalog/upload commit. The measured Phase 7 build keeps the
-public entry at 487,972 raw / 51,192 gzip bytes and the public graph at 55,171
-gzip bytes. Admin chunks measure 2,382 gzip for the shell, 2,125 for the editor,
-1,944 for owner access, 2,196 for upload, and 732 for deployment verification;
-the aggregate admin graph is 9,379 gzip bytes. The public budgets remain
-unchanged. Source-keyed admin ceilings are 2,450, 2,200, 2,000, 2,275, 800, and
-9,600 gzip bytes respectively, preserving small regression tolerance while
-ensuring verification cannot enter an ordinary route or the admin shell before
-a write interaction.
+after a successful catalog/upload commit. The current wide admin workspace adds
+a 2,850-byte gzip workspace ceiling and keeps its editor, access, upload, and
+verification features behind section or write interactions. Their source-keyed
+gzip ceilings are 3,200, 2,200, 3,100, and 800 bytes, with a 13,500-byte
+aggregate admin ceiling. Public entry and graph budgets remain unchanged at
+51,500 and 55,500 gzip bytes. These limits preserve small build-variation
+tolerance while ensuring admin code cannot enter an ordinary public route.
 
 ### Restricted upload capability proof (Phase 8)
 

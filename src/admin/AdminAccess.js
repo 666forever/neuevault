@@ -29,6 +29,14 @@ export function mountAdminAccess(root, { bootstrap, signal }) {
     rows = (await response.json()).delegatedAdmins || []; render(); if (status) setStatus(status);
   };
   const bind = () => {
+    const readiness = root.querySelector('[data-ready-run]');
+    if (readiness) readiness.onclick = async () => {
+      const output = root.querySelector('[data-ready]');
+      const response = await request(() => fetch('/api/admin/readiness', { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' }, signal }));
+      if (!response || signal.aborted) return;
+      const body = await response.json();
+      output.textContent = response.ok ? JSON.stringify(body) : 'Readiness could not be verified.';
+    };
     const form = root.querySelector('form');
     if (form) form.onsubmit = async event => {
       event.preventDefault(); const input = form.elements.discordId; const value = input.value.trim(); const fieldError = root.querySelector('#delegated-id-error');

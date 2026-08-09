@@ -26,6 +26,7 @@ const totals = measurements.reduce((sum, item) => ({ bytes: sum.bytes + item.byt
 const byFile = new Map(measurements.map(item => [`assets/${item.file}`, item]));
 const entryKey = Object.keys(manifest).find(key => manifest[key].isEntry);
 const adminKey = Object.keys(manifest).find(key => manifest[key].src === 'src/admin/AdminPage.js' && manifest[key].isDynamicEntry);
+const adminWorkspaceKey = Object.keys(manifest).find(key => manifest[key].src === 'src/admin/AdminWorkspace.js' && manifest[key].isDynamicEntry);
 const adminEditorKey = Object.keys(manifest).find(key => manifest[key].src === 'src/admin/AdminCatalogEditor.js' && manifest[key].isDynamicEntry);
 const adminAccessKey = Object.keys(manifest).find(key => manifest[key].src === 'src/admin/AdminAccess.js' && manifest[key].isDynamicEntry);
 const adminUploadKey = Object.keys(manifest).find(key => manifest[key].src === 'src/admin/AdminAssetUpload.js' && manifest[key].isDynamicEntry);
@@ -43,13 +44,14 @@ const publicTotals = sumKeys(publicKeys); const adminTotals = sumKeys(adminKeys)
 const publicLazy = [...publicKeys].map(key => byFile.get(manifest[key]?.file)).filter(item => item && item !== entry);
 const largestLazy = publicLazy.sort((a, b) => b.bytes - a.bytes)[0] || { file: 'none', bytes: 0, gzip: 0, brotli: 0 };
 const adminShell = byFile.get(manifest[adminKey]?.file);
+const adminWorkspace = byFile.get(manifest[adminWorkspaceKey]?.file);
 const adminEditor = byFile.get(manifest[adminEditorKey]?.file);
 const adminAccess = byFile.get(manifest[adminAccessKey]?.file);
 const adminUpload = byFile.get(manifest[adminUploadKey]?.file);
 const adminPublication = byFile.get(manifest[adminPublicationKey]?.file);
 const adminNested = [...adminKeys].filter(key => key !== adminKey).map(key => byFile.get(manifest[key]?.file)).filter(Boolean);
 const largestAdminNested = adminNested.sort((a, b) => b.gzip - a.gzip)[0] || { file: 'none', bytes: 0, gzip: 0, brotli: 0 };
-const budgets = { entryBytes: 490_000, entryGzip: 51_500, publicGzip: 55_500, largestPublicLazyBytes: 10_000, adminShellGzip: 2_480, adminEditorGzip: 2_200, adminAccessGzip: 2_000, adminUploadGzip: 2_275, adminPublicationGzip: 800, adminAggregateGzip: 9_600 };
+const budgets = { entryBytes: 490_000, entryGzip: 51_500, publicGzip: 55_500, largestPublicLazyBytes: 10_000, adminShellGzip: 2_480, adminWorkspaceGzip: 2_850, adminEditorGzip: 3_200, adminAccessGzip: 2_200, adminUploadGzip: 3_100, adminPublicationGzip: 800, adminAggregateGzip: 13_500 };
 const failures = [];
 if (!entryKey || !entry) failures.push('entry manifest graph is missing');
 if (!adminKey || !(manifest[entryKey]?.dynamicImports || []).includes(adminKey)) failures.push('admin shell is not an entry-level dynamic boundary');
@@ -60,11 +62,14 @@ if (publicTotals.gzip > budgets.publicGzip) failures.push(`public-path gzip ${pu
 if (largestLazy.bytes > budgets.largestPublicLazyBytes) failures.push(`largest public lazy chunk ${largestLazy.bytes} > ${budgets.largestPublicLazyBytes}`);
 if (!adminShell) failures.push('admin shell chunk is missing');
 else if (adminShell.gzip > budgets.adminShellGzip) failures.push(`admin shell gzip ${adminShell.gzip} > ${budgets.adminShellGzip}`);
+if (!adminWorkspace) failures.push('admin workspace chunk is missing');
+else if (adminWorkspace.gzip > budgets.adminWorkspaceGzip) failures.push(`admin workspace gzip ${adminWorkspace.gzip} > ${budgets.adminWorkspaceGzip}`);
 for (const [label, chunk, budget] of [['catalog editor',adminEditor,budgets.adminEditorGzip],['owner access',adminAccess,budgets.adminAccessGzip],['asset upload',adminUpload,budgets.adminUploadGzip],['publication verifier',adminPublication,budgets.adminPublicationGzip]]) {
   if (!chunk) failures.push(`${label} chunk is missing`);
   else if (chunk.gzip > budget) failures.push(`${label} gzip ${chunk.gzip} > ${budget}`);
 }
-if (!(manifest[adminEditorKey]?.dynamicImports || []).includes(adminUploadKey)) failures.push('asset upload is not lazy behind the catalog editor');
+if (!(manifest[adminKey]?.dynamicImports || []).includes(adminWorkspaceKey)) failures.push('admin workspace is not lazy behind authorization');
+for (const key of [adminEditorKey, adminAccessKey, adminUploadKey]) if (!(manifest[adminWorkspaceKey]?.dynamicImports || []).includes(key)) failures.push(`admin section is not lazy behind the workspace: ${key || 'missing'}`);
 if ((manifest[adminKey]?.dynamicImports || []).includes(adminUploadKey)) failures.push('asset upload became eager from the admin shell');
 if (!(manifest[adminEditorKey]?.dynamicImports || []).includes(adminPublicationKey) || !(manifest[adminUploadKey]?.dynamicImports || []).includes(adminPublicationKey)) failures.push('publication verification is not lazy behind write interactions');
 if ((manifest[adminKey]?.dynamicImports || []).includes(adminPublicationKey)) failures.push('publication verification became eager from the admin shell');
@@ -82,6 +87,7 @@ console.log(`Admin feature: ${adminTotals.bytes} bytes (${adminTotals.gzip} gzip
 console.log(`All emitted JavaScript (informational): ${totals.bytes} bytes (${totals.gzip} gzip, ${totals.brotli} Brotli)`);
 console.log(`Largest public lazy chunk: ${largestLazy.file} at ${largestLazy.bytes} bytes`);
 if (adminShell) console.log(`Admin shell: ${adminShell.file} at ${adminShell.gzip} gzip bytes`);
+if (adminWorkspace) console.log(`Admin workspace: ${adminWorkspace.file} at ${adminWorkspace.gzip} gzip bytes`);
 if (adminEditor) console.log(`Catalog editor: ${adminEditor.file} at ${adminEditor.gzip} gzip bytes`);
 if (adminAccess) console.log(`Owner access: ${adminAccess.file} at ${adminAccess.gzip} gzip bytes`);
 if (adminUpload) console.log(`Asset upload: ${adminUpload.file} at ${adminUpload.gzip} gzip bytes`);

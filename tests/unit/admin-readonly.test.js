@@ -57,9 +57,11 @@ describe('read-only admin catalog endpoint', () => {
     expect(JSON.stringify(body)).not.toMatch(/signed|cloudinaryPublicId|api[_-]?secret/i);
   });
   it('marks the production catalog writable when the existing publication providers are complete', async () => {
-    const githubAppProvider = { readHead: vi.fn(async () => 'a'.repeat(40)), readSnapshot: vi.fn(async () => ({ assetsFile: { assets: catalog.assets }, categoriesFile: { categories: catalog.categories }, collectionsFile: { collections: catalog.collections } })) };
+    const githubAppProvider = { readHead: vi.fn(async () => 'a'.repeat(40)), readSnapshot: vi.fn(async () => ({ assetsFile: { assets: catalog.assets }, categoriesFile: { categories: catalog.categories }, collectionsFile: { collections: catalog.collections }, generated: { assets: [{ id: 'nv-public', previewUrl: 'https://res.cloudinary.com/demo/image/upload/preview.jpg', previewSources: [{ width: 320, url: 'https://res.cloudinary.com/demo/image/upload/w_320/preview.jpg' }], cloudinaryPublicId: 'server-only', originalDelivery: { url: 'server-only' } }] } })) };
     const response = await catalogHandler({ request: await requestFor(ownerId, { url: 'https://www.pfseeker.com/api/admin/catalog' }), env: { ...env(db()), ADMIN_ENVIRONMENT: 'production', ADMIN_PRODUCTION_WRITES_ENABLED: 'true' }, data: { githubAppProvider, publicationStore: {} } });
-    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ source: 'github', readOnly: false, catalog });
+    expect(response.status).toBe(200); const body=await response.json(); expect(body).toMatchObject({ source: 'github', readOnly: false, catalog });
+    expect(body.catalog.assets[0]).toMatchObject({ previewUrl: 'https://res.cloudinary.com/demo/image/upload/preview.jpg', previewSources: [{ width: 320 }] });
+    expect(JSON.stringify(body)).not.toMatch(/cloudinaryPublicId|originalDelivery|server-only/i);
   });
   it('fails safely when production or preview has no GitHub provider', async () => {
     for (const environment of ['production', 'preview']) {
