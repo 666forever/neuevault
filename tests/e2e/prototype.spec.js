@@ -187,9 +187,8 @@ test('homepage navbar assets and hero media preserve routes and exact copy', asy
   await expect(description).toHaveCSS('font-weight', '400');
   const media = page.locator('.hero-media');
   await expect(media).toHaveCount(1);
-  const expectedHeroSource = await page.evaluate(() => innerWidth <= 700 ? '/assets/video/sailor_hero-mobile.mp4' : '/assets/video/sailor_hero-desktop.mp4');
-  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe(expectedHeroSource);
-  await expect(media).toHaveCSS('opacity', '0.15');
+  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
+  await expect(media).toHaveCSS('opacity', '0.8');
   await expect(media).toHaveCSS('object-fit', 'cover');
   await expect(media).toHaveCSS('object-position', '50% 50%');
   await expect(page.locator('.hero-grain')).toHaveCount(0);
@@ -218,16 +217,16 @@ test('approved local fonts load without italic or legacy fallbacks', async ({ pa
   expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro');
 });
 
-test('large displays request only the desktop hero video', async ({ page }, testInfo) => {
+test('large displays request only the approved hero image', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.setViewportSize({ width: 1920, height: 1080 });
   const requests = [];
-  page.on('request', request => { if (/sailor_hero-|hero(?:new)?\.(?:gif|mp4)|furina-hero-/.test(request.url())) requests.push(request.url()); });
+  page.on('request', request => { if (/sailor_hero-|heroimage\.png|hero(?:new)?\.(?:gif|mp4)|furina-hero-/.test(request.url())) requests.push(request.url()); });
   await page.goto('/');
-  await expect.poll(() => page.locator('.hero-media').evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-desktop.mp4');
+  await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
   await page.waitForTimeout(400);
-  expect(requests.some(url => url.endsWith('/assets/video/sailor_hero-desktop.mp4'))).toBe(true);
-  expect(requests.some(url => /sailor_hero-mobile|furina-hero-|heronew\.gif/.test(url))).toBe(false);
+  expect(requests.some(url => url.endsWith('/assets/video/heroimage.png'))).toBe(true);
+  expect(requests.some(url => /sailor_hero-|furina-hero-|heronew\.gif/.test(url))).toBe(false);
 });
 
 test('hero chooses one approved word per render and keeps deliberate line structure', async ({ page }) => {
@@ -293,47 +292,43 @@ test('signed-out copy stays compact while the Discord OAuth action remains expli
   expect(await oauthRequest).toBeTruthy();
 });
 
-test('reduced motion keeps the hero video visible, aligned, and paused', async ({ page }, testInfo) => {
+test('reduced motion keeps the static hero image visible and aligned', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const media = page.locator('.hero-media');
-  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-desktop.mp4');
-  await expect(media).toHaveCSS('opacity', '0.15');
+  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
+  await expect(media).toHaveCSS('opacity', '0.8');
   await expect(media).toHaveCSS('object-fit', 'cover');
   await expect(media).toHaveCSS('object-position', '50% 50%');
-  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
+  await expect(media).toHaveCount(1);
 });
 
-test('hero playback resynchronizes after readiness, refresh, visibility, viewport, and route changes', async ({ page }, testInfo) => {
+test('static hero image remains stable across refresh, visibility, viewport, and route changes', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const errors = [];
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
-  page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error' && !message.text().includes('/api/auth/session')) errors.push(message.text()); });
+  page.on('pageerror', error => { if (/hero|play|pause|catch/i.test(error.message)) errors.push(error.message); });
+  page.on('console', message => { if (message.type() === 'error' && /hero|play|pause|catch/i.test(message.text())) errors.push(message.text()); });
   await page.setViewportSize({ width: 1440, height: 900 });
   for (let attempt = 0; attempt < 5; attempt += 1) {
     if (attempt === 0) await page.goto('/'); else await page.reload({ waitUntil: 'domcontentloaded' });
     const media = page.locator('.hero-media');
     await expect(media).toHaveCount(1);
-    await expect.poll(() => media.evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+    await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
+    await expect(page.locator('video.hero-media')).toHaveCount(0);
   }
   const media = page.locator('.hero-media');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(() => media.evaluate(video => video.paused)).toBe(false);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); });
-  await expect.poll(() => media.evaluate(video => video.paused)).toBe(true);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); document.dispatchEvent(new Event('visibilitychange')); });
-  await expect.poll(() => media.evaluate(video => video.paused)).toBe(false);
   await page.setViewportSize({ width: 375, height: 780 });
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect.poll(() => media.evaluate(video => new URL(video.currentSrc).pathname)).toBe('/assets/video/sailor_hero-mobile.mp4');
-  await expect.poll(() => media.evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
   await page.goto('/about'); await expect(page.locator('.hero-media')).toHaveCount(0);
   await page.goto('/'); await expect(page.locator('.hero-media')).toHaveCount(1);
-  await expect.poll(() => page.locator('.hero-media').evaluate(video => video.readyState >= 2 && !video.paused)).toBe(true);
+  await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
   expect(errors).toEqual([]);
 });
 
@@ -364,8 +359,8 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     expect(ctaBox.y + ctaBox.height).toBeLessThanOrEqual(heroBox.y + heroBox.height + 1);
     await expect(page.locator('.hero-cta')).toHaveCSS('border-radius', '99px');
     expect(mediaBox.y + mediaBox.height).toBeCloseTo(heroBox.y + heroBox.height, 0);
-    await expect.poll(() => page.locator('.hero-media').evaluate(video => new URL(video.currentSrc).pathname)).toBe(width <= 700 ? '/assets/video/sailor_hero-mobile.mp4' : '/assets/video/sailor_hero-desktop.mp4');
-    await expect(page.locator('.hero-media')).toHaveCSS('opacity', '0.15');
+    await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
+    await expect(page.locator('.hero-media')).toHaveCSS('opacity', '0.8');
     await expect(page.locator('.hero-media')).toHaveCSS('object-fit', 'cover');
     await expect(page.locator('.hero-media')).toHaveCSS('object-position', '50% 50%');
     await expect(page.locator('.hero-decorations')).toHaveCSS('pointer-events', 'none');

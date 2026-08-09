@@ -14,6 +14,7 @@ const permanentAssets = [
   'public/assets/video/heronew.gif',
   'public/assets/video/sailor_hero-desktop.mp4',
   'public/assets/video/sailor_hero-mobile.mp4',
+  'public/assets/video/heroimage.png',
   'public/assets/icons/microdesign/globe.svg',
   'public/assets/icons/microdesign/spark.svg',
   'public/assets/icons/microdesign/lines.svg',
@@ -47,8 +48,9 @@ describe('homepage presentation assets', () => {
     expect(sources.join('\n')).not.toContain('temp/');
     expect(sources.join('\n')).toContain('/fonts/tbj-neuetra-vf.woff2');
     expect(sources.join('\n')).toContain('/assets/brand/logo28x28.svg');
-    expect(sources.join('\n')).toContain('/assets/video/sailor_hero-desktop.mp4');
-    expect(sources.join('\n')).toContain('/assets/video/sailor_hero-mobile.mp4');
+    expect(sources.join('\n')).toContain('/assets/video/heroimage.png');
+    expect(sources.join('\n')).not.toContain('/assets/video/sailor_hero-desktop.mp4');
+    expect(sources.join('\n')).not.toContain('/assets/video/sailor_hero-mobile.mp4');
     expect(sources.join('\n')).not.toContain('/assets/video/heronew.gif');
     expect(sources.join('\n')).not.toContain('/assets/video/hero.gif');
     expect(await readFile(path.join(root, 'src/pages/pages.js'), 'utf8')).not.toContain('furina-hero-');
@@ -85,14 +87,11 @@ describe('homepage presentation assets', () => {
     expect(css).toMatch(/\.hero-cta\s*\{[\s\S]*?font-size:\s*17px/);
     expect(css).toMatch(/\.button\s*\{[\s\S]*?border-radius:\s*var\(--radius-discord-auth\)/);
     expect(css).toMatch(/\.button-light\s*\{\s*background:\s*var\(--color-acid\)/);
-    expect(css).toMatch(/\.hero-media\s*\{[\s\S]*?object-fit:\s*cover;[\s\S]*?object-position:\s*center;[\s\S]*?opacity:\s*0\.15/);
+    expect(css).toMatch(/\.hero-media\s*\{[\s\S]*?object-fit:\s*cover;[\s\S]*?object-position:\s*center;[\s\S]*?opacity:\s*0\.8/);
     expect(css).toContain('linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)');
     expect(pages).not.toContain('hero-grain');
     for (const asset of ['globe.svg', 'spark.svg', 'lines.svg', 'tilts.svg']) expect(css).toContain(`/assets/icons/microdesign/${asset}`);
-    expect(pages).toContain('<video class="hero-media" autoplay muted loop playsinline preload="metadata"');
-    expect(pages).toContain('<source src="/assets/video/sailor_hero-mobile.mp4" type="video/mp4" media="(max-width: 700px)">');
-    expect(pages).toContain('<source src="/assets/video/sailor_hero-desktop.mp4" type="video/mp4">');
-    expect(pages).toContain('aria-hidden="true" tabindex="-1"');
+    expect(pages).toContain('<img class="hero-media" src="/assets/video/heroimage.png" alt="" aria-hidden="true" decoding="async">');
     expect(css).toMatch(/\.hero-decorations\s*\{[\s\S]*?z-index:\s*2;[\s\S]*?pointer-events:\s*none/);
     expect(css).toMatch(/\.hero-decorations::after\s*\{[\s\S]*?width:\s*min\(390px,[\s\S]*?opacity:\s*0\.1/);
   });

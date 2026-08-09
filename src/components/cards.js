@@ -28,7 +28,7 @@ export function bindAnimatedCovers(scope = document) {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hoverCapable = matchMedia('(hover: hover)').matches;
   const cleanups = []; const observer = !reducedMotion && 'IntersectionObserver' in window ? new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) entry.target.__startAnimatedCover?.(entry); else entry.target.__stopAnimatedCover?.(entry); })) : null;
-  const hero = scope.querySelector('.hero-media');
+  const hero = scope.querySelector('video.hero-media');
   if (hero) {
     let visible = hero.getBoundingClientRect().bottom > 0;
     let playPending = false;
