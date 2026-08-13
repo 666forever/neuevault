@@ -21,7 +21,7 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
     const linkStyle = getComputedStyle(link);
     const pill = getComputedStyle(link, '::before');
     return {
-      header: rect('.site-header'), shell: rect('.nav-shell'), brand: rect('.brand'), logo: rect('.brand-logo-shell'),
+      header: rect('.site-header'), shell: rect('.nav-shell'), brand: rect('.brand'), logo: rect('.profile-brand-logo'),
       nav: rect('.main-nav'), link: rect('.main-nav > a'), actions: rect('.nav-actions'), signIn: rect('.sign-in'),
       gap: getComputedStyle(document.querySelector('.main-nav')).gap,
       paddingInline: linkStyle.paddingInline, pillInset: [pill.top, pill.right, pill.bottom, pill.left],
@@ -31,9 +31,9 @@ test('desktop navbar uses the compact measured composition', async ({ page }, te
   expect(geometry.header.height).toBe(62);
   expect(geometry.shell.x).toBeCloseTo(15, 0);
   expect(geometry.shell.width).toBeCloseTo(1410, 0);
-  expect(geometry.brand.width).toBeGreaterThan(135);
-  expect(geometry.brand.width).toBeLessThan(145);
-  expect(geometry.logo).toMatchObject({ width: 34, height: 34 });
+  expect(geometry.brand.width).toBeGreaterThan(185);
+  expect(geometry.brand.width).toBeLessThan(200);
+  expect(geometry.logo).toMatchObject({ width: 27, height: 30 });
   expect(geometry.gap).toBe('2px');
   expect(geometry.paddingInline).toBe('15px');
   expect(geometry.link.height).toBe(40);

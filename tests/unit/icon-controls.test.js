@@ -13,7 +13,7 @@ describe('shared icon and control primitives', () => {
   it('provides the complete local semantic icon registry', () => {
     expect(iconNames).toEqual(expect.arrayContaining([
       'download', 'share', 'close', 'previous', 'next', 'back',
-      'restricted', 'menu', 'close-menu', 'discord', 'bookmark', 'bolt',
+      'restricted', 'menu', 'close-menu', 'discord', 'bookmark', 'bolt', 'cta-category',
     ]));
     expect(iconSizes).toEqual({ compact: 12, standard: 16, medium: 20, large: 24 });
     for (const icon of Object.values(iconRegistry)) {
@@ -23,6 +23,7 @@ describe('shared icon and control primitives', () => {
     }
     expect(iconRegistry.bolt.viewBox).toBe('3 1 18 22');
     expect(iconRegistry.bookmark.viewBox).toBe('0 0 24 24');
+    expect(iconRegistry['cta-category'].viewBox).toBe('0 0 24 24');
   });
 
   it('renders decorative SVG once without an accessible duplicate', () => {

@@ -7,7 +7,7 @@ import { sortAssets } from '../utils/filter.js';
 import { countDescription } from '../utils/content.js';
 import { loadLazyModule } from '../utils/lazy.js';
 
-export const HERO_WORDS = Object.freeze(['Banners', 'Icons', 'Wallpapers']);
+export const HERO_WORDS = Object.freeze(['Banners', 'Icons']);
 
 export function selectHeroWord(random = Math.random) {
   return HERO_WORDS[Math.floor(random() * HERO_WORDS.length)];
@@ -17,18 +17,19 @@ export function createPages(repository, app, openAsset, { random = Math.random }
   const assets = repository.getAssets();
   const collections = repository.getCollections();
   const categories = repository.getCategories();
+  const heroWord = selectHeroWord(random);
+  const heroRoute = `/${heroWord.toLowerCase()}`;
   const mount = () => { mountAssetGrids(app, openAsset); bindImageErrors(app); bindAnimatedCovers(app); };
 
   function home() {
-    const heroWord = selectHeroWord(random);
     const featured = collections.filter(collection => collection.featured).slice(0, 6);
     const emptyCollectionSlots = Array.from(
       { length: Math.max(0, 6 - featured.length) },
       () => '<div class="collection-card collection-card-empty" aria-hidden="true"><div class="collection-cover"></div><div class="collection-meta"></div></div>',
     );
     const categorySection = categories.length ? `<section class="category-grid" aria-label="Browse categories">${categories.map(categoryCard).join('')}</section>` : '';
-    const collectionSection = `<section class="section collection-section"><div class="section-head home-section-head"><div><h2>Popular Collections</h2><p>Curated packs worth keeping close.</p></div><a class="text-link section-head-action" href="/collections">View all</a></div><div class="collection-grid">${[...featured.map(collectionCard), ...emptyCollectionSlots].join('')}</div></section>`;
-    app.innerHTML = `<div class="page"><section class="hero"><img class="hero-media" src="/assets/video/heroimage.png" alt="" aria-hidden="true" decoding="async"><div class="hero-gradient" aria-hidden="true"></div><div class="hero-decorations" aria-hidden="true"></div><div class="hero-content"><h1><span>Probably the best</span> <span><span class="hero-title-dynamic">${escapeHtml(heroWord)}</span> on the Internet.</span></h1><p class="hero-description"><span>Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.</span> <span>Your identity forms in this borderland.</span></p>${Button({ label: 'Collections', icon: 'bolt', iconClassName: 'hero-cta-icon', href: '/collections', variant: 'accent', size: 'large', className: 'hero-cta' })}</div></section>${categorySection}</div>${collectionSection}<section class="section recent-section"><div class="section-head home-section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link section-head-action" href="/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
+    const collectionSection = `<section class="section collection-section"><div class="section-head home-section-head"><div><h2>Featured Collections</h2><p>Curated packs worth keeping close.</p></div></div><div class="collection-grid">${[...featured.map(collectionCard), ...emptyCollectionSlots].join('')}</div><div class="collection-section-action"><a class="text-link section-head-action" href="/collections">Browse more</a></div></section>`;
+    app.innerHTML = `<div class="page"><section class="hero"><div class="hero-layout"><div class="hero-heading"><p class="hero-eyebrow"><span class="hero-eyebrow-logo" aria-hidden="true"></span><span>pfseeker &copy;</span></p><h1><span>Probably the Best</span><span>${escapeHtml(heroWord)} on the Internet.</span></h1></div><div class="hero-details"><p class="hero-description"><span>Start digging through alt, emo, dark, soft, strange, cute, messy, and more</span> <span>in the spaces where they all cross. Your identity forms in this</span> <span>borderland.</span></p><div class="hero-actions">${Button({ label: heroWord, icon: 'cta-category', href: heroRoute, variant: 'accent', size: 'standard', className: 'hero-category-cta' })}${Button({ label: 'Collections', icon: 'bolt', href: '/collections', variant: 'light', size: 'standard', className: 'hero-collections-cta' })}</div></div></div></section></div>${collectionSection}${categorySection ? `<div class="page">${categorySection}</div>` : ''}<section class="section recent-section"><div class="section-head home-section-head"><div><h2>Recently Added</h2><p>The newest finds, in every format.</p></div><a class="text-link section-head-action" href="/recent">Browse archive</a></div>${renderAssetGrid(assets.slice(0, 8))}</section>`;
     mount();
   }
   function collectionsPage() {

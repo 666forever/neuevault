@@ -22,6 +22,17 @@ async function fixture({ files = [{ name: 'icons/fixture.jpg', color: '#a7ff1e' 
   return { root, config: { sourceRoot, metadataRoot, collectionRoot, cacheRoot: path.join(root, 'content/generated/cache'), generatedRoot: path.join(root, 'src/generated'), publicPreviewRoot: path.join(root, 'public/media/previews'), publicOriginalRoot: path.join(root, 'public/media/originals'), supportedExtensions: new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']), preview: { maxWidth: 1200, maxHeight: 1200, quality: 78 } } };
 }
 
+async function addHostedFixture(config) {
+  const authored = { id: 'nv-hosted', sourceFile: 'icons/nv-hosted.jpg', title: 'Hosted', category: 'Icons', collectionSlugs: [], tags: [], uploadDate: '2026-08-06', requiresDiscordAuth: false, animated: false, sourceHash: 'a'.repeat(64) };
+  const generated = { ...authored, slug: 'hosted', previewFile: 'https://res.cloudinary.com/demo/image/upload/f_auto/v1/neuevault/public/icons/nv-hosted.jpg', previewUrl: 'https://res.cloudinary.com/demo/image/upload/f_auto/v1/neuevault/public/icons/nv-hosted.jpg', src: 'https://res.cloudinary.com/demo/image/upload/v1/neuevault/public/icons/nv-hosted.jpg', width: 100, height: 100, aspectRatio: 1, orientation: 'Square', fileType: 'JPG', mimeType: 'image/jpeg', fileSize: 100, cloudinaryPublicId: 'neuevault/public/icons/nv-hosted', cloudinaryDeliveryType: 'upload', originalDelivery: { url: 'https://res.cloudinary.com/demo/image/upload/v1/neuevault/public/icons/nv-hosted.jpg', resourceType: 'image', deliveryType: 'upload' } };
+  await mkdir(config.generatedRoot, { recursive: true });
+  await writeFile(path.join(config.metadataRoot, 'assets.json'), JSON.stringify({ version: 1, assets: [authored] }));
+  await writeFile(path.join(config.metadataRoot, 'categories.json'), JSON.stringify({ version: 1, categories: [{ id: 'cat-1', slug: 'fixture', title: 'Fixture', coverAssetId: null, visible: false, order: 1 }] }));
+  await writeFile(path.join(config.generatedRoot, 'assets.json'), JSON.stringify([generated]));
+  await writeFile(path.join(path.dirname(config.metadataRoot), 'cloudinary-sync.json'), JSON.stringify({ version: 1, assets: { 'nv-hosted': { sourceHash: authored.sourceHash, original: { publicId: generated.cloudinaryPublicId, deliveryType: 'upload' } } } }));
+  return generated;
+}
+
 describe('asset metadata normalization', () => {
   it('uses pageHeight and safe stacked-frame dimensions for GIF and animated WebP metadata', () => {
     expect(frameDimensions({ format: 'gif', width: 540, height: 7910, pageHeight: 226, pages: 35 })).toEqual({ width: 540, height: 226, aspectRatio: 2.389381 });
@@ -61,6 +72,11 @@ describe('asset metadata normalization', () => {
 });
 
 describe('pipeline validation', () => {
+  it('accepts a verified hosted-only asset while preserving hosted delivery', async () => {
+    const { config } = await fixture({ files: [], assets: [{ id: 'placeholder', sourceFile: 'icons/placeholder.jpg' }], collections: [{ slug: 'fixture', title: 'Fixture', description: '', coverAssetId: null, public: false }] });
+    const expected = await addHostedFixture(config); const result = await generateAssets({ config, writeOutput: false });
+    expect(result.assets).toHaveLength(1); expect(result.assets[0]).toMatchObject({ id: 'nv-hosted', previewFile: expected.previewFile, src: expected.src });
+  });
   it('reports duplicate IDs and slugs', async () => {
     const { config } = await fixture({ files: [{ name: 'icons/a.jpg', color: '#fff' }, { name: 'icons/b.jpg', color: '#000' }], assets: [
       { id: 'nv-duplicate', sourceFile: 'icons/a.jpg', title: 'Same' }, { id: 'nv-duplicate', sourceFile: 'icons/b.jpg', title: 'Same' },

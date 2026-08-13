@@ -1,13 +1,16 @@
 import { z } from 'zod';
 
 const generatedAssetSchema = z.object({
-  id: z.string(), title: z.string(), slug: z.string(), sourceFile: z.string(), previewFile: z.string().startsWith('/media/previews/'), previewUrl: z.string().url().optional(),
+  id: z.string(), title: z.string(), slug: z.string(), sourceFile: z.string(), previewFile: z.string(), previewUrl: z.string().url().optional(),
   previewSources: z.array(z.object({ width: z.number(), url: z.string().url() })).optional(), src: z.union([z.string().startsWith('/media/originals/'), z.string().url()]).nullable(), downloadUrl: z.string().url().nullable().optional(), category: z.string(), collectionSlugs: z.array(z.string()), tags: z.array(z.string()),
   width: z.number().positive(), height: z.number().positive(), aspectRatio: z.number().positive(), orientation: z.enum(['Square', 'Landscape', 'Portrait']),
   fileType: z.string(), mimeType: z.string().startsWith('image/'), fileSize: z.number().nonnegative(), uploadDate: z.iso.date(), animated: z.boolean(),
   requiresDiscordAuth: z.boolean(), protectedDownloadPath: z.string().startsWith('/').optional(), attribution: z.string().optional(), sourceNote: z.string().optional(),
   cloudinaryAssetId: z.string().optional(), cloudinaryPublicId: z.string().optional(), cloudinaryVersion: z.number().optional(), cloudinaryDeliveryType: z.enum(['upload', 'private', 'authenticated']).optional(), originalDelivery: z.object({ url: z.string().url().optional(), resourceType: z.string(), deliveryType: z.string() }).optional(),
 }).superRefine((asset, context) => {
+  const localPreview = asset.previewFile.startsWith('/media/previews/');
+  const hostedPreview = asset.previewFile === asset.previewUrl && /^https:\/\//.test(asset.previewFile) && Boolean(asset.cloudinaryDeliveryType && asset.originalDelivery);
+  if (!localPreview && !hostedPreview) context.addIssue({ code: 'custom', path: ['previewFile'], message: 'Preview must be a local generated path or a verified hosted delivery.' });
   if (!Number.isFinite(asset.aspectRatio) || asset.aspectRatio < 0.05 || asset.aspectRatio > 20) context.addIssue({ code: 'custom', path: ['aspectRatio'], message: 'Asset aspect ratio is outside safe UI bounds.' });
   if (asset.requiresDiscordAuth && asset.src !== null) context.addIssue({ code: 'custom', path: ['src'], message: 'Restricted originals must not have a public src.' });
   if (!asset.requiresDiscordAuth && !asset.src) context.addIssue({ code: 'custom', path: ['src'], message: 'Public assets require an original src.' });

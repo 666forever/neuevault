@@ -63,9 +63,9 @@ test('registry icons preserve control names, state, and geometry', async ({ page
     expect({ width: after.width, height: after.height }).toEqual({ width: before.width, height: before.height });
   }
 
-  const heroCta = page.locator('.hero-cta');
+  const heroCta = page.locator('.hero-category-cta');
   await expect(heroCta.locator('.roll-icon svg.icon')).toHaveCount(2);
-  await expect(heroCta).toHaveAccessibleName('Collections');
+  await expect(heroCta).toHaveAccessibleName(/^(Banners|Icons)$/);
   await page.locator('.asset-card').first().click();
   for (const [name, selector] of [
     ['Close viewer', '.modal-close'],
@@ -87,7 +87,7 @@ test('icon-and-text buttons fade a variant-owned outside border without geometry
   test.skip(testInfo.project.name !== 'desktop');
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.goto('/');
-  const hero = page.locator('.hero-cta');
+  const hero = page.locator('.hero-category-cta');
   const signIn = page.locator('.sign-in');
   for (const control of [hero, signIn]) {
     await expect(control).toHaveClass(/button-with-icon/);
@@ -116,164 +116,153 @@ test('icon-and-text buttons fade a variant-owned outside border without geometry
   await expect(page.locator('.menu-toggle')).not.toHaveClass(/button-with-icon/);
 });
 
-test('hero bolt uses normalized artwork bounds without changing CTA geometry', async ({ page }, testInfo) => {
+test('hero category action preserves its compact reference geometry', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   for (const width of [320, 375, 700, 1200, 1440, 1920]) {
     await page.setViewportSize({ width, height: width < 700 ? 820 : 900 });
     await page.goto('/');
-    const measurement = await page.locator('.hero-cta').evaluate(element => {
-      const svg = element.querySelector('.roll-icon-layer:first-child svg');
-      const path = svg.querySelector('path');
+    const measurement = await page.locator('.hero-category-cta').evaluate(element => {
       const cta = element.getBoundingClientRect();
-      const icon = svg.getBoundingClientRect();
-      const artwork = path.getBoundingClientRect();
-      const pathBounds = path.getBBox();
-      const viewBox = svg.viewBox.baseVal;
       return {
         cta: { width: cta.width, height: cta.height },
-        icon: { width: icon.width, height: icon.height },
-        artwork: {
-          width: artwork.width,
-          height: artwork.height,
-          centerX: artwork.left + artwork.width / 2 - (icon.left + icon.width / 2),
-          centerY: artwork.top + artwork.height / 2 - (icon.top + icon.height / 2),
-          clipped:
-            artwork.left < icon.left - 0.05 ||
-            artwork.top < icon.top - 0.05 ||
-            artwork.right > icon.right + 0.05 ||
-            artwork.bottom > icon.bottom + 0.05,
-        },
-        viewBox: [viewBox.x, viewBox.y, viewBox.width, viewBox.height],
-        occupancy: {
-          width: pathBounds.width / viewBox.width,
-          height: pathBounds.height / viewBox.height,
-        },
+        radius: getComputedStyle(element).borderRadius,
       };
     });
-    expect(measurement.cta.height).toBe(47);
-    expect(measurement.cta.width).toBeGreaterThan(100);
-    expect(measurement.icon).toEqual({ width: 16, height: 19 });
-    expect(measurement.viewBox).toEqual([3, 1, 18, 22]);
-    expect(measurement.occupancy.width).toBeGreaterThan(0.88);
-    expect(measurement.occupancy.height).toBeGreaterThan(0.9);
-    expect(measurement.artwork.width).toBeGreaterThan(11.4);
-    expect(measurement.artwork.height).toBeGreaterThan(14.3);
-    expect(Math.abs(measurement.artwork.centerX)).toBeLessThan(0.05);
-    expect(Math.abs(measurement.artwork.centerY)).toBeLessThan(0.05);
-    expect(measurement.artwork.clipped).toBe(false);
+    expect(measurement.cta.height).toBe(40);
+    expect(measurement.cta.width).toBeGreaterThan(80);
+    expect(measurement.radius).toBe('4px');
   }
 });
 
-test('homepage navbar assets and hero media preserve routes and exact copy', async ({ page }) => {
+test('homepage navbar branding and split hero preserve routes and exact copy', async ({ page }) => {
+  await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.goto('/');
-  const logo = page.locator('.site-header .brand-logo');
+  const logo = page.locator('.site-header .profile-brand-logo');
   await expect(logo).toBeVisible();
-  const logoShell = page.locator('.site-header .brand-logo-shell');
-  expect(await logoShell.evaluate(element => { const style = getComputedStyle(element); return { width: style.width, height: style.height, radius: style.borderRadius, overflow: style.overflow, background: style.backgroundColor }; })).toEqual({ width: '34px', height: '34px', radius: '12px', overflow: 'hidden', background: 'rgb(18, 18, 18)' });
-  await expect(logo).toHaveCSS('width', '18px');
-  await expect(logo).toHaveCSS('height', '18px');
-  await expect(page.locator('.site-header .brand-wordmark')).toHaveCSS('font-family', /TBJ Neuetra/);
+  await expect(logo).toHaveCSS('width', '27px');
+  await expect(logo).toHaveCSS('height', '30px');
+  await expect(logo).toHaveCSS('background-color', 'rgb(255, 16, 80)');
+  const navbarBrand = page.locator('.site-header .profile-brand');
+  await expect(navbarBrand).toHaveAccessibleName('Profileseeker.com home');
+  await expect(navbarBrand.locator('.profile-brand-logo')).toHaveCount(1);
+  await expect(navbarBrand.locator('.roll-text-layer')).toHaveCount(2);
+  await expect(navbarBrand.locator('.roll-text-layer').first()).toHaveText('Profileseeker.com');
+  await expect(navbarBrand.locator('.profile-brand-strong')).toHaveCount(2);
+  await expect(navbarBrand.locator('.profile-brand-medium')).toHaveCount(2);
+  await expect(navbarBrand.locator('.profile-brand-strong').first()).toHaveCSS('font-weight', '700');
+  await expect(navbarBrand.locator('.profile-brand-strong').last()).toHaveCSS('font-weight', '700');
+  await expect(navbarBrand.locator('.profile-brand-medium').first()).toHaveCSS('font-weight', '500');
+  await expect(navbarBrand.locator('.profile-brand-medium').last()).toHaveCSS('font-weight', '500');
+  expect(await navbarBrand.locator('.roll-text-layer').first().evaluate(layer => {
+    const strong = layer.querySelector('.profile-brand-strong').getBoundingClientRect();
+    const medium = layer.querySelector('.profile-brand-medium').getBoundingClientRect();
+    return Math.abs(strong.right - medium.left) < 1;
+  })).toBe(true);
   await expect(page.locator('.collections-button')).toHaveCount(0);
-  await expect(page.locator('.hero-eyebrow')).toHaveCount(0);
-  await expect(page.locator('.hero h1')).toHaveText(/Probably the best (?:Banners|Icons|Wallpapers) on the Internet\./);
+  await expect(page.locator('.hero-eyebrow')).toHaveText('pfseeker ©');
+  await expect(page.locator('.hero-eyebrow')).toHaveCSS('font-family', /Helvetica Now Var/);
+  await expect(page.locator('.hero h1 > span').first()).toHaveText('Probably the Best');
+  await expect(page.locator('.hero h1 > span').nth(1)).toHaveText(/^(Banners|Icons) on the Internet\.$/);
   await expect(page.locator('.hero h1')).toHaveCSS('font-family', /SF Pro/);
   await expect(page.locator('.hero h1')).toHaveCSS('font-weight', '600');
-  const heroCta = page.locator('.hero-cta');
-  await expect(heroCta).toHaveAccessibleName('Collections');
-  await expect(heroCta).toHaveAttribute('href', '/collections');
+  await expect(page.locator('.hero-sign-in')).toHaveCount(0);
+  await expect(page.locator('.hero-actions > .button')).toHaveCount(2);
+  const browse = page.locator('.hero-category-cta');
+  const selectedHeroWord = (await page.locator('.hero h1 > span').nth(1).textContent()).split(' ')[0];
+  await expect(browse).toHaveAccessibleName(selectedHeroWord);
+  await expect(browse).toHaveAttribute('href', `/${selectedHeroWord.toLowerCase()}`);
+  await expect(browse).toHaveCSS('background-color', 'rgb(255, 16, 80)');
+  await expect(browse.locator('svg').first()).toHaveCSS('color', 'rgb(245, 245, 242)');
+  const collectionsCta = page.locator('.hero-collections-cta');
+  await expect(collectionsCta).toHaveAccessibleName('Collections');
+  await expect(collectionsCta).toHaveAttribute('href', '/collections');
+  await expect(collectionsCta).toHaveCSS('background-color', 'rgb(245, 245, 242)');
+  await expect(collectionsCta).toHaveCSS('color', 'rgb(29, 29, 32)');
+  await expect(collectionsCta.locator('svg').first()).toHaveCSS('color', 'rgb(255, 16, 80)');
   const description = page.locator('.hero-description');
   expect((await description.textContent()).replace(/\s+/g, ' ').trim()).toBe('Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross. Your identity forms in this borderland.');
-  await expect(description).toHaveCSS('font-family', /SF Pro/);
+  await expect(description).toHaveCSS('font-family', /SF Pro Rounded/);
   await expect(description).toHaveCSS('font-weight', '400');
-  const media = page.locator('.hero-media');
-  await expect(media).toHaveCount(1);
-  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
-  await expect(media).toHaveCSS('opacity', '0.8');
-  await expect(media).toHaveCSS('object-fit', 'cover');
-  await expect(media).toHaveCSS('object-position', '50% 50%');
-  await expect(page.locator('.hero-grain')).toHaveCount(0);
-  await expect(page.locator('.hero-gradient')).toHaveCSS('background-image', /linear-gradient/);
-  await expect(page.locator('.hero-gradient')).toHaveCSS('pointer-events', 'none');
-  expect(await page.locator('.hero').evaluate(element => {
-    const z = selector => Number(getComputedStyle(element.querySelector(selector)).zIndex);
-    return [z('.hero-media'), z('.hero-gradient'), z('.hero-decorations'), z('.hero-content')];
-  })).toEqual([0, 1, 2, 3]);
-  await heroCta.click(); await expect(page).toHaveURL(/\/collections$/);
+  await expect(page.locator('.hero-media, .hero-gradient, .hero-decorations')).toHaveCount(0);
+  await browse.click(); await expect(page).toHaveURL(new RegExp(`/${selectedHeroWord.toLowerCase()}$`));
   await page.goto('/recent');
-  await expect(page.locator('.hero-media')).toHaveCount(0);
+  await expect(page.locator('.hero')).toHaveCount(0);
 });
 
 test('approved local fonts load without italic or legacy fallbacks', async ({ page }) => {
   const fontResponses = [];
   page.on('response', response => { if (response.url().includes('/fonts/')) fontResponses.push({ url: response.url(), status: response.status(), type: response.headers()['content-type'] || '' }); });
   await page.goto('/'); await page.evaluate(() => document.fonts.ready);
-  for (const file of ['SF-Pro-Rounded-Regular.woff2', 'SF-Pro-Rounded-Medium.woff2', 'SF-Pro-Rounded-Semibold.woff2', 'tbj-neuetra-vf.woff2']) {
+  for (const file of ['SF-Pro-Rounded-Medium.woff2', 'SF-Pro.woff2', 'SF-Pro-Display-Medium.woff2', 'SF-Pro-Display-Bold.woff2', 'HelveticaNowVar.woff2']) {
     const response = fontResponses.find(item => item.url.endsWith(file));
     expect(response).toBeTruthy(); expect(response.status).toBe(200); expect(response.type).toContain('font/woff2');
   }
   expect(fontResponses.some(item => item.url.includes('Italic-VariableFont'))).toBe(false);
   expect(fontResponses.some(item => /Arimo|Archivo|Inter/.test(item.url))).toBe(false);
-  expect(await page.locator('.site-header .brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('TBJ Neuetra');
+  expect(await page.locator('.site-header .profile-brand-wordmark').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro Display');
   expect(await page.locator('.hero h1').evaluate(element => getComputedStyle(element).fontFamily)).toContain('SF Pro');
 });
 
-test('large displays request only the approved hero image', async ({ page }, testInfo) => {
+test('split hero does not request the retired hero media', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.setViewportSize({ width: 1920, height: 1080 });
   const requests = [];
   page.on('request', request => { if (/sailor_hero-|heroimage\.png|hero(?:new)?\.(?:gif|mp4)|furina-hero-/.test(request.url())) requests.push(request.url()); });
   await page.goto('/');
-  await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
   await page.waitForTimeout(400);
-  expect(requests.some(url => url.endsWith('/assets/video/heroimage.png'))).toBe(true);
-  expect(requests.some(url => /sailor_hero-|furina-hero-|heronew\.gif/.test(url))).toBe(false);
+  expect(requests).toEqual([]);
 });
 
-test('hero chooses one approved word per render and keeps deliberate line structure', async ({ page }) => {
+test('hero keeps the requested deliberate desktop line structure', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/');
   const titleLines = page.locator('.hero h1 > span');
   const descriptionLines = page.locator('.hero-description > span');
   await expect(titleLines).toHaveCount(2);
-  await expect(titleLines.first()).toHaveText('Probably the best');
-  await expect(page.locator('.hero-title-dynamic')).toHaveText(/^(Banners|Icons|Wallpapers)$/);
-  await expect(titleLines.last()).toHaveText(/^(Banners|Icons|Wallpapers) on the Internet\.$/);
-  const selectedWord = await page.locator('.hero-title-dynamic').textContent();
-  await page.mouse.wheel(0, 400);
-  await page.locator('.hero h1').hover();
-  await page.waitForTimeout(100);
-  await expect(page.locator('.hero-title-dynamic')).toHaveText(selectedWord);
-  await expect(descriptionLines).toHaveCount(2);
+  await expect(titleLines.first()).toHaveText('Probably the Best');
+  await expect(titleLines.nth(1)).toHaveText(/^(Banners|Icons) on the Internet\.$/);
+  await expect(descriptionLines).toHaveCount(3);
   await expect(descriptionLines).toHaveText([
-    'Start digging through alt, emo, dark, soft, strange, cute, messy, and more in the spaces where they all cross.',
-    'Your identity forms in this borderland.',
+    'Start digging through alt, emo, dark, soft, strange, cute, messy, and more',
+    'in the spaces where they all cross. Your identity forms in this',
+    'borderland.',
   ]);
   await expect(descriptionLines.first()).toHaveCSS('display', 'block');
   const descriptionBoxes = await descriptionLines.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().top));
   expect(descriptionBoxes[1]).toBeGreaterThan(descriptionBoxes[0]);
+  expect(descriptionBoxes[2]).toBeGreaterThan(descriptionBoxes[1]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
-for (const [word, randomValue] of [['Banners', 0], ['Icons', 0.34], ['Wallpapers', 0.67]]) {
-  test(`hero ${word} variant remains centered and bounded at every target width`, async ({ page }, testInfo) => {
+test('hero shares the 1440px public container and keeps its selected word stable', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  const secondLine = page.locator('.hero h1 > span').nth(1);
+  const selected = await secondLine.textContent();
+  await page.locator('.hero-category-cta').hover();
+  await page.waitForTimeout(100);
+  await expect(secondLine).toHaveText(selected);
+  expect(await page.locator('.hero-layout').evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return { width: box.width, left: box.left, right: window.innerWidth - box.right };
+  })).toEqual({ width: 1440, left: 240, right: 240 });
+});
+
+for (const width of [320, 375, 700, 701, 1023, 1024, 1200, 1440, 1920]) {
+  test(`split hero remains bounded at ${width}px`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop');
-    await page.addInitScript(value => { Math.random = () => value; }, randomValue);
-    for (const width of [320, 375, 700, 701, 1024, 1199, 1200, 1440, 1600, 1920]) {
-      await page.setViewportSize({ width, height: width <= 700 ? 780 : 900 });
-      await page.goto('/');
-      await page.evaluate(() => document.fonts.ready);
-      await expect(page.locator('.hero-title-dynamic')).toHaveText(word);
-      expect(await page.locator('.hero').evaluate(hero => {
-        const title = hero.querySelector('h1').getBoundingClientRect();
-        const heroBox = hero.getBoundingClientRect();
-        const lines = [...hero.querySelectorAll('h1 > span')];
-        return {
-          semanticLines: lines.length,
-          centered: Math.abs((title.left + title.width / 2) - (heroBox.left + heroBox.width / 2)) <= 1,
-          bounded: title.left >= heroBox.left - 1 && title.right <= heroBox.right + 1,
-          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        };
-      })).toEqual({ semanticLines: 2, centered: true, bounded: true, overflow: false });
-    }
+    await page.setViewportSize({ width, height: width <= 700 ? 780 : 900 });
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    expect(await page.locator('.hero').evaluate(hero => {
+      const title = hero.querySelector('h1').getBoundingClientRect();
+      const heroBox = hero.getBoundingClientRect();
+      const layout = hero.querySelector('.hero-layout');
+      const secondLine = hero.querySelector('h1 > span:last-child');
+      const lineHeight = Number.parseFloat(getComputedStyle(secondLine).lineHeight);
+      return { bounded: title.left >= heroBox.left - 1 && title.right <= heroBox.right + 1, overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth, columns: getComputedStyle(layout).gridTemplateColumns.split(' ').length, secondLineRows: Math.round(secondLine.getBoundingClientRect().height / lineHeight) };
+    })).toEqual({ bounded: true, overflow: false, columns: width < 1024 ? 1 : 5, secondLineRows: width < 1440 ? expect.any(Number) : 1 });
   });
 }
 
@@ -292,44 +281,29 @@ test('signed-out copy stays compact while the Discord OAuth action remains expli
   expect(await oauthRequest).toBeTruthy();
 });
 
-test('reduced motion keeps the static hero image visible and aligned', async ({ page }, testInfo) => {
+test('reduced motion keeps both split-hero actions visible and usable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  const media = page.locator('.hero-media');
-  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
-  await expect(media).toHaveCSS('opacity', '0.8');
-  await expect(media).toHaveCSS('object-fit', 'cover');
-  await expect(media).toHaveCSS('object-position', '50% 50%');
-  await expect(media).toHaveCount(1);
+  await expect(page.locator('.hero-category-cta')).toBeVisible();
+  await expect(page.locator('.hero-collections-cta')).toBeVisible();
+  await expect(page.locator('.hero-media')).toHaveCount(0);
 });
 
-test('static hero image remains stable across refresh, visibility, viewport, and route changes', async ({ page }, testInfo) => {
+test('split hero remains stable across refresh, viewport, and route changes', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  const errors = [];
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
-  page.on('pageerror', error => { if (/hero|play|pause|catch/i.test(error.message)) errors.push(error.message); });
-  page.on('console', message => { if (message.type() === 'error' && /hero|play|pause|catch/i.test(message.text())) errors.push(message.text()); });
   await page.setViewportSize({ width: 1440, height: 900 });
   for (let attempt = 0; attempt < 5; attempt += 1) {
     if (attempt === 0) await page.goto('/'); else await page.reload({ waitUntil: 'domcontentloaded' });
-    const media = page.locator('.hero-media');
-    await expect(media).toHaveCount(1);
-    await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
-    await expect(page.locator('video.hero-media')).toHaveCount(0);
+    await expect(page.locator('.hero-layout')).toHaveCount(1);
+    await expect(page.locator('.hero h1 > span').nth(1)).toHaveText(/^(Banners|Icons) on the Internet\.$/);
   }
-  const media = page.locator('.hero-media');
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); });
-  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); document.dispatchEvent(new Event('visibilitychange')); });
   await page.setViewportSize({ width: 375, height: 780 });
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(media).toHaveAttribute('src', '/assets/video/heroimage.png');
-  await page.goto('/about'); await expect(page.locator('.hero-media')).toHaveCount(0);
-  await page.goto('/'); await expect(page.locator('.hero-media')).toHaveCount(1);
-  await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
-  expect(errors).toEqual([]);
+  await expect(page.locator('.hero-layout')).toHaveCSS('grid-template-columns', /.+/);
+  await page.goto('/about'); await expect(page.locator('.hero')).toHaveCount(0);
+  await page.goto('/'); await expect(page.locator('.hero-layout')).toHaveCount(1);
 });
 
 test('navbar and hero remain bounded across target responsive widths', async ({ page }, testInfo) => {
@@ -339,53 +313,33 @@ test('navbar and hero remain bounded across target responsive widths', async ({ 
     await page.setViewportSize({ width, height: width < 700 ? 780 : 900 });
     await page.goto('/');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-    await expect(page.locator('.site-header .brand-wordmark')).toBeVisible();
+    await expect(page.locator('.site-header .profile-brand-wordmark')).toBeVisible();
     await expect(page.locator('.hero h1')).toBeVisible();
-    if (width >= 1200) {
-      await expect(page.locator('.hero h1')).toHaveCSS('font-size', '76px');
-      await expect(page.locator('.hero-cta')).toHaveCSS('height', '47px');
-    }
+    if (width < 1024) await expect(page.locator('.hero h1')).toHaveCSS('font-size', '36px');
     const heroBox = await page.locator('.hero').boundingBox();
     const titleBox = await page.locator('.hero h1').boundingBox();
-    const contentBox = await page.locator('.hero-content').boundingBox();
     const descriptionBox = await page.locator('.hero-description').boundingBox();
-    const ctaBox = await page.locator('.hero-cta').boundingBox();
-    const mediaBox = await page.locator('.hero-media').boundingBox();
+    const firstCtaBox = await page.locator('.hero-category-cta').boundingBox();
     expect(titleBox.x).toBeGreaterThanOrEqual(heroBox.x);
     expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
-    expect(Math.abs((contentBox.y + contentBox.height / 2) - (heroBox.y + heroBox.height / 2))).toBeLessThanOrEqual(1);
-    expect(descriptionBox.y - (titleBox.y + titleBox.height)).toBeCloseTo(32, 0);
-    expect(ctaBox.y).toBeGreaterThan(descriptionBox.y + descriptionBox.height);
-    expect(ctaBox.y + ctaBox.height).toBeLessThanOrEqual(heroBox.y + heroBox.height + 1);
-    await expect(page.locator('.hero-cta')).toHaveCSS('border-radius', '99px');
-    expect(mediaBox.y + mediaBox.height).toBeCloseTo(heroBox.y + heroBox.height, 0);
-    await expect(page.locator('.hero-media')).toHaveAttribute('src', '/assets/video/heroimage.png');
-    await expect(page.locator('.hero-media')).toHaveCSS('opacity', '0.8');
-    await expect(page.locator('.hero-media')).toHaveCSS('object-fit', 'cover');
-    await expect(page.locator('.hero-media')).toHaveCSS('object-position', '50% 50%');
-    await expect(page.locator('.hero-decorations')).toHaveCSS('pointer-events', 'none');
-    const decorationImages = await page.locator('.hero-decorations').evaluate(element => ({
-      primary: getComputedStyle(element, '::before').backgroundImage,
-      line: getComputedStyle(element, '::after').backgroundImage,
-    }));
-    for (const name of ['globe.svg', 'spark.svg', 'tilts.svg']) expect(decorationImages.primary).toContain(name);
-    expect(decorationImages.line).toContain('lines.svg');
-    await expect(page.locator('.hero-description')).toHaveCSS('font-size', '17px');
-    await expect(page.locator('.hero-cta')).toHaveCSS('font-size', '17px');
-    await expect(page.locator('.hero-eyebrow')).toHaveCount(0);
+    expect(firstCtaBox.y).toBeGreaterThan(descriptionBox.y + descriptionBox.height);
+    expect(firstCtaBox.y + firstCtaBox.height).toBeLessThanOrEqual(heroBox.y + heroBox.height + 1);
+    await expect(page.locator('.hero-category-cta')).toHaveCSS('border-radius', '4px');
+    await expect(page.locator('.hero-description')).toHaveCSS('font-size', width < 1024 ? '18px' : '17px');
+    await expect(page.locator('.hero-eyebrow')).toBeVisible();
     if (width < 1200) {
       const toggle = page.getByRole('button', { name: 'Open menu' });
       await expect(toggle).toBeVisible(); await toggle.click();
       await expect(page.locator('.main-nav')).toHaveClass(/open/);
       await expect(page.locator('.mobile-nav-actions .sign-in-mobile')).toBeVisible();
       await expect(page.locator('.mobile-nav-actions .collections-button')).toHaveCount(0);
-      await expect(page.locator('.sign-in-mobile')).toHaveCSS('border-radius', '12px');
+      await expect(page.locator('.sign-in-mobile')).toHaveCSS('border-radius', '4px');
       await expect(page.locator('.sign-in-mobile .roll-text-layer').first()).toHaveText('Sign In');
     } else {
       await expect(page.locator('.main-nav')).toBeVisible();
       await expect(page.locator('.nav-actions .sign-in')).toBeVisible();
       await expect(page.locator('.nav-actions .collections-button')).toHaveCount(0);
-      await expect(page.locator('.sign-in')).toHaveCSS('border-radius', '12px');
+      await expect(page.locator('.sign-in')).toHaveCSS('border-radius', '4px');
       await expect(page.locator('.sign-in .roll-text-layer').first()).toHaveText('Sign In');
     }
   }
@@ -395,7 +349,7 @@ test('rolling controls preserve geometry, accessible names, and opposite icon mo
   test.skip(testInfo.project.name !== 'desktop');
   await page.route('**/api/auth/session*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"configured":true,"authenticated":false,"user":null,"csrfToken":null}' }));
   await page.goto('/');
-  const nav = page.locator('.main-nav > a').first(); const signIn = page.locator('.sign-in'); const hero = page.locator('.hero-cta');
+  const nav = page.locator('.main-nav > a').first(); const signIn = page.locator('.sign-in'); const hero = page.locator('.hero-category-cta');
   for (const control of [nav, signIn, hero]) {
     await expect(control).toHaveClass(/has-roll-animation/);
     await expect(control.locator('.roll-text-layer')).toHaveCount(2);
@@ -498,11 +452,12 @@ test('rolling controls keep text and paired icons visible throughout pointer exi
 test('rolling controls and Lenis remain enhancement-only for touch and reduced motion', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/');
   await expect(page.locator('html')).not.toHaveClass(/lenis/);
-  const hero = page.locator('.hero-cta');
+  const hero = page.locator('.hero-category-cta');
   await expect(hero.locator('.roll-text-layer').last()).toHaveCSS('visibility', 'hidden');
   expect(await page.locator('.main-nav > a').first().evaluate(element => getComputedStyle(element, '::before').transitionDuration)).toBe('0s');
   if (testInfo.project.name === 'mobile') {
-    await hero.tap(); await expect(page).toHaveURL(/\/collections$/);
+    const href = await hero.getAttribute('href');
+    await hero.tap(); await expect(page).toHaveURL(new RegExp(`${href}$`));
   }
 });
 
@@ -784,8 +739,12 @@ test('footer and application shell preserve landmarks, routes, and short-page fl
   await expect(page.locator('footer')).toHaveCount(1);
   await expect(page.locator('.footer-group')).toHaveCount(2);
   await expect(page.locator('.footer-group a')).toHaveCount(8);
-  await expect(page.locator('footer .brand')).toHaveAccessibleName('Neuevault home');
-  await expect(page.locator('.footer-legal')).toContainText('© 2026 Neuevault');
+  await expect(page.locator('footer .brand')).toHaveAccessibleName('pfseeker home');
+  await expect(page.locator('footer .footer-profile-logo')).toBeVisible();
+  await expect(page.locator('.footer-legal')).toContainText('© 2026 pfseeker');
+  await expect(page.locator('.site-footer')).not.toContainText('Neuevault');
+  await expect(page.locator('.footer-group a').first().locator('.roll-text-layer')).toHaveCount(2);
+  await expect(page.locator('.footer-profile-brand .roll-text-layer')).toHaveCount(2);
 
   const shell = await page.evaluate(() => {
     const header = document.querySelector('header').getBoundingClientRect();
@@ -972,26 +931,26 @@ test('homepage reserves six collection slots without fake interactive records', 
   }
 });
 
-test('homepage section headings and actions share one visual contract', async ({ page }) => {
+test('homepage section headings share one visual contract and the collection action is centered below the grid', async ({ page }) => {
   await page.goto('/');
   const result = await page.evaluate(() => {
     const collection = document.querySelector('.collection-section .home-section-head');
     const recent = document.querySelector('.recent-section .home-section-head');
     const project = header => {
       const heading = header.querySelector('h2');
-      const action = header.querySelector('.section-head-action');
       const headingStyle = getComputedStyle(heading);
-      const actionStyle = getComputedStyle(action);
       const bounds = header.getBoundingClientRect();
       return {
         x: bounds.x, width: bounds.width, alignItems: getComputedStyle(header).alignItems,
         heading: [headingStyle.fontSize, headingStyle.lineHeight, headingStyle.fontWeight, headingStyle.letterSpacing],
-        action: [actionStyle.height, actionStyle.padding, actionStyle.borderRadius, actionStyle.fontFamily, actionStyle.fontSize, actionStyle.lineHeight, actionStyle.fontWeight, actionStyle.backgroundColor, actionStyle.border],
       };
     };
-    return { collection: project(collection), recent: project(recent) };
+    const actionWrap = document.querySelector('.collection-section-action');
+    const action = actionWrap.querySelector('.section-head-action');
+    return { collection: project(collection), recent: project(recent), action: { label: action.getAttribute('aria-label'), href: action.getAttribute('href'), justify: getComputedStyle(actionWrap).justifyContent, afterGrid: actionWrap.previousElementSibling?.classList.contains('collection-grid') } };
   });
-  expect(result.recent).toEqual(result.collection);
+  expect(result.recent.heading).toEqual(result.collection.heading);
+  expect(result.action).toEqual({ label: 'Browse more', href: '/collections', justify: 'center', afterGrid: true });
 });
 
 test('collection metadata remains natural-height for real copy', async ({ page }) => {
@@ -1101,17 +1060,14 @@ test('collection cards stay static for touch and reduced motion', async ({ page 
   await expect(card.locator('.media-default .cover-static')).toBeVisible();
 });
 
-test('single-preview collections remain static on pointer and keyboard interaction', async ({ page }, testInfo) => {
+test('new hosted collection members participate in visual alternate previews', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/collections');
   const card = page.locator('a[href="/collections/imvu-pack-01"]');
   await expect(card.locator('.media-default .cover-static')).toBeVisible();
-  await expect(card.locator('.cover-alternate')).toHaveCount(0);
+  await expect(card.locator('.cover-alternate')).toHaveCount(1);
   await card.hover();
-  await expect(card).not.toHaveClass(/cover-playing/);
-  await card.focus();
-  await expect(card).not.toHaveClass(/cover-playing/);
-  await expect(card.locator('.cover-static')).toBeVisible();
+  await expect(card).toHaveClass(/cover-playing/);
 });
 
 test('collection preview failures retain media geometry without blanking healthy static covers', async ({ page }, testInfo) => {

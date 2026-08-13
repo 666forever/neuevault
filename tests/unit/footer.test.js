@@ -21,12 +21,15 @@ describe('footer and application shell', () => {
 
   it('uses the existing brand once with singular semantics', () => {
     const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0] || '';
-    expect(footer).toContain('aria-label="Neuevault home"');
-    expect(footer).toContain('class="brand-wordmark">Neuevault.</span>');
-    expect(footer.match(/aria-label="Neuevault home"/g)).toHaveLength(1);
+    expect(footer).toContain('aria-label="pfseeker home"');
+    expect(footer).toContain('class="brand-wordmark">pfseeker</span>');
+    expect(footer.match(/aria-label="pfseeker home"/g)).toHaveLength(1);
     expect(footer).toContain('aria-hidden="true"');
+    expect(footer).toContain('class="footer-profile-logo"');
+    expect(footer).toContain('id="footer-pfseeker-title">pfseeker</h2>');
     expect(footer).toContain('Independently curated. Built for discovery.');
-    expect(footer).toContain('© 2026 Neuevault');
+    expect(footer).toContain('&copy; 2026 pfseeker');
+    expect(footer).not.toContain('Neuevault');
   });
 
   it('publishes only real internal route groups with no placeholders', () => {

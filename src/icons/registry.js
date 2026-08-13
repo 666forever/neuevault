@@ -20,6 +20,10 @@ export const iconRegistry = Object.freeze({
   },
   bookmark: fill('M18 1H6a3 3 0 0 0-3 3v19.805l9-5.625 9 5.625V4a3 3 0 0 0-3-3Z'),
   bolt: fill('M13 2a1 1 0 0 1 1 1v6h5a1 1 0 0 1 .808 1.588l-8 11A1 1 0 0 1 10 21v-6H5a1 1 0 0 1-.808-1.588l8-11A1 1 0 0 1 13 2Z', '3 1 18 22'),
+  'cta-category': {
+    viewBox: '0 0 24 24',
+    body: '<path fill="currentColor" d="M19 7a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z"/><path fill="currentColor" d="M14 2a3 3 0 0 1 3 2.999L10 5a5 5 0 0 0-5 5l-.001 7-.175-.005A3 3 0 0 1 2 14V5a3 3 0 0 1 3-3z"/>',
+  },
 });
 
 export const iconNames = Object.freeze(Object.keys(iconRegistry));

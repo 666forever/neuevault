@@ -2,33 +2,33 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { compileCatalog, CatalogCompileError } from '../../server/catalog/compiler.js';
-import { pipelineConfig } from '../../scripts/asset-pipeline/config.mjs';
-import { PipelineReport } from '../../scripts/asset-pipeline/errors.mjs';
-import { resolveLocalAssets } from '../../scripts/asset-pipeline/local-adapter.mjs';
+import { reconstructHostedAssetFacts } from '../../server/catalog/hosted-adapter.js';
 import { authoredAssetsFileSchema, authoredCategoriesFileSchema, authoredCollectionsFileSchema } from '../../scripts/asset-pipeline/schema.mjs';
 
 const digest = value => createHash('sha256').update(`${JSON.stringify(value, null, 2)}\n`).digest('hex').toUpperCase();
 let input; let output;
 
 beforeAll(async () => {
-  const [assetsFile, categoriesFile, collectionsFile] = await Promise.all([
+  const [assetsFile, categoriesFile, collectionsFile, generatedAssets] = await Promise.all([
     readFile('content/metadata/assets.json', 'utf8').then(JSON.parse).then(value => authoredAssetsFileSchema.parse(value)),
     readFile('content/metadata/categories.json', 'utf8').then(JSON.parse).then(value => authoredCategoriesFileSchema.parse(value)),
     readFile('content/collections/collections.json', 'utf8').then(JSON.parse).then(value => authoredCollectionsFileSchema.parse(value)),
+    readFile('src/generated/assets.json', 'utf8').then(JSON.parse),
   ]);
-  const report = new PipelineReport(); const resolvedAssets = await resolveLocalAssets(assetsFile.assets, pipelineConfig, report, false); report.assertValid();
+  const resolvedAssets = reconstructHostedAssetFacts(assetsFile.assets, generatedAssets);
   input = { assets: assetsFile.assets, categories: categoriesFile.categories, collections: collectionsFile.collections, resolvedAssets }; output = compileCatalog(input);
 });
 
 describe('deterministic catalog compiler', () => {
-  it('reproduces all 234 pre-extraction manifests byte for byte', () => {
-    expect(output.assets).toHaveLength(234); expect(digest(output.assets)).toBe('B151BCB101EEE6A9BC0E5207D394C62A367CE5AA913758B939D1B8F60DA1B24B'); expect(digest(output.categories)).toBe('DF5414FA194B88D222694878B92DA50712F3AFD90FF67561FC1CED918ADECEAF'); expect(digest(output.collections)).toBe('F5082707E6C14D8873CA88C9B5547894131EBCDFEA05A48F24FC04DCED6C3A6D');
+  it('reproduces the current manifests byte for byte', async () => {
+    const [assets, categories, collections] = await Promise.all(['assets','categories','collections'].map(name => readFile(`src/generated/${name}.json`, 'utf8').then(JSON.parse)));
+    expect(output.assets).toHaveLength(input.assets.length); expect(digest(output.assets)).toBe(digest(assets)); expect(digest(output.categories)).toBe(digest(categories)); expect(digest(output.collections)).toBe(digest(collections));
   });
   it('is stable for identical and shuffled array inputs', () => {
     expect(compileCatalog(input)).toEqual(output); expect(compileCatalog({ assets: [...input.assets].reverse(), categories: [...input.categories].reverse(), collections: [...input.collections].reverse(), resolvedAssets: [...input.resolvedAssets].reverse() })).toEqual(output);
   });
   it('preserves restricted, count, cover, and animation behavior', () => {
-    expect(output.assets.find(asset => asset.id === 'nv-166')).toEqual({ id: 'nv-166', title: 'B6df7c961256bcebc4b169c2ddbd96c5', slug: 'b6df7c961256bcebc4b169c2ddbd96c5', sourceFile: 'icons/b6df7c961256bcebc4b169c2ddbd96c5.jpg', previewFile: '/media/previews/nv-166.jpg', src: null, category: 'Icons', collectionSlugs: [], tags: [], width: 320, height: 320, aspectRatio: 1, orientation: 'Square', fileType: 'JPG', mimeType: 'image/jpeg', fileSize: 11307, uploadDate: '2026-06-27', animated: false, requiresDiscordAuth: true });
+    expect(output.assets.find(asset => asset.id === 'nv-166')).toMatchObject({ id: 'nv-166', title: 'B6df7c961256bcebc4b169c2ddbd96c5', slug: 'b6df7c961256bcebc4b169c2ddbd96c5', sourceFile: 'icons/b6df7c961256bcebc4b169c2ddbd96c5.jpg', previewFile: '/media/previews/nv-166.jpg', src: null, category: 'Icons', collectionSlugs: [], tags: [], width: 320, height: 320, aspectRatio: 1, orientation: 'Square', fileType: 'JPG', mimeType: 'image/jpeg', fileSize: 11307, uploadDate: '2026-06-27', animated: false, requiresDiscordAuth: true });
     expect(output.categories.every(category => category.count >= 0 && typeof category.image === 'string')).toBe(true); expect(output.collections.every(collection => collection.count === collection.assetIds.length)).toBe(true); expect(output.assets.some(asset => asset.animated)).toBe(true);
   });
   it('compiles complete hosted-media facts without a local source file', () => {

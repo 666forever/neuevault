@@ -14,7 +14,7 @@ export function renderAdminPage(app,{client=new AdminClient()}={}){
     set(stateShell('Checking access…','Confirming your administrator session.'));
     try{
       const bootstrapResponse=await client.bootstrap(signal);if(signal.aborted||disposed)return;
-      if(bootstrapResponse.status===401){set(stateShell('Sign in required','Sign in with Discord to request administrator access.','<a class="button button-light button-compact" href="/api/auth/discord?returnTo=%2Fadmin"><span>Sign In</span></a>'));return;}
+      if(bootstrapResponse.status===401){set(stateShell('Sign in required','Sign in with Discord to request administrator access.','<a class="button button-light button-compact discord-auth" href="/api/auth/discord?returnTo=%2Fadmin"><span>Sign In</span></a>'));return;}
       if(bootstrapResponse.status===403){set(stateShell('Access denied','This account does not have access to Neuevault administration.'));return;}
       if(!bootstrapResponse.ok){set(stateShell('Administration unavailable','Administrator access could not be checked safely. Please try again.',retryButton));bindRetry();return;}
       const bootstrap=await bootstrapResponse.json();if(signal.aborted||disposed)return;

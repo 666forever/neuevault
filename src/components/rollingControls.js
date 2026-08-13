@@ -2,12 +2,15 @@ const rollingSelector = [
   '.main-nav > a',
   '.sign-in',
   '.sign-in-mobile',
+  '.hero-category-cta',
+  '.hero-collections-cta',
   '.hero-cta',
   '.text-link',
   '.back-link',
   '.load-more',
   '.modal-actions .button',
   '.auth-dialog-card > .button:not(.auth-close)',
+  '.footer-group a',
 ].join(',');
 
 const iconSelector = '.button-icon';
@@ -39,7 +42,30 @@ function createIconRoll(icon) {
   return viewport;
 }
 
+function enhanceWordmarkRoll(control, wordmark) {
+  if (!wordmark || control.classList.contains('has-roll-animation')) return;
+  const label = wordmark.textContent.trim();
+  if (!label) return;
+  const viewport = document.createElement('span');
+  viewport.className = 'roll-text roll-rich-text';
+  const primary = document.createElement('span');
+  primary.className = 'roll-text-layer';
+  const primaryContent = document.createElement('span');
+  primaryContent.className = 'roll-layer-content';
+  primaryContent.append(...[...wordmark.childNodes].map(node => node.cloneNode(true)));
+  primary.append(primaryContent);
+  const duplicate = primary.cloneNode(true);
+  duplicate.setAttribute('aria-hidden', 'true');
+  viewport.append(primary, duplicate);
+  wordmark.replaceChildren(viewport);
+  control.classList.add('has-roll-animation');
+  if (!control.hasAttribute('aria-label')) control.setAttribute('aria-label', label);
+}
+
 export function enhanceRollingControls(root = document) {
+  root.querySelectorAll('.profile-brand, .footer-profile-brand').forEach(control => {
+    enhanceWordmarkRoll(control, control.querySelector('.profile-brand-wordmark, .brand-wordmark'));
+  });
   root.querySelectorAll(rollingSelector).forEach(control => {
     if (control.disabled || control.classList.contains('has-roll-animation')) return;
     if (control.matches('.sign-in, .sign-in-mobile') && control.dataset.userIdentity === 'true') return;

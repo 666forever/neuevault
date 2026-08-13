@@ -9,7 +9,7 @@ const development = await readFile(path.join(root, 'docs', 'project', 'DEVELOPME
 describe('public design system', () => {
   it('declares the required primitive, semantic, component, layout, motion, and layer tokens', () => {
     for (const token of [
-      '--color-acid', '--gray-900', '--bg-page', '--bg-surface', '--text-primary', '--text-muted',
+      '--color-acid', '--color-discord', '--gray-900', '--bg-page', '--bg-surface', '--text-primary', '--text-muted',
       '--border-subtle', '--focus-ring', '--font-body', '--font-ui', '--font-brand', '--type-nav-size', '--type-button-size',
       '--space-4', '--radius-card', '--radius-brand', '--radius-pill', '--control-height-sm', '--control-height-field',
       '--icon-md', '--shadow-hero-title', '--duration-normal', '--duration-card', '--duration-fade', '--ease-standard', '--container-nav',
@@ -35,7 +35,7 @@ describe('public design system', () => {
   it('uses semantic tokens in representative shared components', () => {
     expect(css).toMatch(/\.button\s*\{[\s\S]*?min-height:\s*var\(--control-height-sm\)/);
     expect(css).toMatch(/\.main-nav\s*\{[\s\S]*?gap:\s*var\(--nav-item-gap\)/);
-    expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-size:\s*var\(--type-hero-size\)/);
+    expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-size:\s*4\.5rem/);
     expect(css).toMatch(/\.select,[\s\S]*?\.search-input\s*\{[\s\S]*?height:\s*var\(--control-height-field\)/);
     expect(css).toMatch(/\.modal\s*\{[\s\S]*?z-index:\s*var\(--z-modal\)/);
     expect(css).toMatch(/\.auth-dialog\s*\{[\s\S]*?z-index:\s*var\(--z-auth-dialog\)/);
@@ -69,7 +69,7 @@ describe('public design system', () => {
   it('does not use spacing tokens for typography or raw values for named hero layers', () => {
     expect(css).not.toMatch(/font-size:\s*var\(--space-/);
     expect(css).toContain('.auth-dialog-card h2 { font-size: var(--type-auth-title-mobile-size); }');
-    expect(css).toMatch(/\.hero-content\s*\{[\s\S]*?z-index:\s*var\(--z-hero-content\)/);
+    expect(css).toMatch(/\.hero-layout\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,[\s\S]*?gap:\s*80px/);
   });
 
   it('defines the responsive category-card contract without Figma positioning', () => {
@@ -83,7 +83,7 @@ describe('public design system', () => {
     expect(css).not.toMatch(/\.category-copy(?:-inner)?\s*\{[^}]*\b(?:left|top):/);
   });
 
-  it('publishes only the approved SF Pro Rounded UI faces and keeps TBJ for the wordmark', async () => {
+  it('publishes the approved shared faces plus the requested scoped hero and navbar faces', async () => {
     const faces = [...css.matchAll(/@font-face\s*\{([\s\S]*?)\}/g)].map(match => match[1]);
     const roundedFaces = faces.filter(face => face.includes('font-family: "SF Pro Rounded"'));
     expect(roundedFaces).toHaveLength(3);
@@ -101,15 +101,19 @@ describe('public design system', () => {
     }
     expect(css).toContain('--font-ui: "SF Pro Rounded"');
     expect(css).not.toMatch(/Arimo|Archivo|Inter/);
-    expect(css).not.toMatch(/font-weight:\s*(?:700|800|900)\b/);
+    expect(css).toMatch(/\.profile-brand-strong\s*\{\s*font-weight:\s*700/);
+    expect(css).not.toMatch(/font-weight:\s*(?:800|900)\b(?![^{}]*@font-face)/);
     expect(css).not.toMatch(/--(?:font-weight|weight)-(?:bold|heavy)\s*:/);
     expect(css).toMatch(/\.brand-wordmark\s*\{[\s\S]*?font-family:\s*var\(--font-brand\)/);
   });
 
-  it('defines the revised responsive hero without the obsolete vignette or tiled grain', () => {
-    expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-family:\s*var\(--font-category\)[\s\S]*?font-weight:\s*var\(--weight-semibold\)[\s\S]*?font-size:\s*var\(--type-hero-size\)[\s\S]*?line-height:\s*var\(--type-hero-line\)/);
-    expect(css).toMatch(/\.hero\s*\{[\s\S]*?aspect-ratio:\s*var\(--hero-frame-ratio\)[\s\S]*?max-height:\s*var\(--hero-frame-max-height\)[\s\S]*?background:\s*var\(--bg-surface\)/);
-    expect(css).toContain('linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)');
+  it('defines the requested responsive split hero without the obsolete media composition', () => {
+    expect(css).toMatch(/\.hero h1\s*\{[\s\S]*?font-family:\s*"SF Pro"[\s\S]*?font-weight:\s*600[\s\S]*?font-size:\s*4\.5rem[\s\S]*?line-height:\s*1/);
+    expect(css).toMatch(/\.hero\s*\{[\s\S]*?padding-block:\s*128px/);
+    expect(css).toMatch(/\.hero-layout\s*\{[\s\S]*?width:\s*min\(calc\(100% - \(var\(--nav-shell-gutter\) \* 2\)\),\s*var\(--container-wide\)\)/);
+    expect(css).toMatch(/@media \(max-width: 1023px\)[\s\S]*?\.hero h1\s*\{[\s\S]*?font-size:\s*36px[\s\S]*?line-height:\s*40px/);
+    expect(css).not.toContain('.hero-gradient');
+    expect(css).not.toContain('.hero-media');
     expect(css).not.toContain('radial-gradient(177.97% 93.94%');
     expect(css).not.toContain('url("/assets/textures/hero_grain.png") center / 100% 100% no-repeat');
     expect(css).not.toContain('url("/assets/textures/hero-grain-1000px.png")');

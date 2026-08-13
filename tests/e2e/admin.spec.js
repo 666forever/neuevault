@@ -82,12 +82,12 @@ test('production owner can run the sanitized read-only readiness check while del
 
 test('manager never flashes before authorization and route disposal ignores the pending response', async ({ page }) => {
   await adminRoutes(page, { delay: 800 }); await page.goto('/admin'); await expect(page.getByText('Checking access…')).toBeVisible(); await expect(page.getByRole('heading', { name: 'Content manager' })).toHaveCount(0);
-  await page.getByRole('banner').getByRole('link', { name: 'Neuevault home' }).click(); await expect(page).toHaveURL('/'); await page.waitForTimeout(900); await expect(page.getByRole('heading', { name: 'Content manager' })).toHaveCount(0);
+  await page.getByRole('banner').getByRole('link', { name: 'Profileseeker.com home' }).click(); await expect(page).toHaveURL('/'); await page.waitForTimeout(900); await expect(page.getByRole('heading', { name: 'Content manager' })).toHaveCount(0);
 });
 
 test('direct refresh and away/back navigation retain the lazy read-only route', async ({ page }) => {
   const requests = await adminRoutes(page); await page.goto('/admin'); await expect(page.getByRole('heading', { name: 'Content manager' })).toBeVisible(); await page.reload(); await expect(page.getByRole('heading', { name: 'Content manager' })).toBeVisible();
-  await page.getByRole('banner').getByRole('link', { name: 'Neuevault home' }).click(); await page.goBack(); await expect(page.getByRole('heading', { name: 'Content manager' })).toBeVisible(); expect(requests()).toBe(3);
+  await page.getByRole('banner').getByRole('link', { name: 'Profileseeker.com home' }).click(); await page.goBack(); await expect(page.getByRole('heading', { name: 'Content manager' })).toBeVisible(); expect(requests()).toBe(3);
 });
 
 test('ordinary homepage does not request the admin feature chunk', async ({ page }) => {
